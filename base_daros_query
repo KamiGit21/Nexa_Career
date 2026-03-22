@@ -1,0 +1,187 @@
+CREATE SCHEMA `nexa_careers` ;
+
+CREATE TABLE `nexa_careers`.`carrera` (
+  `id_carrera` INT NOT NULL AUTO_INCREMENT,
+  `carrera` VARCHAR(255),
+  PRIMARY KEY (`id_carrera`)
+);
+
+CREATE TABLE `nexa_careers`.`estudiante` (
+  `id_estudiante` INT NOT NULL AUTO_INCREMENT,
+  `nombre` VARCHAR(255),
+  `apellido` VARCHAR(255),
+  `telefono` INT,
+  `gmail` VARCHAR(255),
+  `cv` VARCHAR(255),
+  `creado_en` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  `contrasena` VARCHAR(255),
+  `activo` BOOLEAN,
+  `id_carrera` INT NOT NULL,
+  `descripcion` VARCHAR(255),
+  `habilidades` VARCHAR(255),
+  `educacion` VARCHAR(255),
+  PRIMARY KEY (`id_estudiante`)
+);
+
+CREATE TABLE `nexa_careers`.`empleador` (
+  `id_empleador` INT NOT NULL AUTO_INCREMENT,
+  `empresa` VARCHAR(255),
+  `telefono` INT,
+  `gmail` VARCHAR(255),
+  `creado_en` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  `contrasena` VARCHAR(255),
+  `activo` BOOLEAN,
+  PRIMARY KEY (`id_empleador`)
+);
+
+CREATE TABLE `nexa_careers`.`supervisor` (
+  `id_supervisor` INT NOT NULL AUTO_INCREMENT,
+  `nombre` VARCHAR(255),
+  `telefono` INT,
+  `gmail` VARCHAR(255),
+  `creado_en` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  `contrasena` VARCHAR(255),
+  `activo` BOOLEAN,
+  PRIMARY KEY (`id_supervisor`)
+);
+
+CREATE TABLE `nexa_careers`.`oferta` (
+  `id_oferta` INT NOT NULL AUTO_INCREMENT,
+  `descripcion` TEXT,
+  `fecha_apertura` DATE,
+  `estado` INT,
+  `id_emepleador` INT NOT NULL,
+  `rechazo` TEXT,
+  PRIMARY KEY (`id_oferta`)
+);
+
+CREATE TABLE `nexa_careers`.`curso` (
+  `id_curso` INT NOT NULL AUTO_INCREMENT,
+  `descripcion` TEXT,
+  `fecha_apertura` DATE,
+  `estado` INT,
+  `id_ofertante` INT NOT NULL,
+  `tipo_ofertante` BOOLEAN NOT NULL,
+  `contacto` VARCHAR(255),
+  PRIMARY KEY (`id_curso`)
+);
+
+CREATE TABLE `nexa_careers`.`ofertante` (
+  `id_ofertante` INT NOT NULL AUTO_INCREMENT,
+  `id_oferta` INT NOT NULL,
+  `id_estudiante` INT NOT NULL,
+  PRIMARY KEY (`id_ofertante`)
+);
+
+CREATE TABLE `nexa_careers`.`categoria` (
+  `id_categoria` INT NOT NULL AUTO_INCREMENT,
+  `categoria` VARCHAR(255),
+  PRIMARY KEY (`id_categoria`)
+);
+
+CREATE TABLE `nexa_careers`.`categoria_oferta` (
+  `id_categoria_oferta` INT NOT NULL AUTO_INCREMENT,
+  `id_categoria` INT NOT NULL,
+  `id_oferta` INT NOT NULL,
+  PRIMARY KEY (`id_categoria_oferta`)
+);
+
+CREATE TABLE `nexa_careers`.`categoria_curso` (
+  `id_categoria_curso` INT NOT NULL AUTO_INCREMENT,
+  `id_categoria` INT NOT NULL,
+  `id_curso` INT NOT NULL,
+  PRIMARY KEY (`id_categoria_curso`)
+);
+
+CREATE TABLE `nexa_careers`.`carrera` (
+  `id_carrera` INT NOT NULL AUTO_INCREMENT,
+  `carrera` VARCHAR(255),
+  PRIMARY KEY (`id_carrera`)
+);
+
+CREATE TABLE `nexa_careers`.`estudiante` (
+  `id_estudiante` INT NOT NULL AUTO_INCREMENT,
+  `nombre` VARCHAR(255),
+  `apellido` VARCHAR(255),
+  `telefono` INT,
+  `gmail` VARCHAR(255),
+  `cv` VARCHAR(255),
+  `creado_en` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  `contrasena` VARCHAR(255),
+  `activo` BOOLEAN,
+  `id_carrera` INT NOT NULL,
+  `descripcion` VARCHAR(255),
+  `habilidades` VARCHAR(255),
+  `educacion` VARCHAR(255),
+  PRIMARY KEY (`id_estudiante`)
+);
+
+CREATE TABLE `nexa_careers`.`empleador` (
+  `id_empleador` INT NOT NULL AUTO_INCREMENT,
+  `empresa` VARCHAR(255),
+  `telefono` INT,
+  `gmail` VARCHAR(255),
+  `creado_en` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  `contrasena` VARCHAR(255),
+  `activo` BOOLEAN,
+  PRIMARY KEY (`id_empleador`)
+);
+
+CREATE TABLE `nexa_careers`.`supervisor` (
+  `id_supervisor` INT NOT NULL AUTO_INCREMENT,
+  `nombre` VARCHAR(255),
+  `telefono` INT,
+  `gmail` VARCHAR(255),
+  `creado_en` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  `contrasena` VARCHAR(255),
+  `activo` BOOLEAN,
+  PRIMARY KEY (`id_supervisor`)
+);
+
+CREATE TABLE `nexa_careers`.`oferta` (
+  `id_oferta` INT NOT NULL AUTO_INCREMENT,
+  `descripcion` TEXT,
+  `fecha_apertura` DATE,
+  `estado` INT,
+  `id_emepleador` INT NOT NULL,
+  `rechazo` TEXT,
+  PRIMARY KEY (`id_oferta`)
+);
+
+CREATE TABLE `nexa_careers`.`curso` (
+  `id_curso` INT NOT NULL AUTO_INCREMENT,
+  `descripcion` TEXT,
+  `fecha_apertura` DATE,
+  `estado` INT,
+  `id_ofertante` INT NOT NULL,
+  `tipo_ofertante` BOOLEAN NOT NULL,
+  `contacto` VARCHAR(255),
+  PRIMARY KEY (`id_curso`)
+);
+
+CREATE TABLE `nexa_careers`.`ofertante` (
+  `id_ofertante` INT NOT NULL AUTO_INCREMENT,
+  `id_oferta` INT NOT NULL,
+  `id_estudiante` INT NOT NULL,
+  PRIMARY KEY (`id_ofertante`)
+);
+
+CREATE TABLE `nexa_careers`.`categoria` (
+  `id_categoria` INT NOT NULL AUTO_INCREMENT,
+  `categoria` VARCHAR(255),
+  PRIMARY KEY (`id_categoria`)
+);
+
+CREATE TABLE `nexa_careers`.`categoria_oferta` (
+  `id_categoria_oferta` INT NOT NULL AUTO_INCREMENT,
+  `id_categoria` INT NOT NULL,
+  `id_oferta` INT NOT NULL,
+  PRIMARY KEY (`id_categoria_oferta`)
+);
+
+CREATE TABLE `nexa_careers`.`categoria_curso` (
+  `id_categoria_curso` INT NOT NULL AUTO_INCREMENT,
+  `id_categoria` INT NOT NULL,
+  `id_curso` INT NOT NULL,
+  PRIMARY KEY (`id_categoria_curso`)
+);
