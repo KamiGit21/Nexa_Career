@@ -15,3 +15,5 @@ import JobList from '@/components/home/JobList.vue'
 </template>
 
 <style src="@/assets/styles/home.css"></style>
+
+//actualizar despues
