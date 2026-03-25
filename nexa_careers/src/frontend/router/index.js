@@ -30,7 +30,7 @@ const router = createRouter({
   scrollBehavior() { return { top: 0 } }
 })
 
-// Guard de navegación
+// Guard de navegación por roles
 router.beforeEach((to, from, next) => {
   const sesion = JSON.parse(localStorage.getItem('sesion') || '{}')
   if (to.meta.soloPublico && sesion.rol) return next('/home')
