@@ -5,7 +5,9 @@
     <div class="menu">
       <span class="search">🔍 Buscar</span>
       <a href="#">Home</a>
-      <div class="avatar">👤</div>
+      <div class="avatar">
+        <a href="/login">👤</a>
+      </div>
     </div>
   </nav>
 </template>
