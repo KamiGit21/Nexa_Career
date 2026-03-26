@@ -1,117 +1,43 @@
 <template>
-  <div class="w-full min-w-[1280px] min-h-[900px] flex flex-col" style="background:#f0f2f5">
+  <div class="min-h-screen bg-[#f8f5f0]">
+    <Navbar />
 
-    <!-- Navbar -->
-    <nav class="w-full flex items-center justify-between px-8 bg-[#1b2a4a]" style="height:52px;">
-      <div></div>
-      <div class="flex items-center gap-8 mr-12 text-white text-[15px]">
-        <router-link to="/home" class="hover:opacity-80">Home</router-link>
-        <router-link to="/mis-ofertas" class="font-bold text-[#b5943a]">Mis Ofertas</router-link>
-        <router-link to="/login" class="hover:opacity-80">Mi Cuenta</router-link>
-      </div>
-    </nav>
-
-    <!-- Breadcrumb -->
-    <div class="w-full flex items-center px-8 bg-white border-b border-gray-200" style="height:40px;">
-      <router-link to="/mis-ofertas" class="text-[#888888] hover:underline">Mis Ofertas</router-link>
-      <span class="text-[#888888] mx-1">/</span>
-      <span class="text-[#1b2a4a]">{{ oferta.titulo }}</span>
-      <span class="text-[#888888] ml-1">/ Postulantes</span>
-    </div>
-
-    <main class="flex-1 px-[40px] py-[18px] flex flex-col gap-4">
-
-      <!-- Header de la oferta -->
-      <div class="w-full rounded-[10px] flex overflow-hidden bg-[#1b2a4a] min-h-[100px]">
-        <div class="flex-1 px-[28px] py-[18px]">
-          <div class="font-bold text-white text-[17px]">{{ oferta.titulo }}</div>
-          <div class="flex items-center gap-3 flex-wrap mt-2">
-            <span class="text-[11px] px-3 py-1 rounded bg-[#253554] text-white">{{ oferta.categoria }}</span>
-            <span class="text-white text-xs">· {{ oferta.tipo }} · Apertura: {{ oferta.apertura }}</span>
-          </div>
-        </div>
-        <div class="flex border-l border-[#253554]">
-          <div class="px-[32px] py-[18px] text-center min-w-[140px] border-r border-[#253554]">
-            <div class="text-white text-xs">Total postulantes</div>
-            <div class="font-bold text-[#b5943a] text-3xl">{{ postulantes.length }}</div>
-          </div>
-          <div class="px-[32px] py-[18px] text-center min-w-[140px]">
-            <div class="text-white text-xs">Pendientes</div>
-            <div class="font-bold text-white text-3xl">{{ pendientes }}</div>
-          </div>
-        </div>
+    <div class="max-w-7xl mx-auto px-6 py-10">
+      <div class="flex items-center gap-2 text-sm text-gray-500 mb-6">
+        <router-link to="/mis-ofertas" class="hover:text-[#1b2a4a]">Mis Ofertas</router-link>
+        <span>›</span>
+        <span class="text-[#1b2a4a] font-medium">{{ oferta.titulo || 'Cargando...' }}</span>
       </div>
 
-      <!-- Filtros -->
-      <div class="flex gap-3 bg-white border border-gray-200 rounded-[8px] p-3">
-        <input v-model="busqueda" placeholder="Buscar postulante..." 
-               class="flex-1 px-4 py-2 bg-[#fafafa] border border-[#e0e0e0] rounded-[6px] text-sm" />
-        <select v-model="filtroEstado" class="px-4 py-2 bg-[#fafafa] border border-[#e0e0e0] rounded-[6px] text-sm">
-          <option value="Todos">Todos</option>
-          <option value="Pendiente">Pendiente</option>
-          <option value="Aceptado">Aceptado</option>
-          <option value="Rechazado">Rechazado</option>
-        </select>
-      </div>
+      <div v-if="loading" class="text-center py-20 text-gray-500">Cargando postulantes...</div>
 
-      <!-- Tabla -->
-      <div class="bg-white border border-gray-200 rounded-[8px] overflow-hidden">
-        <div class="bg-[#1b2a4a] text-white text-xs font-bold flex px-4 py-3">
-          <div class="w-10">#</div>
-          <div class="flex-1">Postulante</div>
-          <div class="w-48">Correo</div>
-          <div class="w-40">Teléfono</div>
-          <div class="w-36">Fecha</div>
-          <div class="w-24">Estado</div>
-          <div class="flex-1 text-center">Acciones</div>
+      <div v-else class="bg-white rounded-3xl shadow-sm overflow-hidden">
+        <div class="grid grid-cols-12 bg-[#1b2a4a] text-white text-sm py-5 px-8 font-medium">
+          <div class="col-span-5">Postulante</div>
+          <div class="col-span-3">Contacto</div>
+          <div class="col-span-2">Fecha</div>
+          <div class="col-span-2 text-center">Acciones</div>
         </div>
 
-        <div v-for="(p, i) in filteredPostulantes" :key="p.id" 
-             class="flex items-center px-4 py-3 border-t border-gray-200 hover:bg-gray-50"
-             :style="{ background: i % 2 === 0 ? '#fff' : '#f9fafb' }">
-
-          <div class="w-10 text-[#888888]">{{ p.id }}</div>
-          
-          <div class="flex-1 flex items-center gap-3">
-            <div class="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold" 
-                 :style="{ background: p.inicialesBg, color: p.inicialesColor }">
+        <div v-for="p in filteredPostulantes" :key="p.id" class="grid grid-cols-12 items-center px-8 py-6 border-b hover:bg-gray-50">
+          <div class="col-span-5 flex items-center gap-4">
+            <div class="w-12 h-12 rounded-2xl flex items-center justify-center text-lg font-bold" 
+                 :style="{ backgroundColor: p.inicialesBg, color: p.inicialesColor }">
               {{ p.iniciales }}
             </div>
             <div>
-              <div class="text-[#1b2a4a]">{{ p.nombre }}</div>
-              <div class="text-xs text-[#888888]">{{ p.carrera }}</div>
+              <p class="font-semibold">{{ p.nombre }}</p>
+              <p class="text-sm text-gray-500">{{ p.carrera }}</p>
             </div>
           </div>
-
-          <div class="w-48 text-sm text-[#555555]">{{ p.correo }}</div>
-          <div class="w-40 text-sm text-[#555555]">{{ p.telefono }}</div>
-          <div class="w-36 text-sm text-[#555555]">{{ p.fechaPostulacion }}</div>
-
-          <div class="w-24">
-            <span :style="{ color: estadoConfig[p.estado].color }" class="text-xs font-medium">
-              {{ p.estado }}
-            </span>
-          </div>
-
-          <div class="flex-1 flex gap-2 justify-center">
-            <button v-if="p.estado === 'Pendiente'" 
-                    @click="aceptar(p)" 
-                    class="px-4 py-1 text-xs border border-[#3b6d11] text-[#3b6d11] rounded hover:bg-green-50">
-              Aceptar
-            </button>
-            <button v-if="p.estado === 'Pendiente'" 
-                    @click="rechazar(p)" 
-                    class="px-4 py-1 text-xs border border-[#a32d2d] text-[#a32d2d] rounded hover:bg-red-50">
-              Rechazar
-            </button>
-            <button @click="verDetalle(p)" 
-                    class="px-4 py-1 text-xs border border-[#1b2a4a] text-[#1b2a4a] rounded hover:bg-gray-50">
-              Ver CV
-            </button>
+          <div class="col-span-3 text-sm">{{ p.correo }}</div>
+          <div class="col-span-2 text-sm">{{ p.fechaPostulacion }}</div>
+          <div class="col-span-2 flex justify-end gap-3">
+            <button @click="verDetalle(p)" class="px-5 py-2 text-xs border rounded-xl hover:bg-gray-100">Ver CV</button>
           </div>
         </div>
       </div>
-    </main>
+    </div>
   </div>
 </template>
 
@@ -124,57 +50,42 @@ const router = useRouter()
 
 const busqueda = ref('')
 const filtroEstado = ref('Todos')
+const loading = ref(true)
 
-const oferta = ref({ titulo: '', categoria: '', tipo: '', apertura: '' })
+const oferta = ref({})
 const postulantes = ref([])
 
-const estadoConfig = {
-  Pendiente: { color: '#ba7517' },
-  Aceptado: { color: '#3b6d11' },
-  Rechazado: { color: '#a32d2d' }
-}
-
-const pendientes = computed(() => postulantes.value.filter(p => p.estado === 'Pendiente').length)
-
 const filteredPostulantes = computed(() => {
-  let list = [...postulantes.value]
+  let list = postulantes.value
   if (busqueda.value) {
     const q = busqueda.value.toLowerCase()
-    list = list.filter(p => p.nombre.toLowerCase().includes(q) || p.correo.toLowerCase().includes(q))
-  }
-  if (filtroEstado.value !== 'Todos') {
-    list = list.filter(p => p.estado === filtroEstado.value)
+    list = list.filter(p => p.nombre.toLowerCase().includes(q))
   }
   return list
 })
 
 // TODO: GET /api/oferta/:ofertaId
-// TODO: GET /api/ofertante?id_oferta=:ofertaId
+// TODO: GET /api/ofertante?id_oferta=
 const cargarDatos = async () => {
-  const ofertaId = route.params.ofertaId
+  loading.value = true
+  try {
+    const ofertaId = route.params.ofertaId
+    // const resOferta = await fetch(`/api/oferta/${ofertaId}`)
+    // oferta.value = await resOferta.json()
 
-  // Simulación temporal
-  oferta.value = { titulo: 'Desarrollador Backend', categoria: 'Tecnología', tipo: 'Tiempo completo', apertura: '01 mar 2026' }
-  
-  postulantes.value = [
-    { id: 1, iniciales: 'AM', inicialesBg: '#dce8ff', inicialesColor: '#1b2a4a', nombre: 'Andrea Mamani', carrera: 'Ing. de Sistemas · 3er año', correo: 'a.mamani@ucb.edu.bo', telefono: '+591 73 456 789', fechaPostulacion: '18 mar 2026', estado: 'Pendiente' },
-    { id: 2, iniciales: 'LR', inicialesBg: '#ede9ff', inicialesColor: '#533ab7', nombre: 'Luis Rojas', carrera: 'Ing. de Sistemas · 4to año', correo: 'l.rojas@ucb.edu.bo', telefono: '+591 76 123 456', fechaPostulacion: '17 mar 2026', estado: 'Aceptado' }
-  ]
+    // const resPostulantes = await fetch(`/api/ofertante?id_oferta=${ofertaId}`)
+    // postulantes.value = await resPostulantes.json()
+
+    oferta.value = { titulo: 'Cargando...' }
+    postulantes.value = []
+  } catch (e) {
+    console.error(e)
+  } finally {
+    loading.value = false
+  }
 }
 
-const aceptar = (p) => {
-  p.estado = 'Aceptado'
-  // TODO: PUT /api/ofertante/:id { estado: 'aceptado' }
-}
-
-const rechazar = (p) => {
-  p.estado = 'Rechazado'
-  // TODO: PUT /api/ofertante/:id { estado: 'rechazado' }
-}
-
-const verDetalle = (p) => {
-  router.push(`/postulante/${p.id}`)
-}
+const verDetalle = (p) => router.push(`/postulante/${p.id}`)
 
 onMounted(cargarDatos)
 </script>

@@ -1,6 +1,6 @@
 <template>
   <div class="w-full">
-    <!-- Estado 1: Sin archivo -->
+    <!-- Sin archivo -->
     <div 
       v-if="!cvActual"
       class="border-2 border-dashed border-[#002349] rounded-[15px] bg-[#FAFAF8] p-8 flex flex-col items-center justify-center gap-4 cursor-pointer hover:border-[#b5943a] transition-colors"
@@ -17,7 +17,7 @@
       <p class="text-xs text-gray-400">PDF o DOC/DOCX · Máx. 5 MB</p>
     </div>
 
-    <!-- Estado 2: Archivo cargado -->
+    <!-- Con archivo -->
     <div 
       v-else
       class="border border-[#002349] rounded-[15px] bg-[#FAFAF8] p-6 flex items-center gap-4"
@@ -35,7 +35,6 @@
       </button>
     </div>
 
-    <!-- Input oculto -->
     <input 
       ref="fileInput" 
       type="file" 
@@ -50,53 +49,33 @@
 import { ref } from 'vue'
 
 const emit = defineEmits(['update:cv'])
-
 const fileInput = ref(null)
 const cvActual = ref(null)
 const isDragging = ref(false)
 
-// Abrir selector de archivos
-const triggerFileInput = () => {
-  fileInput.value.click()
-}
+const triggerFileInput = () => fileInput.value.click()
 
-// Procesar archivo seleccionado
 const handleFileChange = (e) => {
   const file = e.target.files[0]
   if (file) processFile(file)
-  e.target.value = '' // Limpiar para poder seleccionar el mismo archivo nuevamente
+  e.target.value = ''
 }
 
-// Procesar archivo arrastrado
 const handleDrop = (e) => {
   isDragging.value = false
   const file = e.dataTransfer.files[0]
   if (file) processFile(file)
 }
 
-// Validación y procesamiento del archivo
 const processFile = (file) => {
-  const allowedTypes = [
-    'application/pdf',
-    'application/msword',
-    'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
-  ]
-
-  if (!allowedTypes.includes(file.type)) {
-    alert('Solo se permiten archivos PDF o Word (DOC/DOCX)')
-    return
-  }
-
   if (file.size > 5 * 1024 * 1024) {
     alert('El archivo no puede superar los 5 MB')
     return
   }
-
   cvActual.value = file
   emit('update:cv', file)
 }
 
-// Eliminar archivo
 const removeFile = () => {
   cvActual.value = null
   emit('update:cv', null)

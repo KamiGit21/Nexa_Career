@@ -1,20 +1,17 @@
 <template>
-  <section class="jobs px-12 py-12 bg-[#fff8ec]">
-    <h2 class="font-bold text-[#002349] text-[35px] mb-8">Algunas Ofertas Laborales:</h2>
-    
-    <div v-if="loading" class="text-center py-12 text-[#002349]">Cargando ofertas...</div>
-    
-    <div v-else-if="jobs.length === 0" class="text-center py-12 text-gray-500">
-      No hay ofertas disponibles en este momento.
-    </div>
-    
-    <div v-else class="grid grid-cols-3 gap-8">
-      <JobCard 
-        v-for="job in jobs" 
-        :key="job.id" 
-        :job="job" 
-        @ver-mas="emitirModal" 
-      />
+  <section class="py-16 bg-[#fff8ec]">
+    <div class="max-w-7xl mx-auto px-6">
+      <h2 class="text-4xl font-bold text-[#1b2a4a] mb-10">Algunas Ofertas Laborales</h2>
+      
+      <div v-if="loading" class="text-center py-20 text-gray-500">Cargando ofertas...</div>
+      
+      <div v-else-if="jobs.length === 0" class="text-center py-20 text-gray-500">
+        No hay ofertas disponibles en este momento.
+      </div>
+
+      <div v-else class="grid md:grid-cols-3 gap-8">
+        <JobCard v-for="job in jobs" :key="job.id" :job="job" @ver-mas="emitirModal" />
+      </div>
     </div>
   </section>
 </template>
@@ -29,22 +26,16 @@ const emit = defineEmits(['abrir-modal'])
 
 const emitirModal = (job) => emit('abrir-modal', job)
 
-// TODO: GET /api/ofertas?limit=6&estado=activa
+// TODO: GET /api/ofertas?limit=6
 const cargarOfertas = async () => {
   loading.value = true
   try {
-    // Simulación mientras no tengas backend
     // const res = await fetch('/api/ofertas?limit=6')
     // jobs.value = await res.json()
-
-    // Datos de ejemplo temporal (quitar cuando conectes backend)
-    jobs.value = [
-      { id: 1, title: 'Analista Financiero', company: 'Eventos Chuno', categories: ['Finanzas'], descripcion: 'Evalúa datos económicos...' },
-      { id: 2, title: 'Programador Junior Java', company: 'Asuresoft', categories: ['Tecnología'], descripcion: 'Desarrollo con Spring Boot...' }
-      // ... agrega más cuando tengas la API
-    ]
+    
+    jobs.value = [] // Se llenará desde el backend
   } catch (e) {
-    console.error('Error cargando ofertas', e)
+    console.error(e)
   } finally {
     loading.value = false
   }

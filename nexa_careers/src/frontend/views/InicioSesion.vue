@@ -1,37 +1,66 @@
 <template>
-  <div class="bg-[#fffffd] overflow-hidden w-full min-w-[1440px] min-h-screen relative">
-    <div class="absolute top-[98px] left-[624px] w-[816px] h-[806px] bg-gradient-to-br from-gray-600 to-gray-800" />
-    <div class="absolute top-20 left-[199px] w-[571px] h-[902px] bg-[#fffffd] rotate-[-12.27deg]" />
-    <div class="absolute top-0 left-0 w-full h-[126px] bg-[#002349]" />
-    <nav class="absolute top-0 left-0 w-full h-[126px] flex items-center">
-      <router-link to="/home" class="absolute top-12 left-[952px] text-[#d0b06d] text-[25px]">Home</router-link>
-      <router-link to="/registro-estudiante" class="absolute top-12 left-[1089px] text-[#d0b06d] text-[25px]">Registrarse</router-link>
-    </nav>
+  <div class="min-h-screen bg-gradient-to-br from-[#0f172a] to-[#1e2937] flex items-center justify-center p-6">
+    <div class="w-full max-w-md bg-white rounded-3xl shadow-2xl overflow-hidden">
+      
+      <!-- Header -->
+      <div class="bg-[#1b2a4a] px-10 py-12 text-center">
+        <div class="mx-auto w-16 h-16 bg-white/10 backdrop-blur rounded-2xl flex items-center justify-center mb-6">
+          <span class="text-4xl">🔑</span>
+        </div>
+        <h1 class="text-white text-3xl font-bold">Bienvenido de nuevo</h1>
+        <p class="text-[#d0b06d] mt-2">Inicia sesión para continuar</p>
+      </div>
 
-    <main>
-      <h1 class="absolute top-[211px] left-[230px] text-[#d0b06d] text-[35px] font-semibold text-center">Inicio de Sesión</h1>
-      <form @submit.prevent="handleSubmit" class="absolute top-[343px] left-[118px]">
-        <div class="w-[573px] flex flex-col gap-2.5 mb-9">
-          <label class="text-[#002349] text-[25px]">Correo electrónico institucional:</label>
-          <input v-model="form.correo" type="email" class="ml-[5px] w-[550px] h-10 bg-white rounded-[15px] border border-[#002349] px-3 text-[#002349]" />
+      <!-- Formulario -->
+      <div class="p-10">
+        <form @submit.prevent="handleSubmit" class="space-y-7">
+          <div>
+            <label class="block text-sm font-medium text-gray-600 mb-2">Correo institucional</label>
+            <input 
+              v-model="form.correo" 
+              type="email" 
+              placeholder="tu.nombre@ucb.edu.bo"
+              class="w-full px-6 py-4 bg-gray-50 border border-gray-200 rounded-2xl focus:border-[#b5943a] focus:ring-2 focus:ring-[#b5943a]/30 transition-all outline-none"
+            />
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-gray-600 mb-2">Contraseña</label>
+            <input 
+              v-model="form.password" 
+              :type="showPassword ? 'text' : 'password'"
+              placeholder="••••••••"
+              class="w-full px-6 py-4 bg-gray-50 border border-gray-200 rounded-2xl focus:border-[#b5943a] focus:ring-2 focus:ring-[#b5943a]/30 transition-all outline-none"
+            />
+            <button type="button" @click="showPassword = !showPassword" 
+                    class="absolute right-14 mt-[-42px] text-gray-400 hover:text-gray-600">
+              {{ showPassword ? '🙈' : '👁️' }}
+            </button>
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-gray-600 mb-2">Rol</label>
+            <select v-model="form.rol" 
+                    class="w-full px-6 py-4 bg-gray-50 border border-gray-200 rounded-2xl focus:border-[#b5943a] focus:ring-2 focus:ring-[#b5943a]/30 transition-all">
+              <option value="estudiante">Estudiante</option>
+              <option value="empleador">Empleador</option>
+              <option value="supervisor">Supervisor</option>
+            </select>
+          </div>
+
+          <button 
+            type="submit"
+            class="w-full py-4 bg-gradient-to-r from-[#1b2a4a] to-[#002349] text-white font-semibold rounded-2xl hover:brightness-110 transition-all mt-4">
+            Iniciar Sesión
+          </button>
+        </form>
+
+        <div class="text-center mt-8 text-sm text-gray-500">
+          ¿No tienes cuenta? 
+          <router-link to="/registro-estudiante" class="text-[#b5943a] font-medium hover:underline">Regístrate aquí</router-link>
         </div>
-        <div class="w-[552px] flex flex-col gap-2.5 mb-9">
-          <label class="text-[#002349] text-[25px]">Contraseña:</label>
-          <input v-model="form.password" type="password" class="w-[550px] h-10 bg-white rounded-[15px] border border-[#002349] px-3 text-[#002349]" />
-        </div>
-        <div class="flex flex-col gap-2.5 mb-9">
-          <label class="text-[#002349] text-[25px] ml-[95px]">Selecciona tu rol:</label>
-          <select v-model="form.rol" class="w-[427px] h-10 bg-white rounded-[15px] border border-[#002349] px-3 ml-[8px] text-[#002349]">
-            <option value="estudiante">Estudiante</option>
-            <option value="empleador">Empleador</option>
-            <option value="supervisor">Supervisor</option>
-          </select>
-        </div>
-        <button type="submit" class="ml-[135px] w-[302px] h-[50px] bg-[#002349] rounded-[15px] text-[#d0b06d] text-3xl font-semibold hover:bg-[#003366]">
-          Iniciar Sesión
-        </button>
-      </form>
-    </main>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -40,12 +69,32 @@ import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 
 const router = useRouter()
-const form = ref({ correo: '', password: '', rol: 'estudiante' })
+const showPassword = ref(false)
+
+const form = ref({
+  correo: '',
+  password: '',
+  rol: 'estudiante'
+})
 
 const handleSubmit = () => {
+  if (!form.value.correo || !form.value.password) {
+    alert('Por favor ingresa correo y contraseña')
+    return
+  }
+
   // TODO: POST /api/auth/login
-  localStorage.setItem('sesion', JSON.stringify({ rol: form.value.rol, email: form.value.correo }))
-  const rutas = { estudiante: '/home', empleador: '/mis-ofertas', supervisor: '/home' }
+  localStorage.setItem('sesion', JSON.stringify({ 
+    rol: form.value.rol, 
+    email: form.value.correo 
+  }))
+
+  const rutas = {
+    estudiante: '/home',
+    empleador: '/mis-ofertas',
+    supervisor: '/home'
+  }
+
   router.push(rutas[form.value.rol] || '/home')
 }
 </script>
