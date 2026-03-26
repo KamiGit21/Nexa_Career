@@ -50,7 +50,7 @@ CREATE TABLE `nexa_careers`.`oferta` (
   `descripcion` TEXT,
   `fecha_apertura` DATE,
   `estado` INT,
-  `id_emepleador` INT NOT NULL,
+  `id_empleador` INT NOT NULL,
   `rechazo` TEXT,
   PRIMARY KEY (`id_oferta`)
 );
