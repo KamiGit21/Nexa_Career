@@ -8,7 +8,8 @@
     "build": "run-p type-check \"build-only {@}\" --",
     "preview": "vite preview",
     "build-only": "vite build",
-    "type-check": "vue-tsc --build"
+    "type-check": "vue-tsc --build",
+    "start:servicios": "concurrently \"node src/backend/servicioCarrera/APICarrera/indexCarrera.js\" \"node src/backend/servicioEstudiante/APIEstudiante/indexEstudiante.js\" \"node src/backend/servicioEmpleador/APIEmpleador/indexEmpleador.js\" \"node src/backend/api-gateway/index.js\""
   },
   "dependencies": {
     "axios": "^1.13.6",

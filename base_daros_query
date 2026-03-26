@@ -185,3 +185,6 @@ CREATE TABLE `nexa_careers`.`categoria_curso` (
   `id_curso` INT NOT NULL,
   PRIMARY KEY (`id_categoria_curso`)
 );
+
+ALTER TABLE nexa_careers.oferta
+ADD COLUMN oferta varchar(100); 

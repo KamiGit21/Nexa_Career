@@ -1,50 +1,42 @@
 import axios from 'axios';
 
-const API_URL = 'http://localhost:3003/api/estudiantes';
+// Apuntamos directo al microservicio para probar su funcionamiento interno
+const API_URL = 'http://localhost:3000/api/empleadores';
 
 async function ejecutarPruebas() {
   try {
-    console.log('⏳ Iniciando pruebas del microservicio de Estudiantes...\n');
+    console.log('⏳ Iniciando pruebas del microservicio de Empleadores...\n');
 
-    // 1. POST: Registrar estudiante
-    console.log('➡️ 1. Ejecutando POST: Registrando nuevo estudiante...');
+    // 1. POST: Registrar empleador
+    console.log('➡️ 1. Ejecutando POST: Registrando nuevo empleador...');
     const postResponse = await axios.post(`${API_URL}/registrar`, { 
-      nombre: 'Natalia',
-      apellido: 'Urrutia',
-      telefono: 7753452,
-      gmail: 'nati@gmail.com',
-      cv: 'ruta/al/cv.pdf',
-      contrasena: 'password123',
-      id_carrera: 2, 
-      descripcion: 'Estudiante apasionado por la tecnología y el desarrollo de software.',
-      habilidades: 'Vue, Node, MySQL, Docker, Git, CI/CD, AWS, Python, Java',
-      educacion: 'Universidad Catolica, Instituto Americano, Curso de seguridad y redes',
+      empresa: 'Tech Solutions LLC',
+      telefono: 12345678,
+      gmail: 'contacto@techsolutions.com',
+      contrasena: 'admin123'
     });
-    const nuevoId = postResponse.data.id_estudiante;
+    const nuevoId = postResponse.data.id_empleador;
     console.log('✅ Resultado:', postResponse.data);
     console.log('--------------------------------------------------\n');
 
     // 2. GET: Listar todos
-    console.log('➡️ 2. Ejecutando GET: Solicitando todos los estudiantes...');
+    console.log('➡️ 2. Ejecutando GET: Solicitando todos los empleadores...');
     const getResponse = await axios.get(API_URL);
     console.table(getResponse.data.data);
     console.log('--------------------------------------------------\n');
 
     // 3. GET: Buscar por gmail
-    console.log('➡️ 3. Ejecutando GET: Buscando por gmail "nati@gmail.com"...');
-    const cuentaResponse = await axios.get(`${API_URL}/gmail/nati@gmail.com`);
-    console.log('✅ Resultado:', cuentaResponse.data.data);
+    console.log('➡️ 3. Ejecutando GET: Buscando por gmail "contacto@techsolutions.com"...');
+    const emailResponse = await axios.get(`${API_URL}/gmail/contacto@techsolutions.com`);
+    console.log('✅ Resultado:', emailResponse.data.data);
     console.log('--------------------------------------------------\n');
 
     // 4. PUT: Actualizar perfil
     console.log(`➡️ 4. Ejecutando PUT: Actualizando perfil del ID ${nuevoId}...`);
     const putPerfilResponse = await axios.put(`${API_URL}/${nuevoId}/perfil`, {
+      empresa: 'Tech Solutions Global',
       telefono: 87654321,
-      gmail: 'juan.nuevo@gmail.com',
-      cv: 'ruta/nueva/cv_v2.pdf',
-      descripcion: 'Desarrollador Full Stack',
-      educacion: 'Universidad Nacional - Titulado',
-      habilidades: 'Vue, Node, MySQL, Docker'
+      gmail: 'rh@techsolutions.com'
     });
     console.log('✅ Resultado:', putPerfilResponse.data);
     console.log('--------------------------------------------------\n');
@@ -52,18 +44,18 @@ async function ejecutarPruebas() {
     // 5. PUT: Cambiar contraseña
     console.log(`➡️ 5. Ejecutando PUT: Cambiando contraseña del ID ${nuevoId}...`);
     const putPasswordResponse = await axios.put(`${API_URL}/${nuevoId}/contrasena`, {
-      contrasena: 'nuevaClaveSuperSegura'
+      contrasena: 'nuevaClaveSegura2026'
     });
     console.log('✅ Resultado:', putPasswordResponse.data);
     console.log('--------------------------------------------------\n');
 
     // 6. PUT: Cambiar estado
-    console.log(`➡️ 6. Ejecutando PUT: Desactivando al estudiante ID ${nuevoId}...`);
+    console.log(`➡️ 6. Ejecutando PUT: Desactivando al empleador ID ${nuevoId}...`);
     const putEstadoResponse = await axios.put(`${API_URL}/${nuevoId}/estado`, {
-      activo: 0 // 0 = false, 1 = true
+      activo: 0 
     });
     console.log('✅ Resultado:', putEstadoResponse.data);
-    console.log('\n🎉 Todas las pruebas finalizaron con éxito.');
+    console.log('\n🎉 Todas las pruebas del empleador finalizaron con éxito.');
 
   } catch (error) {
     console.error('❌ Error durante las pruebas:', error.response ? error.response.data : error.message);

@@ -1,4 +1,4 @@
-import db from '../api-gateway/db.js';
+import db from '../../api-gateway/db.js';
 
 export const registrarCarrera = async (req, res) => {
   const { carrera } = req.body; 

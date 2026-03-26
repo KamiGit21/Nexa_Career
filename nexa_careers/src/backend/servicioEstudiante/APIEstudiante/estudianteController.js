@@ -1,19 +1,19 @@
-import db from '../api-gateway/db.js';
+import db from '../../api-gateway/db.js';
 
 // 1. POST: Registrar estudiante (activo = true por defecto)
 export const registrarEstudiante = async (req, res) => {
   const { nombre, apellido, telefono, gmail, cv, contrasena, id_carrera, descripcion, habilidades, educacion, cuenta } = req.body;
   
-  if (!cuenta || !gmail || !id_carrera) {
-    return res.status(400).json({ success: false, message: 'La cuenta, gmail y id_carrera son obligatorios' });
+  if (!gmail || !id_carrera) {
+    return res.status(400).json({ success: false, message: 'El gmail y id_carrera son obligatorios' });
   }
 
   try {
     const activo = 1; // 1 equivale a true en tinyint(1) de MySQL
     const [result] = await db.query(
-      `INSERT INTO estudiante (nombre, apellido, telefono, gmail, cv, contrasena, activo, id_carrera, descripcion, habilidades, educacion, cuenta) 
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-      [nombre, apellido, telefono, gmail, cv, contrasena, activo, id_carrera, descripcion, habilidades, educacion, cuenta]
+      `INSERT INTO estudiante (nombre, apellido, telefono, gmail, cv, contrasena, activo, id_carrera, descripcion, habilidades, educacion) 
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [nombre, apellido, telefono, gmail, cv, contrasena, activo, id_carrera, descripcion, habilidades, educacion]
     );
     res.status(201).json({ success: true, id_estudiante: result.insertId, message: 'Estudiante registrado correctamente' });
   } catch (error) {
@@ -46,15 +46,15 @@ export const buscarEstudiantePorId = async (req, res) => {
   }
 };
 
-// 4. GET: Buscar estudiante por cuenta
-export const buscarEstudiantePorCuenta = async (req, res) => {
-  const { cuenta } = req.params;
+// 4. GET: Buscar estudiante por correo
+export const buscarEstudiantePorGmail = async (req, res) => {
+  const { gmail } = req.params;
   try {
-    const [rows] = await db.query('SELECT * FROM estudiante WHERE cuenta = ?', [cuenta]);
-    if (rows.length === 0) return res.status(404).json({ success: false, message: 'Estudiante no encontrado con esa cuenta' });
+    const [rows] = await db.query('SELECT * FROM estudiante WHERE gmail = ?', [gmail]);
+    if (rows.length === 0) return res.status(404).json({ success: false, message: 'Estudiante no encontrado con ese correo' });
     res.status(200).json({ success: true, data: rows[0] });
   } catch (error) {
-    console.error('Error al buscar por cuenta:', error);
+    console.error('Error al buscar por gmail:', error);
     res.status(500).json({ success: false, message: 'Error al buscar estudiante' });
   }
 };

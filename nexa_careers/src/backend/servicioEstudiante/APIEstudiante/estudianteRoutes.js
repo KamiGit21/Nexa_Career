@@ -6,7 +6,7 @@ const router = express.Router();
 router.post('/registrar', estudianteController.registrarEstudiante);
 router.get('/', estudianteController.listarEstudiantes);
 router.get('/:id', estudianteController.buscarEstudiantePorId);
-router.get('/cuenta/:cuenta', estudianteController.buscarEstudiantePorCuenta);
+router.get('/gmail/:gmail', estudianteController.buscarEstudiantePorGmail);
 
 // Rutas PUT para actualizaciones específicas
 router.put('/:id/perfil', estudianteController.actualizarPerfil);
