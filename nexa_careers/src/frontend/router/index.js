@@ -12,9 +12,9 @@ import MisOfertas         from '@/views/MisOfertas.vue'
 import NuevaOferta        from '@/views/NuevaOferta.vue'
 import ListaPostulantes   from '@/views/ListaPostulantes.vue'
 import DetallePostulante  from '@/views/DetallePostulante.vue'
+import PerfilEstudiante  from '@/views/EditarPerfilEstudiante.vue'
 
 const routes = [
-  // Página principal
   { path: '/',                         redirect: '/home' },
   { path: '/home',                     name: 'Home',               component: HomeView },
 
@@ -32,7 +32,10 @@ const routes = [
 
   // Postulantes  ← HU: Como empleador quiero ver las solicitudes a mis ofertas
   { path: '/mis-ofertas/:ofertaId/postulantes', name: 'ListaPostulantes', component: ListaPostulantes },
-  { path: '/postulantes/:id',          name: 'DetallePostulante',   component: DetallePostulante }
+  { path: '/postulantes/:id',          name: 'DetallePostulante',   component: DetallePostulante },
+
+  //Perfiles
+  { path: '/perfil-estudiante',          name: 'PerfilEstudiante',    component: PerfilEstudiante }
 ]
 
 export const router = createRouter({

@@ -34,6 +34,32 @@ import SelectField from "./SelectField.vue";
 import TextAreaField from "./TextAreaField.vue";
 import PasswordField from "./PasswordField.vue";
 import RegisterButtons from "./RegisterButtons.vue";
+import { ref } from "vue";
+
+import SuccessModal from "./modals/SuccessModal.vue";
+import ErrorModal from "./modals/ErrorModal.vue";
+
+const showSuccess = ref(false);
+const showError = ref(false);
+
+const registrar = async () => {
+  try {
+    const ok = Math.random() > 0.5;
+
+    if (ok) {
+      showSuccess.value = true;
+    } else {
+      throw new Error();
+    }
+  } catch {
+    showError.value = true;
+  }
+};
+
+const irLogin = () => {
+  console.log("redirigir a login");
+};
+
 </script>
 
 <style scoped>
