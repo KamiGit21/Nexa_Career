@@ -8,6 +8,13 @@ export const registrarEstudiante = async (req, res) => {
     return res.status(400).json({ success: false, message: 'El gmail y id_carrera son obligatorios' });
   }
 
+  // Validación de dominio institucional permitido (114)
+  const dominiosPermitidos = ['ucb.edu.bo'];
+  const dominio = gmail.split('@')[1];
+  if (!dominio || !dominiosPermitidos.includes(dominio.toLowerCase())) {
+    return res.status(400).json({ success: false, message: 'El correo debe ser institucional con dominio permitido' });
+  }
+
   try {
     const activo = 1; // 1 equivale a true en tinyint(1) de MySQL
     const [result] = await db.query(
