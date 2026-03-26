@@ -1,4 +1,6 @@
 <template>
+  <div>
+  <navbar />
   <div class="min-h-screen bg-gradient-to-br from-[#0f172a] to-[#1e2937] flex items-center justify-center p-6">
     <div class="w-full max-w-md bg-white rounded-3xl shadow-2xl overflow-hidden">
       
@@ -62,11 +64,14 @@
       </div>
     </div>
   </div>
+  </div>
 </template>
 
 <script setup>
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
+import Navbar from '@/components/layout/Navbar.vue'
+
 
 const router = useRouter()
 const showPassword = ref(false)

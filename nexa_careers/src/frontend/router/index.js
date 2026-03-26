@@ -13,7 +13,7 @@ import PerfilEstudiante from '@/views/EditarPerfilEstudiante.vue'
 
 const routes = [
   { path: '/', redirect: '/home' },
-  { path: '/home', name: 'Home', component: HomeView, meta: { requiereRol: ['estudiante', 'empleador', 'supervisor'] } },
+  { path: '/home', name: 'Home', component: HomeView, meta: { soloPublico: true } },
 
   { path: '/login', name: 'InicioSesion', component: InicioSesion, meta: { soloPublico: true } },
 
