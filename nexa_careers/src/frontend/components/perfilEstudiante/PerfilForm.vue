@@ -50,7 +50,7 @@ import { ref } from "vue";
 import AvatarUpload from "./AvatarUpload.vue";
 import InputField from "./InputField.vue";
 import TextAreaField from "./TextAreaField.vue";
-import FileUpload from "./FileUpload.vue";
+//import FileUpload from "./FileUpload.vue";
 import PasswordField from "./PasswordField.vue";
 import ToggleSwitch from "./ToggleSwitch.vue";
 import SaveButton from "./SaveButton.vue";

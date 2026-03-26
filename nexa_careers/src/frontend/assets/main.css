@@ -1,3 +1,12 @@
 @import "tailwindcss";
 
 @import '../assets/styles/home.css';
+
+:root {
+  --primary: #1f2f4a;
+  --accent: #b5943a;
+  --bg-card: #f3f4f6;
+  --border: #334155;
+  --input-bg: #f8fafc;
+  --text-muted: #6b7280;
+}
