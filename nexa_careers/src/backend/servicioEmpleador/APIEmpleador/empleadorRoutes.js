@@ -12,4 +12,7 @@ router.put('/:id/perfil', empleadorController.actualizarPerfil);
 router.put('/:id/contrasena', empleadorController.cambiarContrasena);
 router.put('/:id/estado', empleadorController.cambiarEstado);
 
+// Nueva ruta: Obtener ofertas de un empleador
+router.get('/:id/ofertas', empleadorController.obtenerOfertasPorEmpleador);
+
 export default router;

@@ -8,6 +8,13 @@ export const registrarEstudiante = async (req, res) => {
     return res.status(400).json({ success: false, message: 'El gmail y id_carrera son obligatorios' });
   }
 
+  // Validación de dominio institucional permitido (114)
+  const dominiosPermitidos = ['ucb.edu.bo'];
+  const dominio = gmail.split('@')[1];
+  if (!dominio || !dominiosPermitidos.includes(dominio.toLowerCase())) {
+    return res.status(400).json({ success: false, message: 'El correo debe ser institucional con dominio permitido' });
+  }
+
   try {
     const activo = 1; // 1 equivale a true en tinyint(1) de MySQL
     const [result] = await db.query(
@@ -106,5 +113,36 @@ export const cambiarEstado = async (req, res) => {
   } catch (error) {
     console.error('Error al cambiar estado:', error);
     res.status(500).json({ success: false, message: 'Error al actualizar estado' });
+  }
+};
+
+// 8. GET: Obtener postulaciones de un estudiante (con datos de oferta y empleador para frontend)
+export const obtenerPostulacionesPorEstudiante = async (req, res) => {
+  const { id } = req.params;
+  try {
+    const [rows] = await db.query(`
+      SELECT 
+        p.id_postulacion,
+        p.fecha_postulacion,
+        p.estado,
+        o.id_oferta,
+        o.titulo,
+        o.descripcion,
+        o.salario,
+        o.ubicacion,
+        o.fecha_publicacion,
+        e.empresa,
+        e.gmail as correo_empleador
+      FROM postulacion p
+      JOIN oferta o ON p.id_oferta = o.id_oferta
+      JOIN empleador e ON o.id_empleador = e.id_empleador
+      WHERE p.id_estudiante = ?
+      ORDER BY p.fecha_postulacion DESC
+    `, [id]);
+
+    res.status(200).json({ success: true, data: rows });
+  } catch (error) {
+    console.error('Error al obtener postulaciones:', error);
+    res.status(500).json({ success: false, message: 'Error al obtener postulaciones' });
   }
 };
