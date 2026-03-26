@@ -14,6 +14,10 @@ import PerfilEstudiante from '@/views/EditarPerfilEstudiante.vue'
 import PerfilEmpleador from '@/views/EditarPerfilEmpleador.vue'
 
 
+//Dashboard
+import DashboardSupervisor from '@/views/DashboardSupervisor.vue'
+
+
 const routes = [
   { path: '/', 
     redirect: '/home' },
@@ -59,6 +63,11 @@ const routes = [
   { path: '/perfil-estudiante', name: 'PerfilEstudiante', component: PerfilEstudiante },
   { path: '/perfil-empleador', name: 'PerfilEmpleador', component: PerfilEmpleador,
     // meta: { requiereRol: ['empleador'] }
+  },
+
+  //Dashboard Supervisor
+  { path: '/dashboard-supervisor', name: 'DashboardSupervisor', component: DashboardSupervisor, 
+    //meta: { requiereRol: ['supervisor'] } 
   }
 ]
 
