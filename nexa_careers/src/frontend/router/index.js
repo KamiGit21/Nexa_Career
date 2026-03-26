@@ -9,16 +9,43 @@ import MisOfertas from '@/views/MisOfertas.vue'
 import NuevaOferta from '@/views/NuevaOferta.vue'
 import ListaPostulantes from '@/views/ListaPostulantes.vue'
 import DetallePostulante from '@/views/DetallePostulante.vue'
+//Perfiles
 import PerfilEstudiante from '@/views/EditarPerfilEstudiante.vue'
+import PerfilEmpleador from '@/views/EditarPerfilEmpleador.vue'
+
 
 const routes = [
-  { path: '/', redirect: '/home' },
-  { path: '/home', name: 'Home', component: HomeView, meta: { soloPublico: true } },
+  { path: '/', 
+    redirect: '/home' },
+  {
+    path: '/home',
+    name: 'Home',
+    component: HomeView,
+    meta: { soloPublico: true }
+  },
 
-  { path: '/login', name: 'InicioSesion', component: InicioSesion, meta: { soloPublico: true } },
+  {
+    path: '/login',
+    name: 'InicioSesion', 
+    component: InicioSesion, 
+    meta: { soloPublico: true }
+  },
 
-  { path: '/registro-estudiante', name: 'RegistroEstudiante', component: RegistroEstudiante, meta: { soloPublico: true } },
-  { path: '/registro-empleador', name: 'RegistroEmpleador', component: RegistroEmpleador, meta: { soloPublico: true } },
+  { 
+    path: '/registro-estudiante', 
+    name: 'RegistroEstudiante', 
+    component: RegistroEstudiante, 
+    meta: { soloPublico: true } 
+  },
+
+  { 
+    path: '/registro-empleador', 
+    name: 'RegistroEmpleador', 
+    component: RegistroEmpleador, 
+    meta: { soloPublico: true } 
+  },
+
+  
   { path: '/registro-supervisor', name: 'RegistroSupervisor', component: RegistroSupervisor, meta: { soloPublico: true } },
 
   { path: '/mis-ofertas', name: 'MisOfertas', component: MisOfertas, meta: { requiereRol: ['empleador'] } },
@@ -28,7 +55,11 @@ const routes = [
 
   { path: '/:pathMatch(.*)*', redirect: '/home' },
 
-  { path: '/perfil-estudiante',          name: 'PerfilEstudiante',    component: PerfilEstudiante }
+  //Perfiles
+  { path: '/perfil-estudiante', name: 'PerfilEstudiante', component: PerfilEstudiante },
+  { path: '/perfil-empleador', name: 'PerfilEmpleador', component: PerfilEmpleador,
+    // meta: { requiereRol: ['empleador'] }
+  }
 ]
 
 const router = createRouter({
