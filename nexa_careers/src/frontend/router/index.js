@@ -20,7 +20,7 @@ import PerfilEstudiante from '@/views/EditarPerfilEstudiante.vue'
 import PerfilEmpleador from '@/views/EditarPerfilEmpleador.vue'
 
 //Dashboard
-import DashboardSupervisor from '@/views/DashboardSupervisor.vue'
+import DashboardSupervisor from '@/views/DashboardSupervisor.vue' 
 
 
 const routes = [
