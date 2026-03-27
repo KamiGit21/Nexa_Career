@@ -21,7 +21,7 @@
                    class="w-full px-5 py-4 bg-gray-50 border border-gray-200 rounded-2xl focus:border-[#b5943a] focus:ring-2 focus:ring-[#b5943a]/20 transition-all" />
           </div>
 
-          <div class="grid grid-cols-2 gap-5">
+          <!--<div class="grid grid-cols-2 gap-5">
             <div>
               <label class="block text-sm font-medium text-gray-600 mb-1.5">Nombre del Representante</label>
               <input v-model="form.nombre" type="text" placeholder="Nombre"
@@ -33,6 +33,7 @@
                      class="w-full px-5 py-4 bg-gray-50 border border-gray-200 rounded-2xl focus:border-[#b5943a]" />
             </div>
           </div>
+          -->
 
           <div>
             <label class="block text-sm font-medium text-gray-600 mb-1.5">Correo institucional (@ucb.edu.bo)</label>
@@ -41,11 +42,12 @@
           </div>
 
           <div class="grid grid-cols-2 gap-5">
-            <div>
+            <!--<div>
               <label class="block text-sm font-medium text-gray-600 mb-1.5">Dirección</label>
               <input v-model="form.direccion" type="text" placeholder="Dirección"
                      class="w-full px-5 py-4 bg-gray-50 border border-gray-200 rounded-2xl focus:border-[#b5943a]" />
             </div>
+            -->
             <div>
               <label class="block text-sm font-medium text-gray-600 mb-1.5">Teléfono</label>
               <input v-model="form.telefono" type="tel" placeholder="+591 71234567"
@@ -53,15 +55,14 @@
             </div>
           </div>
 
-          <!-- Sector / Rubro - Limpio (sin hardcode) -->
+          <!-- Sector / Rubro - Limpio (sin hardcode) 
           <div>
             <label class="block text-sm font-medium text-gray-600 mb-1.5">Sector / Rubro</label>
             <select v-model="form.sector" 
                     class="mt-2 w-full px-5 py-4 bg-gray-50 border border-gray-200 rounded-2xl focus:border-[#b5943a] focus:ring-2 focus:ring-[#b5943a]/20 transition-all">
               <option value="">Seleccionar sector...</option>
-              <!-- Las opciones se cargarán desde el backend -->
             </select>
-          </div>
+          </div>-->
 
           <button type="submit"
                   class="w-full py-4 bg-gradient-to-r from-[#1b2a4a] to-[#002349] text-white font-semibold rounded-2xl hover:brightness-110 transition-all mt-6">
