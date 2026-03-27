@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_URL = 'http://localhost:3003/api/estudiantes';
+const API_URL = 'http://localhost:3000/api/estudiantes';
 
 async function ejecutarPruebas() {
   try {
@@ -12,7 +12,7 @@ async function ejecutarPruebas() {
       nombre: 'Natalia',
       apellido: 'Urrutia',
       telefono: 7753452,
-      gmail: 'nati@gmail.com',
+      gmail: 'nati@ucb.edu.bo',
       cv: 'ruta/al/cv.pdf',
       contrasena: 'password123',
       id_carrera: 2, 
@@ -31,8 +31,8 @@ async function ejecutarPruebas() {
     console.log('--------------------------------------------------\n');
 
     // 3. GET: Buscar por gmail
-    console.log('➡️ 3. Ejecutando GET: Buscando por gmail "nati@gmail.com"...');
-    const cuentaResponse = await axios.get(`${API_URL}/gmail/nati@gmail.com`);
+    console.log('➡️ 3. Ejecutando GET: Buscando por gmail "nati@ucb.edu.bo"...');
+    const cuentaResponse = await axios.get(`${API_URL}/gmail/nati@ucb.edu.bo`);
     console.log('✅ Resultado:', cuentaResponse.data.data);
     console.log('--------------------------------------------------\n');
 
