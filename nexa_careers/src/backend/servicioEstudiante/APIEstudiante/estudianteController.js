@@ -16,6 +16,11 @@ export const registrarEstudiante = async (req, res) => {
   }
 
   try {
+    // 🛑 NUEVO: Validar si el correo ya existe
+    const [existingEmail] = await db.query('SELECT gmail FROM estudiante WHERE gmail = ?', [gmail]);
+    if (existingEmail.length > 0) {
+      return res.status(400).json({ success: false, message: 'Este correo electrónico ya está registrado.' });
+    }
     const activo = 1; // 1 equivale a true en tinyint(1) de MySQL
     const [result] = await db.query(
       `INSERT INTO estudiante (nombre, apellido, telefono, gmail, cv, contrasena, activo, id_carrera, descripcion, habilidades, educacion) 

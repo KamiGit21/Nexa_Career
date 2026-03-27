@@ -9,6 +9,11 @@ export const registrarEmpleador = async (req, res) => {
   }
 
   try {
+    // 🛑 NUEVO: Validar si el correo ya existe
+    const [existingEmail] = await db.query('SELECT gmail FROM empleador WHERE gmail = ?', [gmail]);
+    if (existingEmail.length > 0) {
+      return res.status(400).json({ success: false, message: 'Este correo electrónico ya está registrado.' });
+    }
     const activo = 1; 
     const [result] = await db.query(
       `INSERT INTO empleador (empresa, telefono, gmail, contrasena, activo) 

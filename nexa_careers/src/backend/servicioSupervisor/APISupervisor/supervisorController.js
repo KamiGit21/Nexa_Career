@@ -9,6 +9,12 @@ export const registrarSupervisor = async (req, res) => {
   }
 
   try {
+    // 🛑 NUEVO: Validar si el correo ya existe
+    const [existingEmail] = await db.query('SELECT gmail FROM supervisor WHERE gmail = ?', [gmail]);
+    if (existingEmail.length > 0) {
+      return res.status(400).json({ success: false, message: 'Este correo electrónico ya está registrado.' });
+    }
+    
     const activo = 1; // 1 equivale a true/activo en tinyint(1)
     const [result] = await db.query(
       `INSERT INTO supervisor (nombre, telefono, gmail, contrasena, activo) 
