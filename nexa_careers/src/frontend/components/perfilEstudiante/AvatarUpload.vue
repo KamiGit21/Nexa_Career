@@ -2,7 +2,7 @@
   <div class="avatar">
     <div class="circle">AM</div>
     <button class="camera">📷</button>
-    <p>Cambiar foto</p>
+    <!-- <p>Cambiar foto</p> -->
   </div>
 </template>
 

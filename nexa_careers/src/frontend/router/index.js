@@ -32,7 +32,6 @@ const routes = [
     path: '/home',
     name: 'Home',
     component: HomeView,
-    //meta: { soloPublico: true }
   },
 
   {
@@ -60,11 +59,12 @@ const routes = [
   { path: '/registro-supervisor', name: 'RegistroSupervisor', component: RegistroSupervisor, meta: { soloPublico: true } },
 
   { path: '/ofertas', name: 'CatalogoOfertas', component: CatalogoOfertas, meta: { soloPublico: true } },
-  { path: '/mis-ofertas', name: 'MisOfertas', component: MisOfertas, meta: { requiereRol: ['empleador'] } },
+  { path: '/mis-ofertas', name: 'MisOfertas', component: MisOfertas, meta: { requiereRol: ['empleador'] } 
+  },
   { path: '/mis-ofertas/nueva', name: 'NuevaOferta', component: NuevaOferta, meta: { requiereRol: ['empleador'] } },
   { path: '/mis-ofertas/:ofertaId/postulantes', name: 'ListaPostulantes', component: ListaPostulantes, meta: { requiereRol: ['empleador'] } },
   { path: '/postulante/:id', name: 'DetallePostulante', component: DetallePostulante, meta: { requiereRol: ['empleador'] } },
-  { path: '/mis-ofertas/:ofertaId/editar', name: 'EditarOferta', component: EditarOferta, meta: { requiereRol: ['empleador'] } },
+  { path: '/mis-ofertas/editar', name: 'EditarOferta', component: EditarOferta, meta: { requiereRol: ['empleador'] } },
 
   { path: '/:pathMatch(.*)*', redirect: '/home' },
 
