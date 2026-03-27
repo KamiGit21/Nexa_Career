@@ -26,6 +26,16 @@ app.use('/api/supervisores', createProxyMiddleware({
   changeOrigin: true 
 }));
 
+app.use('/api/ofertas', createProxyMiddleware({ 
+  target: 'http://localhost:3006/api/ofertas', 
+  changeOrigin: true 
+}));
+
+app.use('/api/ofertantes', createProxyMiddleware({ 
+  target: 'http://localhost:3007/api/ofertantes', 
+  changeOrigin: true 
+}));
+
 
 const PORT = process.env.PORT || 3000;
 
