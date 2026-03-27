@@ -58,7 +58,7 @@ const routes = [
 
   { path: '/registro-supervisor', name: 'RegistroSupervisor', component: RegistroSupervisor, meta: { soloPublico: true } },
 
-  { path: '/ofertas', name: 'CatalogoOfertas', component: CatalogoOfertas, meta: { soloPublico: true } },
+  { path: '/ofertas', name: 'CatalogoOfertas', component: CatalogoOfertas},
   { path: '/mis-ofertas', name: 'MisOfertas', component: MisOfertas, meta: { requiereRol: ['empleador'] } 
   },
   { path: '/mis-ofertas/nueva', name: 'NuevaOferta', component: NuevaOferta, meta: { requiereRol: ['empleador'] } },
