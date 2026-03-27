@@ -10,46 +10,43 @@
       <div class="p-10">
         <form @submit.prevent="handleSubmit" class="space-y-6">
           <div>
-            <label class="text-sm font-medium text-gray-600">Nombre de la Empresa</label>
-            <input v-model="form.empresa" type="text" class="mt-2 w-full px-5 py-4 bg-gray-50 border border-gray-200 rounded-2xl focus:border-[#b5943a]" required />
-          </div>
-
-          <div class="grid grid-cols-2 gap-5">
-            <div>
-              <label class="text-sm font-medium text-gray-600">Nombre del Representante</label>
-              <input v-model="form.nombre" type="text" class="mt-2 w-full px-5 py-4 bg-gray-50 border border-gray-200 rounded-2xl focus:border-[#b5943a]" required />
-            </div>
-            <div>
-              <label class="text-sm font-medium text-gray-600">Apellido</label>
-              <input v-model="form.apellido" type="text" class="mt-2 w-full px-5 py-4 bg-gray-50 border border-gray-200 rounded-2xl focus:border-[#b5943a]" required />
-            </div>
+            <label class="text-sm font-medium text-gray-600">Nombre de la Empresa *</label>
+            <input v-model="form.empresa" type="text" 
+                   class="mt-2 w-full px-5 py-4 bg-gray-50 border border-gray-200 rounded-2xl focus:border-[#b5943a]" 
+                   required />
           </div>
 
           <div>
-            <label class="text-sm font-medium text-gray-600">Correo institucional (@ucb.edu.bo)</label>
-            <input v-model="form.correo" type="email" class="mt-2 w-full px-5 py-4 bg-gray-50 border border-gray-200 rounded-2xl focus:border-[#b5943a]" required />
+            <label class="text-sm font-medium text-gray-600">Correo institucional (@ucb.edu.bo) *</label>
+            <input v-model="form.gmail" type="email" 
+                   class="mt-2 w-full px-5 py-4 bg-gray-50 border border-gray-200 rounded-2xl focus:border-[#b5943a]" 
+                   required />
+            <p class="text-xs text-gray-500 mt-1">Debe ser un correo @ucb.edu.bo</p>
           </div>
 
-          <div class="grid grid-cols-2 gap-5">
-            <!-- <div>
-              <label class="text-sm font-medium text-gray-600">Dirección</label>
-              <input v-model="form.direccion" type="text" class="mt-2 w-full px-5 py-4 bg-gray-50 border border-gray-200 rounded-2xl focus:border-[#b5943a]" />
-            </div> -->
-            <div>
-              <label class="text-sm font-medium text-gray-600">Teléfono</label>
-              <input v-model="form.telefono" type="tel" class="mt-2 w-full px-5 py-4 bg-gray-50 border border-gray-200 rounded-2xl focus:border-[#b5943a]" />
-            </div>
+          <div>
+            <label class="text-sm font-medium text-gray-600">Teléfono</label>
+            <input v-model="form.telefono" type="tel" 
+                   class="mt-2 w-full px-5 py-4 bg-gray-50 border border-gray-200 rounded-2xl focus:border-[#b5943a]" />
           </div>
 
           <!-- Contraseña con fuerza -->
           <div>
-            <label class="text-sm font-medium text-gray-600">Contraseña</label>
+            <label class="text-sm font-medium text-gray-600">Contraseña *</label>
             <div class="relative">
               <input v-model="form.contrasena" :type="showPassword ? 'text' : 'password'" @input="calcularFuerza"
-                     class="mt-2 w-full px-5 py-4 bg-gray-50 border border-gray-200 rounded-2xl focus:border-[#b5943a] pr-12" required />
-              <button type="button" @click="showPassword = !showPassword" class="absolute right-6 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
-                <svg v-if="showPassword" xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5 16.477 5 20.268 7.943 21.542 12 20.268 16.057 16.477 19 12 19 7.523 19 3.732 19 3.732 16.057 2.458 12z" /></svg>
-                <svg v-else xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908l3.42 3.42" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3l18 18" /></svg>
+                     class="mt-2 w-full px-5 py-4 bg-gray-50 border border-gray-200 rounded-2xl focus:border-[#b5943a] pr-12" 
+                     required />
+              <button type="button" @click="showPassword = !showPassword" 
+                      class="absolute right-6 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
+                <svg v-if="showPassword" xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5 16.477 5 20.268 7.943 21.542 12 20.268 16.057 16.477 19 12 19 7.523 19 3.732 19 3.732 16.057 2.458 12z" />
+                </svg>
+                <svg v-else xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908l3.42 3.42" />
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3l18 18" />
+                </svg>
               </button>
             </div>
 
@@ -61,16 +58,21 @@
             </div>
 
             <ul class="mt-4 space-y-1 text-sm">
-              <li v-for="req in requisitos" :key="req.label" :class="req.met ? 'text-green-600' : 'text-red-500'">{{ req.label }}</li>
+              <li v-for="req in requisitos" :key="req.label" :class="req.met ? 'text-green-600' : 'text-red-500'">
+                {{ req.label }}
+              </li>
             </ul>
           </div>
 
           <div>
-            <label class="text-sm font-medium text-gray-600">Confirmar Contraseña</label>
-            <input v-model="form.confirmar" type="password" class="mt-2 w-full px-5 py-4 bg-gray-50 border border-gray-200 rounded-2xl focus:border-[#b5943a]" required />
+            <label class="text-sm font-medium text-gray-600">Confirmar Contraseña *</label>
+            <input v-model="form.confirmar" type="password" 
+                   class="mt-2 w-full px-5 py-4 bg-gray-50 border border-gray-200 rounded-2xl focus:border-[#b5943a]" 
+                   required />
           </div>
 
-          <button type="submit" class="w-full py-4 bg-gradient-to-r from-[#1b2a4a] to-[#002349] text-white font-semibold rounded-2xl hover:brightness-110 mt-6">
+          <button type="submit" 
+                  class="w-full py-4 bg-gradient-to-r from-[#1b2a4a] to-[#002349] text-white font-semibold rounded-2xl hover:brightness-110 mt-6">
             Registrarme como Empleador
           </button>
         </form>
@@ -82,8 +84,10 @@
 <script setup>
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
+import { registrarEmpleador } from '../services/empleadorService.js'
 
 const router = useRouter()
+
 const showPassword = ref(false)
 const porcentajeFuerza = ref(0)
 const colorFuerza = ref('#db0000')
@@ -91,33 +95,105 @@ const etiquetaFuerza = ref('Débil')
 
 const form = ref({
   empresa: '',
-  nombre: '',
-  apellido: '',
-  correo: '',
-  direccion: '',
+  gmail: '',
   telefono: '',
   contrasena: '',
   confirmar: ''
 })
 
 const requisitos = ref([
-  { label: 'Al menos 12 caracteres', met: false },
+  { label: 'Al menos 8 caracteres', met: false },
   { label: 'Una letra mayúscula', met: false },
   { label: 'Una letra minúscula', met: false },
   { label: 'Un número', met: false },
   { label: 'Un símbolo', met: false }
 ])
 
-const calcularFuerza = () => { /* mismo código que en RegistroEstudiante */ }
+const calcularFuerza = () => {
+  const pass = form.value.contrasena
+  if (!pass) {
+    porcentajeFuerza.value = 0
+    etiquetaFuerza.value = 'Débil'
+    colorFuerza.value = '#db0000'
+    requisitos.value.forEach(r => r.met = false)
+    return
+  }
 
-const handleSubmit = () => {
-  // TODO: POST /api/empleadores
+  // Verificar requisitos
+  requisitos.value[0].met = pass.length >= 8
+  requisitos.value[1].met = /[A-Z]/.test(pass)
+  requisitos.value[2].met = /[a-z]/.test(pass)
+  requisitos.value[3].met = /[0-9]/.test(pass)
+  requisitos.value[4].met = /[^A-Za-z0-9]/.test(pass)
 
-  localStorage.setItem('sesion', JSON.stringify({
-    rol: 'empleador',
-    email: form.value.correo
-  }))
+  const metCount = requisitos.value.filter(r => r.met).length
+  
+  if (metCount <= 2) {
+    porcentajeFuerza.value = 33
+    etiquetaFuerza.value = 'Débil'
+    colorFuerza.value = '#db0000'
+  } else if (metCount <= 4) {
+    porcentajeFuerza.value = 66
+    etiquetaFuerza.value = 'Media'
+    colorFuerza.value = '#f4b400'
+  } else {
+    porcentajeFuerza.value = 100
+    etiquetaFuerza.value = 'Fuerte'
+    colorFuerza.value = '#0f9d58'
+  }
+}
 
-  router.push('/mis-ofertas')
+const handleSubmit = async () => {
+  console.log('Enviando registro...')
+  
+  // Validaciones
+  if (!form.value.empresa.trim()) {
+    alert('El nombre de la empresa es obligatorio')
+    return
+  }
+  
+  if (!form.value.gmail.includes('@ucb.edu.bo')) {
+    alert('Debes usar un correo institucional @ucb.edu.bo')
+    return
+  }
+  
+  if (form.value.contrasena !== form.value.confirmar) {
+    alert('Las contraseñas no coinciden')
+    return
+  }
+  
+  if (form.value.contrasena.length < 8) {
+    alert('La contraseña debe tener al menos 8 caracteres')
+    return
+  }
+
+  try {
+    const response = await registrarEmpleador({
+      empresa: form.value.empresa,
+      telefono: form.value.telefono,
+      gmail: form.value.gmail,
+      contrasena: form.value.contrasena
+    })
+
+    console.log('Respuesta del servidor:', response)
+
+    if (response.success) {
+      alert('Registro exitoso 🚀')
+      
+      localStorage.setItem('sesion', JSON.stringify({
+        rol: 'empleador',
+        email: form.value.gmail,
+        id: response.id_empleador
+      }))
+
+      router.push('/mis-ofertas')
+    } else {
+      alert(response.message || 'Error al registrar ❌')
+    }
+
+  } catch (error) {
+    console.error('Error:', error)
+    alert('Error de conexión con el servidor ❌')
+  }
 }
 </script>

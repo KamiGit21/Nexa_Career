@@ -100,20 +100,22 @@ const router = createRouter({
   scrollBehavior() { return { top: 0 } }
 })
 
-// Guard de navegación por roles
-router.beforeEach((to, from, next) => {
+// Guard de navegación por roles - VERSIÓN ACTUALIZADA
+router.beforeEach((to, from) => {
   const sesion = JSON.parse(localStorage.getItem('sesion') || '{}')
 
-  // evitar loop en hom
+  // Evitar loop en home
   if (to.meta.soloPublico && sesion.rol && to.path !== '/home') {
-    return next('/home')
+    return '/home'
   }
 
+  // Verificar roles requeridos
   if (to.meta.requiereRol && (!sesion.rol || !to.meta.requiereRol.includes(sesion.rol))) {
-    return next('/login')
+    return '/login'
   }
 
-  next()
+  // Permitir navegación
+  return true
 })
 
 export default router
