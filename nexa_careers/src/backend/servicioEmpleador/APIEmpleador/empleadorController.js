@@ -108,25 +108,3 @@ export const cambiarEstado = async (req, res) => {
     res.status(500).json({ success: false, message: 'Error al actualizar estado' });
   }
 };
-
-// 8. GET: Obtener ofertas laborales de un empleador (con conteo de postulaciones)
-export const obtenerOfertasPorEmpleador = async (req, res) => {
-  const { id } = req.params;
-  try {
-    const [rows] = await db.query(`
-      SELECT 
-        o.*,
-        COUNT(p.id_postulacion) as total_postulaciones
-      FROM oferta o
-      LEFT JOIN postulacion p ON o.id_oferta = p.id_oferta
-      WHERE o.id_empleador = ?
-      GROUP BY o.id_oferta
-      ORDER BY o.fecha_publicacion DESC
-    `, [id]);
-
-    res.status(200).json({ success: true, data: rows });
-  } catch (error) {
-    console.error('Error al obtener ofertas del empleador:', error);
-    res.status(500).json({ success: false, message: 'Error al obtener ofertas' });
-  }
-};
