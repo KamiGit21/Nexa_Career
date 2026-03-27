@@ -13,7 +13,7 @@ async function ejecutarPruebas() {
       apellido: 'Urrutia',
       telefono: 7753452,
       gmail: 'nati@ucb.edu.bo',
-      cv: 'ruta/al/cv.pdf',
+      cv: 'https://www.linkedin.com',
       contrasena: 'password123',
       id_carrera: 2, 
       descripcion: 'Estudiante apasionado por la tecnología y el desarrollo de software.',
@@ -40,8 +40,8 @@ async function ejecutarPruebas() {
     console.log(`➡️ 4. Ejecutando PUT: Actualizando perfil del ID ${nuevoId}...`);
     const putPerfilResponse = await axios.put(`${API_URL}/${nuevoId}/perfil`, {
       telefono: 87654321,
-      gmail: 'juan.nuevo@gmail.com',
-      cv: 'ruta/nueva/cv_v2.pdf',
+      gmail: 'juan.nuevo@ucb.edu.bo',
+      cv: 'https://www.linkedin.com/in/juan-nuevo',
       descripcion: 'Desarrollador Full Stack',
       educacion: 'Universidad Nacional - Titulado',
       habilidades: 'Vue, Node, MySQL, Docker'

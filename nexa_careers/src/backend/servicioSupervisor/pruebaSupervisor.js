@@ -12,7 +12,7 @@ async function ejecutarPruebas() {
     const postResponse = await axios.post(`${API_URL}/registrar`, { 
       nombre: 'Carlos Administrador',
       telefono: 65432100,
-      gmail: 'carlos.admin@nexacareers.com',
+      gmail: 'carlos.jefe@nexacareers.com',
       contrasena: 'claveAdmin123'
     });
     const nuevoId = postResponse.data.id_supervisor;

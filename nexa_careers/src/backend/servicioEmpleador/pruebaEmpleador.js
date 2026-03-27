@@ -19,6 +19,16 @@ async function ejecutarPruebas() {
     console.log('✅ Resultado:', postResponse.data);
     console.log('--------------------------------------------------\n');
 
+    const postResponse2 = await axios.post(`${API_URL}/registrar`, { 
+      empresa: 'Tech Solutions LLC',
+      telefono: 12345678,
+      gmail: 'contacto@techsolutions.com',
+      contrasena: 'admin123'
+    });
+    const nuevoId2 = postResponse2.data.id_empleador;
+    console.log('✅ Resultado:', postResponse2.data);
+    console.log('--------------------------------------------------\n');
+
     // 2. GET: Listar todos
     console.log('➡️ 2. Ejecutando GET: Solicitando todos los empleadores...');
     const getResponse = await axios.get(API_URL);
