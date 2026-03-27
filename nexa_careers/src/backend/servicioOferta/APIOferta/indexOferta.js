@@ -1,18 +1,14 @@
-// Inicializar con el comando "node indexOferta.js" para levantar el microservicio de ofertas
-
+// src/backend/servicioOferta/APIOferta/indexOferta.js
 import express from 'express';
+import ofertaRoutes from './ofertaRoutes.js';
+
 const app = express();
 
-// Importar rutas
-import ofertaRoutes from './ofertaRoutes.js';
 app.use(express.json());
-
-// Rutas con prefijo /api/ofertas
 app.use('/api/ofertas', ofertaRoutes);
 
-// Puerto del microservicio
-const PORT = process.env.PORT || 3005;
+const PORT = process.env.PORT || 3006;
 
 app.listen(PORT, () => {
-    console.log(`🚀 Microservicio de Ofertas corriendo en http://localhost:${PORT}`);
+  console.log(`🚀 Microservicio de Ofertas corriendo en http://localhost:${PORT}`);
 });

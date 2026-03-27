@@ -20,7 +20,7 @@ import PerfilEstudiante from '@/views/EditarPerfilEstudiante.vue'
 import PerfilEmpleador from '@/views/EditarPerfilEmpleador.vue'
 
 //Dashboard
-import DashboardSupervisor from '@/views/DashboardSupervisor.vue'
+import DashboardSupervisor from '@/views/DashboardSupervisor.vue' 
 
 
 const routes = [
@@ -69,7 +69,7 @@ const routes = [
   { path: '/:pathMatch(.*)*', redirect: '/home' },
 
   //Perfiles
-  { path: '/perfil-estudiante', name: 'PerfilEstudiante', component: PerfilEstudiante },
+  { path: '/perfil-estudiante', name: 'PerfilEstudiante', component: PerfilEstudiante, meta: { requiereRol: ['estudiante'] } },
   {
     path: '/perfil-empleador', name: 'PerfilEmpleador', component: PerfilEmpleador, meta: { requiereRol: ['empleador'] }
   },

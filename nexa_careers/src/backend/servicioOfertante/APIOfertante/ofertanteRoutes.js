@@ -1,9 +1,14 @@
+// src/backend/servicioOfertante/APIOfertante/ofertanteRoutes.js
 import express from 'express';
 import * as ofertanteController from './ofertanteController.js';
 
 const router = express.Router();
 
-// Obtener postulantes de una oferta específica
-router.get('/oferta/:id_oferta/postulantes', ofertanteController.obtenerPostulantesPorOferta);
+router.post('/postular', ofertanteController.crearOfertante);
+router.get('/:id', ofertanteController.buscarOfertantePorId);
+router.get('/oferta/:id_oferta', ofertanteController.buscarPorOferta);
+router.get('/estudiante/:id_estudiante', ofertanteController.buscarPorEstudiante);
+
+router.put('/:id/estado', ofertanteController.cambiarEstadoOfertante);
 
 export default router;
