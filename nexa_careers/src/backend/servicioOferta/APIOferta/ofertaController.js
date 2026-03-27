@@ -1,35 +1,68 @@
 // src/backend/servicioOferta/APIOferta/ofertaController.js
 import db from '../../api-gateway/db.js';
 
-
 // Función para obtener una oferta laboral específica por ID
 export const obtenerOfertaPorId = async (req, res) => {
-    const { id } = req.params;
-    try {
-        const [rows] = await db.query('SELECT * FROM oferta WHERE id_oferta = ?', [id]);
-        if (rows.length === 0) {
-            return res.status(404).json({ success: false, message: 'Oferta no encontrada' });
-        }
-        res.status(200).json({ success: true, data: rows[0] });
-    } catch (error) {
-        console.error('Error al obtener oferta por ID:', error);
-        res.status(500).json({ success: false, message: 'Error interno del servidor al obtener oferta' });
+  const { id } = req.params;
+  try {
+    const [rows] = await db.query('SELECT * FROM oferta WHERE id_oferta = ?', [id]);
+    if (rows.length === 0) {
+      return res.status(404).json({ success: false, message: 'Oferta no encontrada' });
     }
+    res.status(200).json({ success: true, data: rows[0] });
+  } catch (error) {
+    console.error('Error al obtener oferta por ID:', error);
+    res.status(500).json({ success: false, message: 'Error interno del servidor al obtener oferta' });
+  }
 };
 
+// validar campos de oferta
+const isValidDate = (value) => {
+  if (!value) return true; // opcional
+  const date = new Date(value);
+  return !Number.isNaN(date.getTime());
+};
+
+const validateOferta = (data) => {
+  const errors = [];
+  const { descripcion, fecha_apertura, oferta, id_empleador } = data;
+
+  if (!oferta || !String(oferta).trim()) {
+    errors.push('El título de la oferta es obligatorio');
+  }
+
+  if (!id_empleador || Number.isNaN(Number(id_empleador)) || Number(id_empleador) <= 0) {
+    errors.push('El id_empleador es obligatorio y debe ser un número entero positivo');
+  }
+
+  if (descripcion && String(descripcion).length > 1000) {
+    errors.push('La descripción no puede exceder 1000 caracteres');
+  }
+
+  if (oferta && String(oferta).length > 255) {
+    errors.push('El título de la oferta no puede exceder 255 caracteres');
+  }
+
+  if (fecha_apertura && !isValidDate(fecha_apertura)) {
+    errors.push('La fecha de apertura debe ser una fecha válida');
+  }
+
+  return { valid: errors.length === 0, errors };
+};
 
 // 1. POST: Crear oferta (estado = 0 y rechazo = '' por defecto)
 export const crearOferta = async (req, res) => {
   const { descripcion, fecha_apertura, oferta, id_empleador } = req.body;
-  
-  if (!oferta || !id_empleador) {
-    return res.status(400).json({ success: false, message: 'El título de la oferta y el id_empleador son obligatorios' });
+
+  const validation = validateOferta({ descripcion, fecha_apertura, oferta, id_empleador });
+  if (!validation.valid) {
+    return res.status(400).json({ success: false, message: validation.errors.join('; ') });
   }
 
   try {
     const estado = 0; // 0 por defecto al crearse
     const rechazo = ''; // Blanco por defecto
-    
+
     // IMPORTANTE: En el SQL usamos 'id_emepleador' para coincidir con tu BD
     const [result] = await db.query(
       `INSERT INTO oferta (descripcion, fecha_apertura, estado, rechazo, oferta, id_emepleador) 
@@ -98,7 +131,7 @@ export const buscarOfertasPorEmpleador = async (req, res) => {
 export const editarOferta = async (req, res) => {
   const { id } = req.params;
   const { descripcion, fecha_apertura, rechazo, oferta } = req.body;
-  
+
   try {
     const [result] = await db.query(
       `UPDATE oferta SET descripcion = ?, fecha_apertura = ?, rechazo = ?, oferta = ? WHERE id_oferta = ?`,
