@@ -48,6 +48,46 @@
             </div>
           </div>
 
+          <!-- Contraseña con fuerza -->
+          <div>
+            <label class="text-sm font-medium text-gray-600">Contraseña</label>
+            <div class="relative">
+              <input v-model="form.contrasena" :type="showPassword ? 'text' : 'password'" @input="calcularFuerza"
+                     class="mt-2 w-full px-5 py-4 bg-gray-50 border border-gray-200 rounded-2xl focus:border-[#b5943a] pr-12" />
+              <button type="button" @click="showPassword = !showPassword" class="absolute right-6 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
+                <svg v-if="showPassword" xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5 16.477 5 20.268 7.943 21.542 12 20.268 16.057 16.477 19 12 19 7.523 19 3.732 19 3.732 16.057 2.458 12z" />
+                </svg>
+                <svg v-else xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908l3.42 3.42" />
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3l18 18" />
+                </svg>
+              </button>
+            </div>
+
+            <!-- Barra de fuerza -->
+            <div class="flex items-center gap-3 mt-3">
+              <div class="flex-1 h-2.5 bg-gray-200 rounded-full overflow-hidden">
+                <div class="h-full transition-all duration-300" :style="{ width: porcentajeFuerza + '%', backgroundColor: colorFuerza }"></div>
+              </div>
+              <span class="text-xs font-medium whitespace-nowrap" :style="{ color: colorFuerza }">{{ etiquetaFuerza }}</span>
+            </div>
+
+            <!-- Requisitos -->
+            <ul class="mt-4 space-y-1 text-sm">
+              <li v-for="req in requisitos" :key="req.label" :class="req.met ? 'text-green-600' : 'text-red-500'">
+                {{ req.label }}
+              </li>
+            </ul>
+          </div>
+
+          <div>
+            <label class="text-sm font-medium text-gray-600">Confirmar Contraseña</label>
+            <input v-model="form.confirmar" type="password" 
+                   class="mt-2 w-full px-5 py-4 bg-gray-50 border border-gray-200 rounded-2xl focus:border-[#b5943a]" />
+          </div>
+
           <button 
             type="submit"
             class="w-full py-4 bg-gradient-to-r from-[#1b2a4a] to-[#002349] text-white font-semibold rounded-2xl hover:brightness-110 transition-all duration-300 shadow-lg mt-6">
@@ -67,21 +107,53 @@
 
 <script setup>
 import { ref } from 'vue'
-import Navbar from '@/components/layout/Navbar.vue'
+
+const showPassword = ref(false)
+const porcentajeFuerza = ref(0)
+const colorFuerza = ref('#db0000')
+const etiquetaFuerza = ref('Débil')
 
 const form = ref({
   nombre: '',
   apellido: '',
   correo: '',
   direccion: '',
-  telefono: ''
+  telefono: '',
+  contrasena: '',
+  confirmar: ''
 })
 
+const requisitos = ref([
+  { label: 'Al menos 12 caracteres', met: false },
+  { label: 'Una letra mayúscula', met: false },
+  { label: 'Una letra minúscula', met: false },
+  { label: 'Un número', met: false },
+  { label: 'Un símbolo', met: false }
+])
+
+const calcularFuerza = () => {
+  const p = form.value.contrasena
+  let count = 0
+  if (p.length >= 12) count++
+  if (/[A-Z]/.test(p)) count++
+  if (/[a-z]/.test(p)) count++
+  if (/[0-9]/.test(p)) count++
+  if (/[^A-Za-z0-9]/.test(p)) count++
+
+  porcentajeFuerza.value = (count / 5) * 100
+
+  if (count <= 2) { colorFuerza.value = '#db0000'; etiquetaFuerza.value = 'Débil' }
+  else if (count <= 3) { colorFuerza.value = '#f59e0b'; etiquetaFuerza.value = 'Regular' }
+  else { colorFuerza.value = '#22c55e'; etiquetaFuerza.value = 'Fuerte' }
+
+  requisitos.value[0].met = p.length >= 12
+  requisitos.value[1].met = /[A-Z]/.test(p)
+  requisitos.value[2].met = /[a-z]/.test(p)
+  requisitos.value[3].met = /[0-9]/.test(p)
+  requisitos.value[4].met = /[^A-Za-z0-9]/.test(p)
+}
+
 const handleSubmit = () => {
-  if (!form.value.nombre || !form.value.apellido || !form.value.correo) {
-    alert('Por favor completa los campos obligatorios')
-    return
-  }
   // TODO: POST /api/estudiantes
   alert('¡Estudiante registrado exitosamente!')
 }
