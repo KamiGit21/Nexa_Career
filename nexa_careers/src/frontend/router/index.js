@@ -103,10 +103,16 @@ const router = createRouter({
 // Guard de navegación por roles
 router.beforeEach((to, from, next) => {
   const sesion = JSON.parse(localStorage.getItem('sesion') || '{}')
-  if (to.meta.soloPublico && sesion.rol) return next('/home')
+
+  // evitar loop en hom
+  if (to.meta.soloPublico && sesion.rol && to.path !== '/home') {
+    return next('/home')
+  }
+
   if (to.meta.requiereRol && (!sesion.rol || !to.meta.requiereRol.includes(sesion.rol))) {
     return next('/login')
   }
+
   next()
 })
 

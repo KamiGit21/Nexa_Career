@@ -1,73 +1,117 @@
 <template>
-  <div class="min-h-screen bg-[#f8f5f0]">
-    <Navbar />
+  <div class="nueva-oferta">
+    <h2>Crear Nueva Oferta</h2>
 
-    <div class="max-w-3xl mx-auto px-6 py-12">
-      <div class="bg-white rounded-3xl shadow-xl p-10">
-        <h1 class="text-4xl font-bold text-center text-[#1b2a4a] mb-2">Nueva Oferta Laboral</h1>
-        <p class="text-center text-gray-500">Crea una nueva oportunidad para estudiantes</p>
-
-        <form @submit.prevent="handleSubmit" class="space-y-8 mt-10">
-          <div>
-            <label class="block text-sm font-medium text-gray-600 mb-2">Título de la Oferta</label>
-            <input v-model="form.titulo" type="text" placeholder="Ej. Desarrollador Full Stack Junior"
-                   class="w-full px-6 py-4 border border-gray-200 rounded-2xl focus:border-[#b5943a]" />
-          </div>
-
-          <div>
-            <label class="block text-sm font-medium text-gray-600 mb-2">Descripción</label>
-            <textarea v-model="form.descripcion" rows="6" placeholder="Describe responsabilidades, requisitos y beneficios..."
-                      class="w-full px-6 py-4 border border-gray-200 rounded-2xl focus:border-[#b5943a]"></textarea>
-          </div>
-
-          <!--<div class="grid grid-cols-2 gap-6">
-            <div>
-              <label class="block text-sm font-medium text-gray-600 mb-2">Categoría</label>
-              <select v-model="form.categoriaId" class="w-full px-6 py-4 border border-gray-200 rounded-2xl">
-                <option value="">Seleccionar categoría...</option>
-                <option value="1">Tecnología</option>
-                <option value="2">Marketing</option>
-                <option value="3">Finanzas</option>
-              </select>
-            </div>
-            <div>
-              <label class="block text-sm font-medium text-gray-600 mb-2">Modalidad</label>
-              <select v-model="form.modalidad" class="w-full px-6 py-4 border border-gray-200 rounded-2xl">
-                <option value="">Seleccionar modalidad...</option>
-                <option>Presencial</option>
-                <option>Remoto</option>
-                <option>Híbrido</option>
-              </select>
-            </div>
-          </div>
-          -->
-
-          <button type="submit"
-                  class="w-full py-5 bg-[#1b2a4a] text-white font-semibold rounded-2xl hover:bg-[#0f1a2e]">
-            Publicar Oferta
-          </button>
-        </form>
+    <form @submit.prevent="crearNuevaOferta">
+      <div>
+        <label>Título:</label>
+        <input v-model="titulo" type="text" required />
       </div>
-    </div>
+
+      <div>
+        <label>Descripción:</label>
+        <textarea v-model="descripcion" required></textarea>
+      </div>
+
+      <div>
+        <label>Fecha de Apertura:</label>
+        <input v-model="fecha_apertura" type="date" required />
+      </div>
+
+      <div>
+        <label>ID Empleador:</label>
+        <input v-model="id_empleador" type="number" required />
+      </div>
+
+      <button type="submit">Crear Oferta</button>
+    </form>
+
+    <h2>Ofertas Existentes</h2>
+    <ul>
+      <li v-for="oferta in ofertas" :key="oferta.id_oferta">
+        {{ oferta.oferta }} - {{ oferta.descripcion }}
+      </li>
+    </ul>
   </div>
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
+import ofertaService from '@/services/ofertaService.js'
 
-const form = ref({
-  titulo: '',
-  descripcion: '',
-  categoriaId: '',
-  modalidad: ''
-})
+// ✅ VARIABLES CORRECTAS (las que usa el template)
+const titulo = ref('')
+const descripcion = ref('')
+const fecha_apertura = ref('')
+const id_empleador = ref('')
 
-// TODO: POST /api/ofertas
-const handleSubmit = () => {
-  if (!form.value.titulo || !form.value.descripcion) {
-    alert('Por favor completa título y descripción')
-    return
+// lista
+const ofertas = ref([])
+
+// ✅ cargar ofertas
+const cargarOfertas = async () => {
+  try {
+    const res = await ofertaService.listarOfertas()
+    ofertas.value = res.data || []
+  } catch (error) {
+    console.error('Error al listar ofertas:', error)
   }
-  alert('Oferta enviada al supervisor para revisión')
 }
+
+// ✅ crear oferta
+const crearNuevaOferta = async () => {
+  try {
+    const payload = {
+      oferta: titulo.value,
+      descripcion: descripcion.value,
+      fecha_apertura: fecha_apertura.value,
+      id_emepleador: id_empleador.value // 👈 TU BACKEND USA ESTE NOMBRE
+    }
+
+    console.log('Payload enviado:', payload)
+
+    const res = await ofertaService.crearOferta(payload)
+
+    console.log('Respuesta backend:', res)
+
+    if (res.success) {
+      alert('✅ Oferta creada correctamente')
+
+      // limpiar
+      titulo.value = ''
+      descripcion.value = ''
+      fecha_apertura.value = ''
+      id_empleador.value = ''
+
+      cargarOfertas()
+    } else {
+      alert('❌ ' + res.message)
+    }
+
+  } catch (error) {
+    console.error('Error al crear oferta:', error)
+    alert('❌ Error al crear oferta')
+  }
+}
+
+// init
+onMounted(() => {
+  cargarOfertas()
+})
 </script>
+
+<style scoped>
+.nueva-oferta {
+  max-width: 600px;
+  margin: auto;
+}
+
+form div {
+  margin-bottom: 10px;
+}
+
+button {
+  padding: 6px 12px;
+  cursor: pointer;
+}
+</style>
