@@ -30,7 +30,9 @@ const routes = [
     path: '/home',
     name: 'Home',
     component: HomeView,
+
     meta: { soloPublico: true }
+
   },
 
   {
@@ -57,19 +59,29 @@ const routes = [
   
   { path: '/registro-supervisor', name: 'RegistroSupervisor', component: RegistroSupervisor, meta: { soloPublico: true } },
 
-  { path: '/ofertas', name: 'CatalogoOfertas', component: CatalogoOfertas, meta: { soloPublico: true } },
-  { path: '/mis-ofertas', name: 'MisOfertas', component: MisOfertas, meta: { requiereRol: ['empleador'] } },
+  { path: '/ofertas', name: 'CatalogoOfertas', component: CatalogoOfertas},
+  { path: '/mis-ofertas', name: 'MisOfertas', component: MisOfertas, meta: { requiereRol: ['empleador'] } 
+  },
   { path: '/mis-ofertas/nueva', name: 'NuevaOferta', component: NuevaOferta, meta: { requiereRol: ['empleador'] } },
   { path: '/mis-ofertas/:ofertaId/postulantes', name: 'ListaPostulantes', component: ListaPostulantes, meta: { requiereRol: ['empleador'] } },
   { path: '/postulante/:id', name: 'DetallePostulante', component: DetallePostulante, meta: { requiereRol: ['empleador'] } },
-  { path: '/mis-ofertas/:ofertaId/editar', name: 'EditarOferta', component: EditarOferta, meta: { requiereRol: ['empleador'] } },
+  { path: '/mis-ofertas/editar', name: 'EditarOferta', component: EditarOferta, meta: { requiereRol: ['empleador'] } },
 
   { path: '/:pathMatch(.*)*', redirect: '/home' },
 
-  //Perfiles
-  { path: '/perfil-estudiante', name: 'PerfilEstudiante', component: PerfilEstudiante },
-  { path: '/perfil-empleador', name: 'PerfilEmpleador', component: PerfilEmpleador, meta: { requiereRol: ['empleador'] }
-  },
+ // Perfiles
+{ 
+  path: '/perfil-estudiante', 
+  name: 'PerfilEstudiante', 
+  component: PerfilEstudiante, 
+  meta: { requiereRol: ['estudiante'] } 
+},
+{ 
+  path: '/perfil-empleador', 
+  name: 'PerfilEmpleador', 
+  component: PerfilEmpleador, 
+  meta: { requiereRol: ['empleador'] } 
+},
 
   //Dashboard Supervisor
   { path: '/dashboard-supervisor', name: 'DashboardSupervisor', component: DashboardSupervisor, meta: { requiereRol: ['supervisor'] } 

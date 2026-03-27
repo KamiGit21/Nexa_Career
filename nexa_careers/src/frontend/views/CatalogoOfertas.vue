@@ -1,19 +1,6 @@
 <template>
   <div class="min-h-screen bg-gray-50 font-sans">
-    <nav class="bg-[#1e293b] text-white px-8 py-4 flex justify-between items-center sticky top-0 z-50 shadow-md">
-      <div class="flex items-center gap-2">
-        <div class="w-8 h-8 bg-yellow-500 rounded flex items-center justify-center font-bold text-[#1e293b]">N</div>
-        <span class="text-xl font-bold tracking-tight">Nexa <span class="text-yellow-500">Careers</span></span>
-      </div>
-      <div class="flex gap-6 items-center text-sm font-medium">
-        <a href="#" class="text-yellow-500">Ofertas Disponibles</a>
-        <a href="#" class="hover:text-yellow-500 transition-colors">Empresas</a>
-        <a href="#" class="hover:text-yellow-500 transition-colors">Ayuda</a>
-        <router-link to="/login" class="bg-yellow-600 hover:bg-yellow-500 px-5 py-2 rounded-full text-[#1e293b] font-bold transition-all">
-          Iniciar Sesión
-        </router-link>
-      </div>
-    </nav>
+    <navbar/>
 
     <header class="bg-[#1e293b] text-white py-16 px-8 text-center border-t border-slate-700">
       <h1 class="text-4xl font-extrabold mb-4">Encuentra tu próximo desafío profesional</h1>
@@ -119,5 +106,5 @@
 </template>
 
 <script setup>
-
+  import Navbar from '@/components/layout/Navbar.vue'
 </script>

@@ -3,13 +3,11 @@
     <nav class="bg-[#1e293b] text-white px-8 py-4 flex justify-between items-center border-b border-slate-700">
       <div class="flex items-center gap-4 cursor-pointer" @click="$router.back()">
         <span class="text-yellow-500 font-bold">←</span>
-        <span class="text-sm font-medium">Mis Ofertas / Editar: Desarrollador Backend</span>
+        <span class="text-sm font-medium">Mis Ofertas / Editar</span>
       </div>
       <div class="flex gap-8 items-center text-sm">
-        <a href="#" class="hover:text-yellow-500">Home</a>
-        <a href="#" class="text-yellow-500 border-b-2 border-yellow-500">Mis Ofertas</a>
-        <a href="#" class="hover:text-yellow-500">Postulantes</a>
-        <a href="#" class="hover:text-yellow-500">Mi Cuenta</a>
+        <a href="/home" class="hover:text-yellow-500">Home</a>
+        <a href="/mis-ofertas" class="text-yellow-500 border-b-2 border-yellow-500">Mis Ofertas</a>
         <div class="w-8 h-8 bg-slate-400 rounded-md flex items-center justify-center">
           <span class="text-xs italic">Nexa</span>
         </div>
@@ -28,7 +26,7 @@
 
         <form @submit.prevent="saveChanges" class="space-y-8">
           
-          <div>
+          <!--<div>
             <h3 class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-3">Imagen de la oferta</h3>
             <div class="flex gap-6 items-center">
               <div class="relative w-48 h-32 bg-slate-200 rounded-lg overflow-hidden border border-gray-300">
@@ -47,6 +45,7 @@
               <span class="text-[10px] text-gray-400 self-center">Sin imagen se mostrará un banner genérico.</span>
             </div>
           </div>
+        -->
 
           <hr class="border-gray-100">
 
@@ -55,17 +54,17 @@
             <div class="space-y-4">
               <div>
                 <label class="block text-xs font-semibold text-slate-700 mb-1">Título de la oferta:</label>
-                <input type="text" value="Desarrollador Backend" class="w-full border border-slate-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-yellow-500 outline-none">
+                <input type="text" class="w-full border border-slate-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-yellow-500 outline-none">
               </div>
               <div>
                 <label class="block text-xs font-semibold text-slate-700 mb-1">Descripción de la oferta:</label>
-                <textarea rows="4" class="w-full border border-slate-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-yellow-500 outline-none resize-none">Buscamos un desarrollador backend con experiencia en Node.js para unirse a nuestro equipo de tecnología. Responsable del diseño e implementación de APIs REST.</textarea>
+                <textarea rows="4" class="w-full border border-slate-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-yellow-500 outline-none resize-none"> </textarea>
                 <div class="text-right text-[10px] text-gray-400 mt-1">184 / 500</div>
               </div>
             </div>
           </div>
 
-          <div class="grid grid-cols-2 gap-6">
+          <!--<div class="grid grid-cols-2 gap-6">
             <div>
               <label class="block text-xs font-semibold text-slate-700 mb-1">Categoría:</label>
               <select class="w-full border border-slate-300 rounded-lg p-2.5 text-sm outline-none">
@@ -74,24 +73,10 @@
               </select>
             </div>
             <div>
-              <label class="block text-xs font-semibold text-slate-700 mb-1">Tipo de empleo:</label>
-              <select class="w-full border border-slate-300 rounded-lg p-2.5 text-sm outline-none">
-                <option>Tiempo completo</option>
-                <option>Medio tiempo</option>
-              </select>
-            </div>
-            <div>
               <label class="block text-xs font-semibold text-slate-700 mb-1">Modalidad:</label>
               <select class="w-full border border-slate-300 rounded-lg p-2.5 text-sm outline-none">
                 <option>Presencial</option>
                 <option>Remoto</option>
-              </select>
-            </div>
-            <div>
-              <label class="block text-xs font-semibold text-slate-700 mb-1">Experiencia requerida:</label>
-              <select class="w-full border border-slate-300 rounded-lg p-2.5 text-sm outline-none">
-                <option>1 año</option>
-                <option>2+ años</option>
               </select>
             </div>
           </div>
@@ -120,29 +105,31 @@
               </div>
             </div>
           </div>
+        -->
 
           <div class="grid grid-cols-3 gap-6">
             <div>
               <label class="block text-xs font-semibold text-slate-700 mb-1">Fecha de apertura:</label>
               <div class="relative">
-                <input type="text" value="30 / 04 / 2026" class="w-full border border-slate-300 rounded-lg p-2.5 pl-9 text-sm outline-none">
+                <input type="date" class="w-full border border-slate-300 rounded-lg p-2.5 pl-9 text-sm outline-none">
                 <span class="absolute left-3 top-2.5 text-slate-400">📅</span>
               </div>
             </div>
-            <div>
+            <!--<div>
               <label class="block text-xs font-semibold text-slate-700 mb-1">Fecha de cierre:</label>
               <div class="relative">
                 <input type="text" value="30 / 04 / 2026" class="w-full border border-slate-300 rounded-lg p-2.5 pl-9 text-sm outline-none">
                 <span class="absolute left-3 top-2.5 text-slate-400">📅</span>
               </div>
             </div>
+            
             <div>
               <label class="block text-xs font-semibold text-slate-700 mb-1">Correo de contacto:</label>
               <div class="relative">
                 <input type="email" value="rrhh@nexacareers.bo" class="w-full border border-slate-300 rounded-lg p-2.5 pl-9 text-sm outline-none">
                 <span class="absolute left-3 top-2.5 text-slate-400">✉️</span>
               </div>
-            </div>
+            </div>-->
           </div>
 
           <div class="pt-4">
@@ -164,7 +151,7 @@
             <button type="submit" class="bg-[#1e293b] text-white px-12 py-3 rounded-lg font-bold shadow-lg hover:bg-slate-800 transition-all">
               Guardar Cambios
             </button>
-            <button type="button" @click="$router.back()" class="border-2 border-slate-700 text-slate-700 px-12 py-3 rounded-lg font-bold hover:bg-slate-50 transition-all">
+            <button type="button" href="#" class="border-2 border-slate-700 text-slate-700 px-12 py-3 rounded-lg font-bold hover:bg-slate-50 transition-all">
               Cancelar
             </button>
           </div>
@@ -177,7 +164,7 @@
 
 <script setup>
 import { useRouter } from 'vue-router';
-import imagenOferta from '../assets/images/imagen-oferta.png';
+//import imagenOferta from '../assets/images/imagen-oferta.png';
 const router = useRouter();
 
 const saveChanges = () => {

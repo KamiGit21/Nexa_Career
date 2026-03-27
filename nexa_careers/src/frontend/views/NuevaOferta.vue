@@ -20,7 +20,7 @@
                       class="w-full px-6 py-4 border border-gray-200 rounded-2xl focus:border-[#b5943a]"></textarea>
           </div>
 
-          <div class="grid grid-cols-2 gap-6">
+          <!--<div class="grid grid-cols-2 gap-6">
             <div>
               <label class="block text-sm font-medium text-gray-600 mb-2">Categoría</label>
               <select v-model="form.categoriaId" class="w-full px-6 py-4 border border-gray-200 rounded-2xl">
@@ -40,6 +40,7 @@
               </select>
             </div>
           </div>
+          -->
 
           <button type="submit"
                   class="w-full py-5 bg-[#1b2a4a] text-white font-semibold rounded-2xl hover:bg-[#0f1a2e]">
