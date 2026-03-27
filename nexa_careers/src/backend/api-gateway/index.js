@@ -35,7 +35,7 @@ app.use('/api/empleadores', createProxyMiddleware({
     console.log(`🔄 Proxy: ${req.method} ${req.url} -> http://localhost:3004${req.url}`);
   },
   onError: (err, req, res) => {
-    console.error('❌ Error en proxy:', err);
+    console.error('Error en proxy:', err);
     res.status(500).json({ success: false, message: 'Error de conexión con el microservicio' });
   }
 }));
@@ -71,8 +71,8 @@ app.get('/api/health', (req, res) => {
 const PORT = process.env.PORT || 3000;
 
 app.listen(PORT, () => {
-  console.log(`🌐 API Gateway central corriendo en http://localhost:${PORT}`);
-  console.log(`📋 Endpoints disponibles:`);
+  console.log(` API Gateway central corriendo en http://localhost:${PORT}`);
+  console.log(` Endpoints disponibles:`);
   console.log(`   - http://localhost:${PORT}/api/empleadores`);
   console.log(`   - http://localhost:${PORT}/api/estudiantes`);
   console.log(`   - http://localhost:${PORT}/api/ofertas`);

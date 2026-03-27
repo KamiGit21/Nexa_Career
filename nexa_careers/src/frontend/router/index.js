@@ -9,7 +9,7 @@ import RegistroSupervisor from '@/views/RegistroSupervisor.vue'
 
 // Ofertas y postulantes
 import CatalogoOfertas from '@/views/CatalogoOfertas.vue'
-import DetalleOferta from '@/views/DetalleOferta.vue'     // ← LÍNEA NUEVA
+import DetalleOferta from '@/views/DetalleOferta.vue'    
 import MisOfertas from '@/views/MisOfertas.vue'
 import NuevaOferta from '@/views/NuevaOferta.vue'
 import ListaPostulantes from '@/views/ListaPostulantes.vue'
@@ -61,7 +61,7 @@ const routes = [
   },
 
   { path: '/ofertas', name: 'CatalogoOfertas', component: CatalogoOfertas },
-  { path: '/ofertas/:id', name: 'DetalleOferta', component: DetalleOferta }, // ← LÍNEA NUEVA
+  { path: '/ofertas/:id', name: 'DetalleOferta', component: DetalleOferta }, 
 
   { path: '/mis-ofertas', name: 'MisOfertas', component: MisOfertas, meta: { requiereRol: ['empleador'] } },
   { path: '/mis-ofertas/nueva', name: 'NuevaOferta', component: NuevaOferta, meta: { requiereRol: ['empleador'] } },
