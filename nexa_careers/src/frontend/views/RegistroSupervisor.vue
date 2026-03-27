@@ -37,11 +37,11 @@
           </div>
 
           <div class="grid grid-cols-2 gap-5">
-            <div>
+            <!--<div>
               <label class="text-sm font-medium text-gray-600">Dirección</label>
               <input v-model="form.direccion" type="text" placeholder="La Paz, Bolivia"
                      class="mt-2 w-full px-5 py-4 bg-gray-50 border border-gray-200 rounded-2xl focus:border-[#b5943a]" />
-            </div>
+            </div>-->
             <div>
               <label class="text-sm font-medium text-gray-600">Teléfono</label>
               <input v-model="form.telefono" type="tel" placeholder="+591 71234567"
