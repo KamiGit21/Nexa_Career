@@ -1,18 +1,14 @@
-// Inicializar con el comando "node indexOfertante.js" para levantar el microservicio de ofertante
-
+// src/backend/servicioOfertante/APIOfertante/indexOfertante.js
 import express from 'express';
+import ofertanteRoutes from './ofertanteRoutes.js';
+
 const app = express();
 
-// Importar rutas
-import ofertanteRoutes from './ofertanteRoutes.js';
 app.use(express.json());
+app.use('/api/ofertantes', ofertanteRoutes);
 
-// Rutas con prefijo /api/ofertante
-app.use('/api/ofertante', ofertanteRoutes);
-
-// Puerto del microservicio
-const PORT = process.env.PORT || 3006;
+const PORT = process.env.PORT || 3007;
 
 app.listen(PORT, () => {
-    console.log(`🚀 Microservicio de Ofertante corriendo en http://localhost:${PORT}`);
+  console.log(`🚀 Microservicio de Ofertantes corriendo en http://localhost:${PORT}`);
 });
