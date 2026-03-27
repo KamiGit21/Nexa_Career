@@ -14,3 +14,4 @@ export const obtenerOfertaPorId = async (req, res) => {
         res.status(500).json({ success: false, message: 'Error interno del servidor al obtener oferta' });
     }
 };
+
