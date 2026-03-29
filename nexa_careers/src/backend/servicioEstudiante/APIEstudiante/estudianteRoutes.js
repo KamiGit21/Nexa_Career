@@ -13,7 +13,8 @@ router.put('/:id/perfil', estudianteController.actualizarPerfil);
 router.put('/:id/contrasena', estudianteController.cambiarContrasena);
 router.put('/:id/estado', estudianteController.cambiarEstado);
 
-// Nueva ruta: Obtener postulaciones de un estudiante
+// rutas pa postulaciones de un estudiante
 router.get('/:id/postulaciones', estudianteController.obtenerPostulacionesPorEstudiante);
+router.post('/:id/postulaciones', estudianteController.postularAOferta);//nuevooooo
 
 export default router;

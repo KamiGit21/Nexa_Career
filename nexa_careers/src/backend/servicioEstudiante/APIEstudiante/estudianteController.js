@@ -4,7 +4,6 @@ const dominiosPermitidos = ['ucb.edu.bo'];
 
 const isValidEmail = (email) => {
   if (!email || typeof email !== 'string') return false;
-  // validación simple de formato
   const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   return regex.test(email);
 };
@@ -16,14 +15,14 @@ const isInstitucional = (email) => {
 };
 
 const isValidPhone = (telefono) => {
-  if (!telefono) return true; // opcional
+  if (!telefono) return true;
   const str = String(telefono).trim();
   const regex = /^[0-9]{7,15}$/;
   return regex.test(str);
 };
 
 const isValidUrl = (url) => {
-  if (!url) return true; // opcional
+  if (!url) return true;
   try {
     new URL(url);
     return true;
@@ -64,48 +63,32 @@ const validateEstudiante = (data, { isNew = false } = {}) => {
   }
 
   if (telefono && !isValidPhone(telefono)) errors.push('El teléfono debe contener solo dígitos y entre 7 y 15 caracteres');
-
   if (cv && !isValidUrl(cv)) errors.push('El campo cv debe ser una URL válida');
-
   if (contrasena && String(contrasena).length < 8) errors.push('La contraseña debe tener al menos 8 caracteres');
   if (contrasena && String(contrasena).length > 60) errors.push('La contraseña no puede exceder 60 caracteres');
-
   if (descripcion && String(descripcion).length > 500) errors.push('La descripción no puede exceder 500 caracteres');
   if (habilidades && String(habilidades).length > 500) errors.push('Las habilidades no pueden exceder 500 caracteres');
   if (educacion && String(educacion).length > 500) errors.push('La educación no puede exceder 500 caracteres');
-
   if (id_carrera && (isNaN(Number(id_carrera)) || Number(id_carrera) <= 0)) errors.push('El id_carrera debe ser un número válido positivo');
 
   return { valid: errors.length === 0, errors };
 };
 
-// 1. POST: Registrar estudiante (activo = true por defecto)
+// 1. POST: Registrar estudiante
 export const registrarEstudiante = async (req, res) => {
   const validation = validateEstudiante(req.body, { isNew: true });
   if (!validation.valid) {
     return res.status(400).json({ success: false, message: validation.errors.join('; ') });
   }
 
-  const {
-    nombre,
-    apellido,
-    telefono,
-    gmail,
-    cv,
-    contrasena,
-    id_carrera,
-    descripcion,
-    habilidades,
-    educacion,
-  } = req.body;
+  const { nombre, apellido, telefono, gmail, cv, contrasena, id_carrera, descripcion, habilidades, educacion } = req.body;
 
   try {
-    // 🛑 NUEVO: Validar si el correo ya existe
     const [existingEmail] = await db.query('SELECT gmail FROM estudiante WHERE gmail = ?', [gmail]);
     if (existingEmail.length > 0) {
       return res.status(400).json({ success: false, message: 'Este correo electrónico ya está registrado.' });
     }
-    const activo = 1; // 1 equivale a true en tinyint(1) de MySQL
+    const activo = 1;
     const [result] = await db.query(
       `INSERT INTO estudiante (nombre, apellido, telefono, gmail, cv, contrasena, activo, id_carrera, descripcion, habilidades, educacion) 
        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
@@ -155,7 +138,7 @@ export const buscarEstudiantePorGmail = async (req, res) => {
   }
 };
 
-// 5. PUT: Actualizar perfil (telefono, gmail, cv, descripcion, educacion, habilidades)
+// 5. PUT: Actualizar perfil
 export const actualizarPerfil = async (req, res) => {
   const { id } = req.params;
   const { telefono, gmail, cv, descripcion, educacion, habilidades } = req.body;
@@ -201,7 +184,7 @@ export const cambiarContrasena = async (req, res) => {
 // 7. PUT: Cambiar estado (activo)
 export const cambiarEstado = async (req, res) => {
   const { id } = req.params;
-  const { activo } = req.body; // Se espera un 1 (true) o 0 (false)
+  const { activo } = req.body;
 
   if (![0, 1, '0', '1', true, false].includes(activo)) {
     return res.status(400).json({ success: false, message: 'El valor activo debe ser 0 o 1' });
@@ -219,33 +202,60 @@ export const cambiarEstado = async (req, res) => {
   }
 };
 
-// 8. GET: Obtener postulaciones de un estudiante (con datos de oferta y empleador para frontend)
+// 8. GET: Obtener postulaciones de un estudiante
 export const obtenerPostulacionesPorEstudiante = async (req, res) => {
   const { id } = req.params;
   try {
     const [rows] = await db.query(`
       SELECT 
-        p.id_postulacion,
-        p.fecha_postulacion,
-        p.estado,
         o.id_oferta,
-        o.titulo,
+        o.oferta as titulo,
         o.descripcion,
-        o.salario,
-        o.ubicacion,
-        o.fecha_publicacion,
-        e.empresa,
-        e.gmail as correo_empleador
-      FROM postulacion p
-      JOIN oferta o ON p.id_oferta = o.id_oferta
+        o.estado as estado_oferta,
+        ofe.estado as estado_postulacion,
+        e.empresa
+      FROM ofertante ofe
+      JOIN oferta o ON ofe.id_oferta = o.id_oferta
       JOIN empleador e ON o.id_empleador = e.id_empleador
-      WHERE p.id_estudiante = ?
-      ORDER BY p.fecha_postulacion DESC
+      WHERE ofe.id_estudiante = ?
+      ORDER BY ofe.id_ofertante DESC
     `, [id]);
 
     res.status(200).json({ success: true, data: rows });
   } catch (error) {
     console.error('Error al obtener postulaciones:', error);
     res.status(500).json({ success: false, message: 'Error al obtener postulaciones' });
+  }
+};
+
+// 9. POST: Postular a una oferta
+export const postularAOferta = async (req, res) => {
+  const { id } = req.params;
+  const { id_oferta } = req.body;
+
+  if (!id_oferta) {
+    return res.status(400).json({ success: false, message: 'El id_oferta es obligatorio' });
+  }
+
+  try {
+    const [existing] = await db.query(
+      'SELECT * FROM ofertante WHERE id_estudiante = ? AND id_oferta = ?',
+      [id, id_oferta]
+    );
+
+    if (existing.length > 0) {
+      return res.status(400).json({ success: false, message: 'Ya te has postulado a esta oferta' });
+    }
+
+    const [result] = await db.query(
+      `INSERT INTO ofertante (id_estudiante, id_oferta, estado) 
+       VALUES (?, ?, 0)`,
+      [id, id_oferta]
+    );
+
+    res.status(201).json({ success: true, message: 'Postulación realizada correctamente' });
+  } catch (error) {
+    console.error('Error al postular:', error);
+    res.status(500).json({ success: false, message: 'Error interno al postular' });
   }
 };
