@@ -208,15 +208,16 @@ export const obtenerPostulacionesPorEstudiante = async (req, res) => {
   try {
     const [rows] = await db.query(`
       SELECT 
-        o.id_oferta,
+        ofe.id_ofertante,
+        ofe.id_estudiante,
+        ofe.id_oferta,
+        ofe.estado as estado_postulacion,
         o.oferta as titulo,
         o.descripcion,
         o.estado as estado_oferta,
-        ofe.estado as estado_postulacion,
-        e.empresa
+        o.fecha_apertura
       FROM ofertante ofe
-      JOIN oferta o ON ofe.id_oferta = o.id_oferta
-      JOIN empleador e ON o.id_empleador = e.id_empleador
+      INNER JOIN oferta o ON ofe.id_oferta = o.id_oferta
       WHERE ofe.id_estudiante = ?
       ORDER BY ofe.id_ofertante DESC
     `, [id]);
@@ -224,13 +225,13 @@ export const obtenerPostulacionesPorEstudiante = async (req, res) => {
     res.status(200).json({ success: true, data: rows });
   } catch (error) {
     console.error('Error al obtener postulaciones:', error);
-    res.status(500).json({ success: false, message: 'Error al obtener postulaciones' });
+    res.status(500).json({ success: false, message: 'Error al obtener postulaciones', error: error.message });
   }
 };
 
-// 9. POST: Postular a una oferta
+// 9. POST: Postular a una oferta ojo sin validar
 export const postularAOferta = async (req, res) => {
-  const { id } = req.params;
+  const { id } = req.params; // id_estudiante
   const { id_oferta } = req.body;
 
   if (!id_oferta) {
@@ -238,6 +239,7 @@ export const postularAOferta = async (req, res) => {
   }
 
   try {
+    // Verificar si ya existe la postulación
     const [existing] = await db.query(
       'SELECT * FROM ofertante WHERE id_estudiante = ? AND id_oferta = ?',
       [id, id_oferta]
@@ -247,6 +249,7 @@ export const postularAOferta = async (req, res) => {
       return res.status(400).json({ success: false, message: 'Ya te has postulado a esta oferta' });
     }
 
+    // Crear la postulación
     const [result] = await db.query(
       `INSERT INTO ofertante (id_estudiante, id_oferta, estado) 
        VALUES (?, ?, 0)`,

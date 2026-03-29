@@ -69,7 +69,13 @@ app.put('/api/empleadores/:id/contrasena', createProxy('http://localhost:3004'))
 app.put('/api/empleadores/:id/estado', createProxy('http://localhost:3004'));
 
 // Servicio de Supervisores (puerto 3005)
-app.use('/api/supervisores', createProxy('http://localhost:3005'));
+app.post('/api/supervisores/registrar', createProxy('http://localhost:3005'));
+app.get('/api/supervisores', createProxy('http://localhost:3005'));
+app.get('/api/supervisores/:id', createProxy('http://localhost:3005'));
+app.get('/api/supervisores/gmail/:gmail', createProxy('http://localhost:3005'));
+app.put('/api/supervisores/:id/perfil', createProxy('http://localhost:3005'));
+app.put('/api/supervisores/:id/contrasena', createProxy('http://localhost:3005'));
+app.put('/api/supervisores/:id/estado', createProxy('http://localhost:3005'));
 
 // Servicio de Ofertas (puerto 3006)
 app.use('/api/ofertas', createProxy('http://localhost:3006'));

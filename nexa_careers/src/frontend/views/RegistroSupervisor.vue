@@ -87,10 +87,10 @@
                    class="mt-2 w-full px-5 py-4 bg-gray-50 border border-gray-200 rounded-2xl focus:border-[#b5943a]" required />
           </div>
 
-          <button type="submit" 
-                  class="w-full py-4 bg-gradient-to-r from-[#1b2a4a] to-[#002349] text-white font-semibold rounded-2xl hover:brightness-110 transition-all mt-6">
-            Registrarme como Supervisor
-          </button>
+          <button type="submit" :disabled="loading" 
+        class="w-full py-4 bg-gradient-to-r from-[#1b2a4a] to-[#002349] text-white font-semibold rounded-2xl hover:brightness-110 transition-all mt-6 disabled:opacity-50">
+  {{ loading ? 'Registrando...' : 'Registrarme como Supervisor' }}
+</button>
         </form>
       </div>
     </div>
@@ -100,9 +100,11 @@
 <script setup>
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
+import { registrarSupervisor } from '../services/supervisorService.js'
 
 const router = useRouter()
 const showPassword = ref(false)
+const loading = ref(false)
 const porcentajeFuerza = ref(0)
 const colorFuerza = ref('#db0000')
 const etiquetaFuerza = ref('Débil')
@@ -111,14 +113,13 @@ const form = ref({
   nombre: '',
   apellido: '',
   correo: '',
-  direccion: '',
   telefono: '',
   contrasena: '',
   confirmar: ''
 })
 
 const requisitos = ref([
-  { label: 'Al menos 12 caracteres', met: false },
+  { label: 'Al menos 8 caracteres', met: false },
   { label: 'Una letra mayúscula', met: false },
   { label: 'Una letra minúscula', met: false },
   { label: 'Un número', met: false },
@@ -128,7 +129,7 @@ const requisitos = ref([
 const calcularFuerza = () => {
   const p = form.value.contrasena
   let count = 0
-  if (p.length >= 12) count++
+  if (p.length >= 8) count++
   if (/[A-Z]/.test(p)) count++
   if (/[a-z]/.test(p)) count++
   if (/[0-9]/.test(p)) count++
@@ -140,21 +141,40 @@ const calcularFuerza = () => {
   else if (count <= 3) { colorFuerza.value = '#f59e0b'; etiquetaFuerza.value = 'Regular' }
   else { colorFuerza.value = '#22c55e'; etiquetaFuerza.value = 'Fuerte' }
 
-  requisitos.value[0].met = p.length >= 12
+  requisitos.value[0].met = p.length >= 8
   requisitos.value[1].met = /[A-Z]/.test(p)
   requisitos.value[2].met = /[a-z]/.test(p)
   requisitos.value[3].met = /[0-9]/.test(p)
   requisitos.value[4].met = /[^A-Za-z0-9]/.test(p)
 }
 
-const handleSubmit = () => {
-  // TODO: POST /api/supervisores  →  { nombre, apellido, correo, direccion, telefono, contrasena }
+const handleSubmit = async () => {
+  if (form.value.contrasena !== form.value.confirmar) {
+    alert('Las contraseñas no coinciden')
+    return
+  }
 
-  localStorage.setItem('sesion', JSON.stringify({
-    rol: 'supervisor',
-    email: form.value.correo
-  }))
+  loading.value = true
 
-  router.push('/home')
+  try {
+    const response = await registrarSupervisor({
+      nombre: form.value.nombre,
+      telefono: form.value.telefono,
+      gmail: form.value.correo,
+      contrasena: form.value.contrasena
+    })
+
+    if (response.success) {
+      alert('¡Registro exitoso! Ahora puedes iniciar sesión')
+      router.push('/login')
+    } else {
+      alert(response.message || 'Error al registrar')
+    }
+  } catch (error) {
+    console.error('Error:', error)
+    alert('Error de conexión con el servidor')
+  } finally {
+    loading.value = false
+  }
 }
 </script>

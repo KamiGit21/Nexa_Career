@@ -83,6 +83,7 @@ import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { obtenerEmpleadorPorGmail } from '../services/empleadorService.js'
 import { obtenerEstudiantePorGmail } from '../services/estudianteService.js'
+import { obtenerSupervisorPorGmail } from '../services/supervisorService.js'
 
 const router = useRouter()
 const showPassword = ref(false)
@@ -145,6 +146,25 @@ const handleSubmit = async () => {
         alert('Estudiante no encontrado')
       }
     }
+    else if (form.value.rol === 'supervisor') {
+  response = await obtenerSupervisorPorGmail(form.value.correo)
+  if (response.success && response.data) {
+    userData = response.data
+    if (userData.contrasena === form.value.password && userData.activo === 1) {
+      localStorage.setItem('sesion', JSON.stringify({
+        rol: 'supervisor',
+        email: userData.gmail,
+        id: userData.id_supervisor,
+        nombre: userData.nombre
+      }))
+      router.push('/dashboard-supervisor')
+    } else {
+      alert('Contraseña incorrecta o cuenta inactiva')
+    }
+  } else {
+    alert('Supervisor no encontrado')
+  }
+}
   } catch (error) {
     console.error('Error en login:', error)
     alert('Error de conexión con el servidor')
