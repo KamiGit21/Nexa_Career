@@ -82,6 +82,7 @@
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { obtenerEmpleadorPorGmail } from '../services/empleadorService.js'
+import { obtenerEstudiantePorGmail } from '../services/estudianteService.js'
 
 const router = useRouter()
 const showPassword = ref(false)
@@ -102,28 +103,47 @@ const handleSubmit = async () => {
   isLoading.value = true
 
   try {
-    // Buscar empleador por email
-    const response = await obtenerEmpleadorPorGmail(form.value.correo)
-    
-    if (response.success && response.data) {
-      const empleador = response.data
-      
-      // Validar contraseña (simplificado - en producción usar hash)
-      if (empleador.contrasena === form.value.password && empleador.activo === 1) {
-        // Guardar sesión
-        localStorage.setItem('sesion', JSON.stringify({ 
-          rol: 'empleador', 
-          email: empleador.gmail,
-          id: empleador.id_empleador,
-          empresa: empleador.empresa
-        }))
-        
-        router.push('/mis-ofertas')
+    let response = null
+    let userData = null
+
+    if (form.value.rol === 'empleador') {
+      response = await obtenerEmpleadorPorGmail(form.value.correo)
+      if (response.success && response.data) {
+        userData = response.data
+        if (userData.contrasena === form.value.password && userData.activo === 1) {
+          localStorage.setItem('sesion', JSON.stringify({
+            rol: 'empleador',
+            email: userData.gmail,
+            id: userData.id_empleador,
+            empresa: userData.empresa
+          }))
+          router.push('/mis-ofertas')
+        } else {
+          alert('Contraseña incorrecta o cuenta inactiva')
+        }
       } else {
-        alert('Contraseña incorrecta o cuenta inactiva')
+        alert('Empleador no encontrado')
       }
-    } else {
-      alert('Empleador no encontrado')
+    } 
+    else if (form.value.rol === 'estudiante') {
+      response = await obtenerEstudiantePorGmail(form.value.correo)
+      if (response.success && response.data) {
+        userData = response.data
+        if (userData.contrasena === form.value.password && userData.activo === 1) {
+          localStorage.setItem('sesion', JSON.stringify({
+            rol: 'estudiante',
+            email: userData.gmail,
+            id: userData.id_estudiante,
+            nombre: userData.nombre,
+            apellido: userData.apellido
+          }))
+          router.push('/home')
+        } else {
+          alert('Contraseña incorrecta o cuenta inactiva')
+        }
+      } else {
+        alert('Estudiante no encontrado')
+      }
     }
   } catch (error) {
     console.error('Error en login:', error)
