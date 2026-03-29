@@ -9,6 +9,8 @@
         :type="type"
         :placeholder="placeholder"
         :disabled="disabled"
+        :value="modelValue"
+        @input="$emit('update:modelValue', $event.target.value)"
       />
     </div>
   </div>
@@ -20,8 +22,11 @@ defineProps({
   placeholder: String,
   icon: String,
   type: { default: "text" },
-  disabled: Boolean
+  disabled: Boolean,
+  modelValue: [String, Number]
 });
+
+defineEmits(['update:modelValue']);
 </script>
 
 <style scoped>

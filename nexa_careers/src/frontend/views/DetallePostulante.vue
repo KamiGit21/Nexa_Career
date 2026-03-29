@@ -47,36 +47,105 @@
 
 <script setup>
 import { ref, onMounted } from 'vue'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
+import Navbar from '@/components/layout/Navbar.vue'
 
 const route = useRoute()
+const router = useRouter()
 const loading = ref(true)
-const postulante = ref({})
+const error = ref(null)
+const postulante = ref({
+  nombre: '',
+  apellido: '',
+  gmail: '',
+  telefono: '',
+  carrera: '',
+  educacion: '',
+  habilidades: '',
+  descripcion: '',
+  cv: '',
+  estadoPostulacion: 0 // 0: pendiente, 1: aceptado, 2: rechazado
+})
 
-// TODO: GET /api/estudiantes/:id
+// ID de la oferta viene como query param
+const ofertaId = ref(null)
+
 const cargarPostulante = async () => {
   loading.value = true
+  error.value = null
+  
   try {
-    // const id = route.params.id
-    // const res = await fetch(`/api/estudiantes/${id}`)
-    // postulante.value = await res.json()
+    const estudianteId = route.params.id
+    ofertaId.value = route.query.ofertaId
     
-    postulante.value = {}
+    if (!estudianteId) {
+      throw new Error('ID de estudiante no válido')
+    }
+    
+    // Obtener datos del estudiante
+    const estudianteResponse = await fetch(`http://localhost:3003/api/estudiantes/${estudianteId}`)
+    const estudianteData = await estudianteResponse.json()
+    
+    if (!estudianteData.success) {
+      throw new Error(estudianteData.message || 'Error al cargar estudiante')
+    }
+    
+    postulante.value = estudianteData.data
+    
+    // Si tenemos ID de oferta, obtenemos el estado de la postulación
+    if (ofertaId.value) {
+      const ofertanteResponse = await fetch(`http://localhost:3004/api/ofertantes/buscar?id_oferta=${ofertaId.value}&id_estudiante=${estudianteId}`)
+      const ofertanteData = await ofertanteResponse.json()
+      
+      if (ofertanteData.success && ofertanteData.data) {
+        postulante.value.estadoPostulacion = ofertanteData.data.estado
+        postulante.value.id_ofertante = ofertanteData.data.id_ofertante
+      }
+    }
+    
   } catch (e) {
-    console.error(e)
+    console.error('Error al cargar postulante:', e)
+    error.value = e.message || 'Error al cargar la información del postulante'
   } finally {
     loading.value = false
   }
 }
 
-const aceptar = () => {
-  // TODO: PUT /api/ofertante/:id { estado: 'aceptado' }
-  alert('Postulante aceptado')
-}
-
-const rechazar = () => {
-  // TODO: PUT /api/ofertante/:id { estado: 'rechazado' }
-  alert('Postulante rechazado')
+const cambiarEstado = async (nuevoEstado) => {
+  try {
+    if (!postulante.value.id_ofertante) {
+      throw new Error('No se encontró la postulación')
+    }
+    
+    const response = await fetch(`http://localhost:3004/api/ofertantes/${postulante.value.id_ofertante}/estado`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ estado: nuevoEstado })
+    })
+    
+    const data = await response.json()
+    
+    if (!data.success) {
+      throw new Error(data.message || 'Error al cambiar estado')
+    }
+    
+    // Actualizar estado local
+    postulante.value.estadoPostulacion = nuevoEstado
+    
+    const mensaje = nuevoEstado === 1 ? 'Postulante aceptado exitosamente' : 'Postulante rechazado exitosamente'
+    alert(mensaje)
+    
+    // Redirigir de vuelta a la lista de postulantes después de 1 segundo
+    setTimeout(() => {
+      router.push(`/mis-ofertas/${ofertaId.value}/postulantes`)
+    }, 1000)
+    
+  } catch (e) {
+    console.error('Error al cambiar estado:', e)
+    alert(e.message || 'Error al procesar la solicitud')
+  }
 }
 
 onMounted(cargarPostulante)

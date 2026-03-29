@@ -81,34 +81,55 @@
 <script setup>
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
+import { obtenerEmpleadorPorGmail } from '../services/empleadorService.js'
 
 const router = useRouter()
 const showPassword = ref(false)
+const isLoading = ref(false)
 
 const form = ref({
   correo: '',
   password: '',
-  rol: 'estudiante'
+  rol: 'empleador'
 })
 
-const handleSubmit = () => {
+const handleSubmit = async () => {
   if (!form.value.correo || !form.value.password) {
     alert('Por favor ingresa correo y contraseña')
     return
   }
 
-  // TODO: POST /api/auth/login
-  localStorage.setItem('sesion', JSON.stringify({ 
-    rol: form.value.rol, 
-    email: form.value.correo 
-  }))
+  isLoading.value = true
 
-  const rutas = {
-    estudiante: '/home',
-    empleador: '/mis-ofertas',
-    supervisor: '/home'
+  try {
+    // Buscar empleador por email
+    const response = await obtenerEmpleadorPorGmail(form.value.correo)
+    
+    if (response.success && response.data) {
+      const empleador = response.data
+      
+      // Validar contraseña (simplificado - en producción usar hash)
+      if (empleador.contrasena === form.value.password && empleador.activo === 1) {
+        // Guardar sesión
+        localStorage.setItem('sesion', JSON.stringify({ 
+          rol: 'empleador', 
+          email: empleador.gmail,
+          id: empleador.id_empleador,
+          empresa: empleador.empresa
+        }))
+        
+        router.push('/mis-ofertas')
+      } else {
+        alert('Contraseña incorrecta o cuenta inactiva')
+      }
+    } else {
+      alert('Empleador no encontrado')
+    }
+  } catch (error) {
+    console.error('Error en login:', error)
+    alert('Error de conexión con el servidor')
+  } finally {
+    isLoading.value = false
   }
-
-  router.push(rutas[form.value.rol] || '/home')
 }
 </script>

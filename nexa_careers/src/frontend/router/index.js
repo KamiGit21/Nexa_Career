@@ -9,7 +9,7 @@ import RegistroSupervisor from '@/views/RegistroSupervisor.vue'
 
 // Ofertas y postulantes
 import CatalogoOfertas from '@/views/CatalogoOfertas.vue'
-import DetalleOferta from '@/views/DetalleOferta.vue'    
+import DetalleOferta from '@/views/DetalleOferta.vue'     // ← LÍNEA NUEVA
 import MisOfertas from '@/views/MisOfertas.vue'
 import NuevaOferta from '@/views/NuevaOferta.vue'
 import ListaPostulantes from '@/views/ListaPostulantes.vue'
@@ -61,14 +61,13 @@ const routes = [
   },
 
   { path: '/ofertas', name: 'CatalogoOfertas', component: CatalogoOfertas },
-  { path: '/ofertas/:id', name: 'DetalleOferta', component: DetalleOferta }, 
+  { path: '/ofertas/:id', name: 'DetalleOferta', component: DetalleOferta }, // ← LÍNEA NUEVA
 
   { path: '/mis-ofertas', name: 'MisOfertas', component: MisOfertas, meta: { requiereRol: ['empleador'] } },
   { path: '/mis-ofertas/nueva', name: 'NuevaOferta', component: NuevaOferta, meta: { requiereRol: ['empleador'] } },
   { path: '/mis-ofertas/:ofertaId/postulantes', name: 'ListaPostulantes', component: ListaPostulantes, meta: { requiereRol: ['empleador'] } },
   { path: '/postulante/:id', name: 'DetallePostulante', component: DetallePostulante, meta: { requiereRol: ['empleador'] } },
-  { path: '/mis-ofertas/editar', name: 'EditarOferta', component: EditarOferta, meta: { requiereRol: ['empleador'] } },
-
+  { path: '/mis-ofertas/:ofertaId/editar', name: 'EditarOferta', component: EditarOferta, meta: { requiereRol: ['empleador'] } }, //cambie esto
   { path: '/:pathMatch(.*)*', redirect: '/home' },
 
   // Perfiles
@@ -100,22 +99,20 @@ const router = createRouter({
   scrollBehavior() { return { top: 0 } }
 })
 
-// Guard de navegación por roles - VERSIÓN ACTUALIZADA
-router.beforeEach((to, from) => {
+// Guard de navegación por roles
+router.beforeEach((to, from, next) => {
   const sesion = JSON.parse(localStorage.getItem('sesion') || '{}')
 
-  // Evitar loop en home
+  // evitar loop en hom
   if (to.meta.soloPublico && sesion.rol && to.path !== '/home') {
-    return '/home'
+    return next('/home')
   }
 
-  // Verificar roles requeridos
   if (to.meta.requiereRol && (!sesion.rol || !to.meta.requiereRol.includes(sesion.rol))) {
-    return '/login'
+    return next('/login')
   }
 
-  // Permitir navegación
-  return true
+  next()
 })
 
 export default router

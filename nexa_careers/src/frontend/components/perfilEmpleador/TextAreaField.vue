@@ -2,17 +2,23 @@
   <div>
     <label>{{ label }}</label>
 
-    <textarea v-model="text" maxlength="300"></textarea>
+    <textarea 
+      :value="modelValue" 
+      @input="$emit('update:modelValue', $event.target.value)"
+      maxlength="300"
+    ></textarea>
 
-    <div class="counter">{{ text.length }} / 300</div>
+    <div class="counter">{{ (modelValue || '').length }} / 300</div>
   </div>
 </template>
 
 <script setup>
-import { ref } from "vue";
-defineProps({ label: String });
+defineProps({
+  label: String,
+  modelValue: String
+});
 
-const text = ref("");
+defineEmits(['update:modelValue']);
 </script>
 
 <style scoped>
@@ -23,11 +29,13 @@ textarea {
   padding: 12px;
   min-height: 110px;
   background: var(--input-bg);
+  resize: vertical;
 }
 
 .counter {
   text-align: right;
   font-size: 11px;
   color: #999;
+  margin-top: 4px;
 }
 </style>

@@ -1,117 +1,93 @@
 <template>
-  <div class="nueva-oferta">
-    <h2>Crear Nueva Oferta</h2>
+  <div class="min-h-screen bg-[#f8f5f0]">
+    <Navbar />
+    
+    <div class="max-w-4xl mx-auto px-6 py-10">
+      <h1 class="text-3xl font-bold text-[#1b2a4a] mb-6">Nueva Oferta</h1>
+      
+      <form @submit.prevent="crearOferta" class="bg-white rounded-2xl shadow p-8">
+        <div class="mb-5">
+          <label class="block text-gray-700 font-medium mb-2">Título de la oferta *</label>
+          <input v-model="form.oferta" type="text" required
+                 class="w-full px-4 py-3 border rounded-xl focus:border-[#1b2a4a] outline-none">
+        </div>
 
-    <form @submit.prevent="crearNuevaOferta">
-      <div>
-        <label>Título:</label>
-        <input v-model="titulo" type="text" required />
-      </div>
+        <div class="mb-5">
+          <label class="block text-gray-700 font-medium mb-2">Descripción *</label>
+          <textarea v-model="form.descripcion" rows="6" required
+                    class="w-full px-4 py-3 border rounded-xl focus:border-[#1b2a4a] outline-none"></textarea>
+        </div>
 
-      <div>
-        <label>Descripción:</label>
-        <textarea v-model="descripcion" required></textarea>
-      </div>
+        <div class="mb-5">
+          <label class="block text-gray-700 font-medium mb-2">Fecha de apertura (opcional)</label>
+          <input v-model="form.fecha_apertura" type="date"
+                 class="w-full px-4 py-3 border rounded-xl focus:border-[#1b2a4a] outline-none">
+        </div>
 
-      <div>
-        <label>Fecha de Apertura:</label>
-        <input v-model="fecha_apertura" type="date" required />
-      </div>
-
-      <div>
-        <label>ID Empleador:</label>
-        <input v-model="id_empleador" type="number" required />
-      </div>
-
-      <button type="submit">Crear Oferta</button>
-    </form>
-
-    <h2>Ofertas Existentes</h2>
-    <ul>
-      <li v-for="oferta in ofertas" :key="oferta.id_oferta">
-        {{ oferta.oferta }} - {{ oferta.descripcion }}
-      </li>
-    </ul>
+        <div class="flex gap-4">
+          <button type="submit" :disabled="loading"
+                  class="bg-[#1b2a4a] text-white px-6 py-3 rounded-xl hover:bg-[#0f1a2e] disabled:opacity-50">
+            {{ loading ? 'Creando...' : 'Publicar Oferta' }}
+          </button>
+          <button type="button" @click="$router.back()"
+                  class="border border-gray-300 px-6 py-3 rounded-xl hover:bg-gray-100">
+            Cancelar
+          </button>
+        </div>
+      </form>
+    </div>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
-import ofertaService from '@/services/ofertaService.js'
+import { ref } from 'vue'
+import { useRouter } from 'vue-router'
+import { crearOferta as crearOfertaService } from '../services/ofertaService.js'
 
-// ✅ VARIABLES CORRECTAS (las que usa el template)
-const titulo = ref('')
-const descripcion = ref('')
-const fecha_apertura = ref('')
-const id_empleador = ref('')
+const router = useRouter()
+const loading = ref(false)
 
-// lista
-const ofertas = ref([])
+const form = ref({
+  oferta: '',
+  descripcion: '',
+  fecha_apertura: ''
+})
 
-// ✅ cargar ofertas
-const cargarOfertas = async () => {
+const crearOferta = async () => {
+  loading.value = true
+  
   try {
-    const res = await ofertaService.listarOfertas()
-    ofertas.value = res.data || []
-  } catch (error) {
-    console.error('Error al listar ofertas:', error)
-  }
-}
-
-// ✅ crear oferta
-const crearNuevaOferta = async () => {
-  try {
+    const sesion = JSON.parse(localStorage.getItem('sesion'))
+    console.log('Sesión obtenida:', sesion)
+    
+    if (!sesion || sesion.rol !== 'empleador') {
+      alert('Debes iniciar sesión como empleador')
+      router.push('/inicio-sesion')
+      return
+    }
+    
     const payload = {
-      oferta: titulo.value,
-      descripcion: descripcion.value,
-      fecha_apertura: fecha_apertura.value,
-      id_emepleador: id_empleador.value // 👈 TU BACKEND USA ESTE NOMBRE
+      oferta: form.value.oferta,
+      descripcion: form.value.descripcion,
+      id_empleador: sesion.id,
+      fecha_apertura: form.value.fecha_apertura || null
     }
-
-    console.log('Payload enviado:', payload)
-
-    const res = await ofertaService.crearOferta(payload)
-
-    console.log('Respuesta backend:', res)
-
-    if (res.success) {
-      alert('✅ Oferta creada correctamente')
-
-      // limpiar
-      titulo.value = ''
-      descripcion.value = ''
-      fecha_apertura.value = ''
-      id_empleador.value = ''
-
-      cargarOfertas()
+    
+    console.log('Enviando al backend:', payload)
+    const response = await crearOfertaService(payload)
+    console.log('Respuesta del backend:', response)
+    
+    if (response.success) {
+      alert('¡Oferta creada exitosamente!')
+      router.push('/mis-ofertas')
     } else {
-      alert('❌ ' + res.message)
+      alert(response.message || 'Error al crear la oferta')
     }
-
   } catch (error) {
     console.error('Error al crear oferta:', error)
-    alert('❌ Error al crear oferta')
+    alert('Error de conexión con el servidor: ' + (error.response?.data?.message || error.message))
+  } finally {
+    loading.value = false
   }
 }
-
-// init
-onMounted(() => {
-  cargarOfertas()
-})
 </script>
-
-<style scoped>
-.nueva-oferta {
-  max-width: 600px;
-  margin: auto;
-}
-
-form div {
-  margin-bottom: 10px;
-}
-
-button {
-  padding: 6px 12px;
-  cursor: pointer;
-}
-</style>

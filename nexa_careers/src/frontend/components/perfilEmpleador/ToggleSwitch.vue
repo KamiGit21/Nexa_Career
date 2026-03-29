@@ -1,17 +1,27 @@
 <template>
   <div class="toggle">
     <span>{{ label }}</span>
-    <div class="switch" :class="{ active: value }" @click="value = !value"></div>
+    <div class="switch" :class="{ active: modelValue }" @click="$emit('update:modelValue', !modelValue)"></div>
   </div>
 </template>
 
 <script setup>
-import { ref } from "vue";
-defineProps({ label: String });
-const value = ref(true);
+defineProps({
+  label: String,
+  modelValue: Boolean
+});
+
+defineEmits(['update:modelValue']);
 </script>
 
 <style scoped>
+.toggle {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: 20px 0;
+}
+
 .switch {
   width: 52px;
   height: 26px;

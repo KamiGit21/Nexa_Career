@@ -6,6 +6,15 @@ const isValidEmail = (email) => {
   return regex.test(email);
 };
 
+/*
+const dominiosPermitidosEmpleador = ['ucb.edu.bo'];  // Si se quiere restringir a ciertos dominios, se puede usar esta función. Por ahora no se aplica esa restricción.
+const isInstitucional = (email) => {
+  const partes = String(email).split('@');
+  if (partes.length !== 2) return false;
+  return dominiosPermitidosEmpleador.includes(partes[1].toLowerCase());
+};
+*/
+
 const isValidPhone = (telefono) => {
   if (!telefono) return true;
   const str = String(telefono).trim();
@@ -19,7 +28,7 @@ const validateEmpleador = (data, { isNew = false } = {}) => {
 
   if (isNew) {
     if (!empresa || !String(empresa).trim()) errors.push('El nombre de la empresa es obligatorio');
-    if (!gmail) errors.push('El correo electrónico es obligatorio');
+    if (!gmail) errors.push('El gmail es obligatorio');
     if (!contrasena) errors.push('La contraseña es obligatoria');
   }
 
@@ -27,12 +36,7 @@ const validateEmpleador = (data, { isNew = false } = {}) => {
   if (telefono && !isValidPhone(telefono)) errors.push('El teléfono debe contener solo dígitos y entre 7 y 15 caracteres');
 
   if (gmail) {
-    if (!isValidEmail(gmail)) errors.push('El correo tiene formato inválido');
-    // Validar dominio institucional UCB
-    const dominio = gmail.split('@')[1];
-    if (dominio !== 'ucb.edu.bo') {
-      errors.push('Debe usar un correo institucional @ucb.edu.bo');
-    }
+    if (!isValidEmail(gmail)) errors.push('El gmail tiene formato inválido');
   }
 
   if (contrasena && (String(contrasena).length < 8 || String(contrasena).length > 60)) {
@@ -42,47 +46,33 @@ const validateEmpleador = (data, { isNew = false } = {}) => {
   return { valid: errors.length === 0, errors };
 };
 
-// 1. POST: Registrar empleador
+// 1. POST: Registrar empleador (activo = true por defecto)
 export const registrarEmpleador = async (req, res) => {
-  console.log('📝 Datos recibidos:', req.body);
-  
   const validation = validateEmpleador(req.body, { isNew: true });
-  if (!validation.valid) {
-    return res.status(400).json({ success: false, message: validation.errors.join('; ') });
-  }
+  if (!validation.valid) return res.status(400).json({ success: false, message: validation.errors.join('; ') });
 
   const { empresa, telefono, gmail, contrasena } = req.body;
   
   try {
-    // Validar si el correo ya existe
+    // 🛑 NUEVO: Validar si el correo ya existe
     const [existingEmail] = await db.query('SELECT gmail FROM empleador WHERE gmail = ?', [gmail]);
     if (existingEmail.length > 0) {
       return res.status(400).json({ success: false, message: 'Este correo electrónico ya está registrado.' });
     }
-    
-    const activo = 1;
-    
+    const activo = 1; 
     const [result] = await db.query(
       `INSERT INTO empleador (empresa, telefono, gmail, contrasena, activo) 
        VALUES (?, ?, ?, ?, ?)`,
-      [empresa, telefono || null, gmail, contrasena, activo]
+      [empresa, telefono, gmail, contrasena, activo]
     );
-    
-    res.status(201).json({ 
-      success: true, 
-      id_empleador: result.insertId, 
-      message: 'Empleador registrado correctamente' 
-    });
+    res.status(201).json({ success: true, id_empleador: result.insertId, message: 'Empleador registrado correctamente' });
   } catch (error) {
-    console.error('❌ Error al registrar empleador:', error);
-    res.status(500).json({ 
-      success: false, 
-      message: 'Error interno al registrar: ' + error.message 
-    });
+    console.error('Error al registrar empleador:', error);
+    res.status(500).json({ success: false, message: 'Error interno al registrar' });
   }
 };
 
-// Resto de funciones igual...
+// 2. GET: Listar todos los empleadores
 export const listarEmpleadores = async (req, res) => {
   try {
     const [rows] = await db.query('SELECT * FROM empleador');
@@ -93,6 +83,7 @@ export const listarEmpleadores = async (req, res) => {
   }
 };
 
+// 3. GET: Buscar empleador por ID
 export const buscarEmpleadorPorId = async (req, res) => {
   const { id } = req.params;
   try {
@@ -105,6 +96,7 @@ export const buscarEmpleadorPorId = async (req, res) => {
   }
 };
 
+// 4. GET: Buscar empleador por correo
 export const buscarEmpleadorPorGmail = async (req, res) => {
   const { gmail } = req.params;
   try {
@@ -117,26 +109,71 @@ export const buscarEmpleadorPorGmail = async (req, res) => {
   }
 };
 
+// 5. PUT: actualizar perfil -acepta todos los campossss - actualizado
 export const actualizarPerfil = async (req, res) => {
   const { id } = req.params;
-  const { empresa, telefono, gmail } = req.body;
+  const { empresa, telefono, gmail, nombre, apellido, descripcion } = req.body;
 
-  const validation = validateEmpleador({ empresa, telefono, gmail }, { isNew: false });
-  if (!validation.valid) return res.status(400).json({ success: false, message: validation.errors.join('; ') });
+  // Construir la consulta dinámicamente según los campos que lleguen
+  const updates = [];
+  const values = [];
+
+  if (empresa !== undefined) {
+    updates.push('empresa = ?');
+    values.push(empresa);
+  }
+  if (telefono !== undefined) {
+    updates.push('telefono = ?');
+    values.push(telefono);
+  }
+  if (gmail !== undefined) {
+    // Validar formato del correo
+    const isValidEmail = (email) => {
+      if (!email || typeof email !== 'string') return false;
+      const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      return regex.test(email);
+    };
+    if (!isValidEmail(gmail)) {
+      return res.status(400).json({ success: false, message: 'El correo electrónico tiene formato inválido' });
+    }
+    updates.push('gmail = ?');
+    values.push(gmail);
+  }
+  if (nombre !== undefined) {
+    updates.push('nombre = ?');
+    values.push(nombre);
+  }
+  if (apellido !== undefined) {
+    updates.push('apellido = ?');
+    values.push(apellido);
+  }
+  if (descripcion !== undefined) {
+    updates.push('descripcion = ?');
+    values.push(descripcion);
+  }
+
+  if (updates.length === 0) {
+    return res.status(400).json({ success: false, message: 'No hay campos para actualizar' });
+  }
 
   try {
-    const [result] = await db.query(
-      `UPDATE empleador SET empresa = ?, telefono = ?, gmail = ? WHERE id_empleador = ?`,
-      [empresa, telefono, gmail, id]
-    );
-    if (result.affectedRows === 0) return res.status(404).json({ success: false, message: 'Empleador no encontrado para actualizar' });
+    values.push(id);
+    const query = `UPDATE empleador SET ${updates.join(', ')} WHERE id_empleador = ?`;
+    
+    const [result] = await db.query(query, values);
+    
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ success: false, message: 'Empleador no encontrado' });
+    }
+    
     res.status(200).json({ success: true, message: 'Perfil actualizado correctamente' });
   } catch (error) {
     console.error('Error al actualizar perfil:', error);
-    res.status(500).json({ success: false, message: 'Error al actualizar perfil' });
+    res.status(500).json({ success: false, message: 'Error interno del servidor' });
   }
 };
 
+// 6. PUT: Cambiar contraseña
 export const cambiarContrasena = async (req, res) => {
   const { id } = req.params;
   const { contrasena } = req.body;
@@ -156,6 +193,7 @@ export const cambiarContrasena = async (req, res) => {
   }
 };
 
+// 7. PUT: Cambiar estado (activo)
 export const cambiarEstado = async (req, res) => {
   const { id } = req.params;
   const { activo } = req.body;

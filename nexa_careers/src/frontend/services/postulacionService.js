@@ -25,3 +25,10 @@ export async function postularAOferta(idEstudiante, idOferta) {
   })
   return data
 }
+
+//nuevooo para lista postulantes------------------------------------------------
+// Agregar al final del archivo
+export async function obtenerPostulantesPorOferta(idOferta) {
+  const { data } = await api.get(`/api/ofertas/${idOferta}/postulantes`);
+  return data;
+}

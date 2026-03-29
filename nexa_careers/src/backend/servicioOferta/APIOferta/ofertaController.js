@@ -117,10 +117,9 @@ export const buscarOfertaPorTitulo = async (req, res) => {
 export const buscarOfertasPorEmpleador = async (req, res) => {
   const { id_empleador } = req.params;
   try {
-    // IMPORTANTE: En el SQL usamos 'id_emepleador'
     const [rows] = await db.query('SELECT * FROM oferta WHERE id_emepleador = ?', [id_empleador]);
-    if (rows.length === 0) return res.status(404).json({ success: false, message: 'Este empleador no tiene ofertas' });
-    res.status(200).json({ success: true, data: rows });
+    // Siempre devolver 200, incluso si no hay ofertas
+    res.status(200).json({ success: true, data: rows || [] });
   } catch (error) {
     console.error('Error al buscar por empleador:', error);
     res.status(500).json({ success: false, message: 'Error al buscar ofertas del empleador' });
