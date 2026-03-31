@@ -44,12 +44,12 @@
         <div class="flex items-center gap-4">
           <div class="w-16 h-16 rounded-xl bg-slate-100 flex items-center justify-center text-slate-600 font-bold text-2xl">
             <!-- Logo: agregar cuando el servicio de empleador lo provea -->
-            #{{ oferta.id_emepleador }}
+            #{{ oferta.id_empleador }}
           </div>
           <div>
             <!-- Campo 'oferta' = título en la BD -->
             <h1 class="text-2xl font-bold text-slate-800">{{ oferta.oferta }}</h1>
-            <p class="text-yellow-600 font-medium">Empleador #{{ oferta.id_emepleador }}</p>
+            <p class="text-yellow-600 font-medium">Empleador #{{ oferta.id_empleador }}</p>
           </div>
         </div>
 

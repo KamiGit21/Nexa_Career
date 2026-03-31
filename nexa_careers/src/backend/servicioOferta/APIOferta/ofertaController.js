@@ -63,9 +63,9 @@ export const crearOferta = async (req, res) => {
     const estado = 0; // 0 por defecto al crearse
     const rechazo = ''; // Blanco por defecto
 
-    // IMPORTANTE: En el SQL usamos 'id_emepleador' para coincidir con tu BD
+    // IMPORTANTE: En el SQL usamos 'id_empleador' para coincidir con tu BD
     const [result] = await db.query(
-      `INSERT INTO oferta (descripcion, fecha_apertura, estado, rechazo, oferta, id_emepleador) 
+      `INSERT INTO oferta (descripcion, fecha_apertura, estado, rechazo, oferta, id_empleador) 
        VALUES (?, ?, ?, ?, ?, ?)`,
       [descripcion, fecha_apertura, estado, rechazo, oferta, id_empleador]
     );
@@ -117,7 +117,7 @@ export const buscarOfertaPorTitulo = async (req, res) => {
 export const buscarOfertasPorEmpleador = async (req, res) => {
   const { id_empleador } = req.params;
   try {
-    const [rows] = await db.query('SELECT * FROM oferta WHERE id_emepleador = ?', [id_empleador]);
+    const [rows] = await db.query('SELECT * FROM oferta WHERE id_empleador = ?', [id_empleador]);
     // Siempre devolver 200, incluso si no hay ofertas
     res.status(200).json({ success: true, data: rows || [] });
   } catch (error) {
