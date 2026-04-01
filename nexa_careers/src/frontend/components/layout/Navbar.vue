@@ -10,17 +10,32 @@
       <router-link v-if="sesion.rol === 'empleador'" to="/mis-ofertas" class="hover:text-[#d0b06d] transition-colors">Mis Ofertas</router-link>
     </div>
 
-    <div class="flex items-center gap-6">
-      <div v-if="sesion.rol" class="flex items-center gap-4">
+    <div class="flex items-center gap-6 relative"> <div v-if="sesion.rol" class="flex items-center gap-4">
         <div class="text-right">
           <p class="text-sm font-medium">{{ sesion.email }}</p>
           <p class="text-xs text-[#d0b06d] capitalize">{{ sesion.rol }}</p>
         </div>
-        <div @click="cerrarSesion" 
+        
+        <div @click="toggleMenu" 
              class="w-11 h-11 bg-white text-[#1b2a4a] rounded-2xl flex items-center justify-center font-bold text-xl cursor-pointer hover:bg-[#d0b06d] hover:text-white transition-all">
           {{ sesion.email?.charAt(0).toUpperCase() }}
         </div>
+
+        <div v-if="menuAbierto" 
+             class="absolute right-0 top-16 w-48 bg-white rounded-2xl shadow-xl py-2 z-50 border border-gray-100 overflow-hidden">
+          <router-link to="/perfil-empleador/:id" 
+                       @click="menuAbierto = false"
+                       class="block px-4 py-3 text-gray-700 hover:bg-gray-50 hover:text-[#1b2a4a] transition-colors text-sm font-medium">
+            👤 Mi Perfil
+          </router-link>
+          <hr class="border-gray-100">
+          <button @click="handleLogout" 
+                  class="w-full text-left px-4 py-3 text-red-600 hover:bg-red-50 transition-colors text-sm font-medium">
+            🚪 Cerrar Sesión
+          </button>
+        </div>
       </div>
+
       <router-link v-else to="/login"
                    class="px-6 py-2.5 bg-white text-[#1b2a4a] font-semibold rounded-2xl hover:bg-[#d0b06d] hover:text-white transition-all">
         Iniciar Sesión
@@ -30,18 +45,35 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 
 const router = useRouter()
 const sesion = ref({ rol: '', email: '' })
+const menuAbierto = ref(false)
 
 onMounted(() => {
   sesion.value = JSON.parse(localStorage.getItem('sesion') || '{}')
+  window.addEventListener('click', cerrarSiFuera)
 })
 
-const cerrarSesion = () => {
+onUnmounted(() => {
+  window.removeEventListener('click', cerrarSiFuera)
+})
+
+const toggleMenu = (event) => {
+  event.stopPropagation()
+  menuAbierto.value = !menuAbierto.value
+}
+
+const cerrarSiFuera = () => {
+  menuAbierto.value = false
+}
+
+const handleLogout = () => {
+  menuAbierto.value = false
   localStorage.removeItem('sesion')
+  sesion.value = { rol: '', email: '' }
   router.push('/login')
 }
 </script>

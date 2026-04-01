@@ -1,6 +1,6 @@
 <template>
   <div class="min-h-screen bg-[#f8f5f0]">
-    <Navbar />
+    <navbar />
 
     <div class="max-w-7xl mx-auto px-6 py-10">
       <div class="flex justify-between items-end mb-8">
@@ -59,7 +59,7 @@
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { listarOfertasPorEmpleador } from '../services/ofertaService.js'
-// import Navbar from '@/components/layout/Navbar.vue' // Descomenta si el componente existe
+import Navbar from '@/components/layout/Navbar.vue'
 
 const router = useRouter()
 const ofertas = ref([])

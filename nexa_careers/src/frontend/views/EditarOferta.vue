@@ -31,7 +31,7 @@
                  class="w-full px-4 py-3 border rounded-xl focus:border-[#1b2a4a] outline-none">
         </div>
 
-        <div class="mb-5">
+        <!--<div class="mb-5">
           <label class="block text-gray-700 font-medium mb-2">Estado</label>
           <select v-model="form.estado" 
                   class="w-full px-4 py-3 border rounded-xl focus:border-[#1b2a4a] outline-none">
@@ -39,7 +39,7 @@
             <option :value="1">Aprobada</option>
             <option :value="2">Rechazada</option>
           </select>
-        </div>
+        </div>-->
 
         <div v-if="form.estado === 2" class="mb-5">
           <label class="block text-gray-700 font-medium mb-2">Motivo de rechazo</label>

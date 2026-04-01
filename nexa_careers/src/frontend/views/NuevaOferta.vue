@@ -1,6 +1,6 @@
 <template>
   <div class="min-h-screen bg-[#f8f5f0]">
-    <Navbar />
+    <navbar />
     
     <div class="max-w-4xl mx-auto px-6 py-10">
       <h1 class="text-3xl font-bold text-[#1b2a4a] mb-6">Nueva Oferta</h1>
@@ -43,6 +43,7 @@
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { crearOferta as crearOfertaService } from '../services/ofertaService.js'
+import navbar from '../components/layout/Navbar.vue'
 
 const router = useRouter()
 const loading = ref(false)

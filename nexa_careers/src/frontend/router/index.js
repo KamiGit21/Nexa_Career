@@ -60,7 +60,12 @@ const routes = [
     meta: { soloPublico: true }
   },
 
-  { path: '/ofertas', name: 'CatalogoOfertas', component: CatalogoOfertas },
+  { path: '/ofertas', 
+    name: 'CatalogoOfertas', 
+    component: CatalogoOfertas 
+  },
+
+
   { path: '/ofertas/:id', name: 'DetalleOferta', component: DetalleOferta }, // ← LÍNEA NUEVA
 
   { path: '/mis-ofertas', name: 'MisOfertas', component: MisOfertas, meta: { requiereRol: ['empleador'] } },
@@ -72,13 +77,13 @@ const routes = [
 
   // Perfiles
   {
-    path: '/perfil-estudiante',
+    path: '/perfil-estudiante/:id',
     name: 'PerfilEstudiante',
     component: PerfilEstudiante,
     meta: { requiereRol: ['estudiante'] }
   },
   {
-    path: '/perfil-empleador',
+    path: '/perfil-empleador/:id',
     name: 'PerfilEmpleador',
     component: PerfilEmpleador,
     meta: { requiereRol: ['empleador'] }
