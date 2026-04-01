@@ -1,6 +1,4 @@
 <template>
-  <div>
-  <navbar />
   <div class="min-h-screen bg-gradient-to-br from-[#0f172a] via-[#1e2937] to-[#0f172a] flex items-center justify-center p-6">
     <div class="w-full max-w-lg bg-white rounded-3xl shadow-2xl overflow-hidden">
       <div class="bg-[#1b2a4a] px-10 py-12 text-center">
@@ -28,10 +26,24 @@
           </div>
 
           <div class="grid grid-cols-2 gap-5">
-            <!-- <div>
-              <label class="text-sm font-medium text-gray-600">Dirección</label>
-              <input v-model="form.direccion" type="text" class="mt-2 w-full px-5 py-4 bg-gray-50 border border-gray-200 rounded-2xl focus:border-[#b5943a]" />
-            </div> -->
+            <div>
+              <label class="text-sm font-medium text-gray-600">Carrera</label>
+              <select
+                v-model="form.id_carrera"
+                class="mt-2 w-full px-5 py-4 bg-gray-50 border border-gray-200 rounded-2xl focus:border-[#b5943a] text-gray-700"
+                required
+              >
+                <option value="" disabled>Selecciona tu carrera</option>
+                <option
+                  v-for="carrera in carreras"
+                  :key="carrera.id_carrera"
+                  :value="carrera.id_carrera"
+                >
+                  {{ carrera.carrera }}
+                </option>
+              </select>
+              <p v-if="errorCarreras" class="text-xs text-red-500 mt-1">{{ errorCarreras }}</p>
+            </div>
             <div>
               <label class="text-sm font-medium text-gray-600">Teléfono</label>
               <input v-model="form.telefono" type="tel" class="mt-2 w-full px-5 py-4 bg-gray-50 border border-gray-200 rounded-2xl focus:border-[#b5943a]" />
@@ -68,20 +80,18 @@
           </div>
 
           <button type="submit" :disabled="loading" class="w-full py-4 bg-gradient-to-r from-[#1b2a4a] to-[#002349] text-white font-semibold rounded-2xl hover:brightness-110 mt-6 disabled:opacity-50">
-  {{ loading ? 'Registrando...' : 'Registrarme como Estudiante' }}
-</button>
+            {{ loading ? 'Registrando...' : 'Registrarme como Estudiante' }}
+          </button>
         </form>
       </div>
     </div>
   </div>
-  </div>
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { registrarEstudiante } from '../services/estudianteService.js'
-import navbar from '../components/layout/Navbar.vue'
 
 const router = useRouter()
 const showPassword = ref(false)
@@ -89,12 +99,15 @@ const loading = ref(false)
 const porcentajeFuerza = ref(0)
 const colorFuerza = ref('#db0000')
 const etiquetaFuerza = ref('Débil')
+const carreras = ref([])
+const errorCarreras = ref('')
 
 const form = ref({
   nombre: '',
   apellido: '',
   correo: '',
   telefono: '',
+  id_carrera: '',
   contrasena: '',
   confirmar: ''
 })
@@ -106,6 +119,22 @@ const requisitos = ref([
   { label: 'Un número', met: false },
   { label: 'Un símbolo', met: false }
 ])
+
+// Cargar carreras desde el microservicio al montar el componente
+onMounted(async () => {
+  try {
+    const res = await fetch('http://localhost:3002/api/carreras')
+    const data = await res.json()
+    if (data.success) {
+      carreras.value = data.data
+    } else {
+      errorCarreras.value = 'No se pudieron cargar las carreras'
+    }
+  } catch (error) {
+    console.error('Error al cargar carreras:', error)
+    errorCarreras.value = 'Error al conectar con el servidor de carreras'
+  }
+})
 
 const calcularFuerza = () => {
   const p = form.value.contrasena
@@ -135,6 +164,11 @@ const handleSubmit = async () => {
     return
   }
 
+  if (!form.value.id_carrera) {
+    alert('Por favor selecciona tu carrera')
+    return
+  }
+
   loading.value = true
 
   try {
@@ -144,7 +178,7 @@ const handleSubmit = async () => {
       gmail: form.value.correo,
       telefono: form.value.telefono,
       contrasena: form.value.contrasena,
-      id_carrera: 1 // Temporal - después se puede agregar un selector de carreras
+      id_carrera: form.value.id_carrera
     })
 
     if (response.success) {

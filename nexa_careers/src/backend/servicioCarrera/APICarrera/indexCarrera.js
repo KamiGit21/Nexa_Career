@@ -1,10 +1,14 @@
 // Inicializar con el comando "node indexCarrera.js" para levantar el microservicio de carreras
 
 import express from 'express';
+import cors from 'cors';
+
 const app = express();
 
 // Importar rutas 
 import carreraRoutes from './carreraRoutes.js';
+
+app.use(cors());
 app.use(express.json());
 
 // Rutas con prefijo /api/carreras
