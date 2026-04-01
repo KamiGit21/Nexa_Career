@@ -69,10 +69,16 @@
           </button>
         </form>
 
-        <div class="text-center mt-8 text-sm text-gray-500">
-          ¿No tienes cuenta? 
-          <router-link to="/registro-estudiante" class="text-[#b5943a] font-medium hover:underline">Regístrate aquí</router-link>
-        </div>
+        <div class="text-center mt-8 text-sm text-gray-500 space-y-2">
+  <p>
+    ¿Eres estudiante? 
+    <router-link to="/registro-estudiante" class="text-[#b5943a] font-medium hover:underline">Regístrate aquí</router-link>
+  </p>
+  <p>
+    ¿Eres empleador? 
+    <router-link to="/registro-empleador" class="text-[#b5943a] font-medium hover:underline">Regístrate como empresa</router-link>
+  </p>
+</div>
       </div>
     </div>
   </div>

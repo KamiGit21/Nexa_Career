@@ -30,13 +30,10 @@
           <div>
             <label class="text-sm font-medium text-gray-600">Correo institucional (@ucb.edu.bo)</label>
             <input v-model="form.correo" type="email" class="mt-2 w-full px-5 py-4 bg-gray-50 border border-gray-200 rounded-2xl focus:border-[#b5943a]" required />
+            <p v-if="errorCorreo" class="text-xs text-red-500 mt-1">{{ errorCorreo }}</p>
           </div>
 
           <div class="grid grid-cols-2 gap-5">
-            <!-- <div>
-              <label class="text-sm font-medium text-gray-600">Dirección</label>
-              <input v-model="form.direccion" type="text" class="mt-2 w-full px-5 py-4 bg-gray-50 border border-gray-200 rounded-2xl focus:border-[#b5943a]" />
-            </div> -->
             <div>
               <label class="text-sm font-medium text-gray-600">Teléfono</label>
               <input v-model="form.telefono" type="tel" class="mt-2 w-full px-5 py-4 bg-gray-50 border border-gray-200 rounded-2xl focus:border-[#b5943a]" />
@@ -63,18 +60,26 @@
             </div>
 
             <ul class="mt-4 space-y-1 text-sm">
-              <li v-for="req in requisitos" :key="req.label" :class="req.met ? 'text-green-600' : 'text-red-500'">{{ req.label }}</li>
+              <li v-for="req in requisitos" :key="req.label" class="flex items-center gap-1.5" :class="req.met ? 'text-green-600' : 'text-gray-400'">
+                <span>{{ req.met ? '✓' : '○' }}</span> {{ req.label }}
+              </li>
             </ul>
           </div>
 
           <div>
             <label class="text-sm font-medium text-gray-600">Confirmar Contraseña</label>
             <input v-model="form.confirmar" type="password" class="mt-2 w-full px-5 py-4 bg-gray-50 border border-gray-200 rounded-2xl focus:border-[#b5943a]" required />
+            <p v-if="errorConfirmar" class="text-xs text-red-500 mt-1">{{ errorConfirmar }}</p>
           </div>
 
-          <button type="submit" class="w-full py-4 bg-gradient-to-r from-[#1b2a4a] to-[#002349] text-white font-semibold rounded-2xl hover:brightness-110 mt-6">
-            Registrarme como Empleador
+          <button type="submit" :disabled="loading" class="w-full py-4 bg-gradient-to-r from-[#1b2a4a] to-[#002349] text-white font-semibold rounded-2xl hover:brightness-110 mt-6 disabled:opacity-50">
+            {{ loading ? 'Registrando...' : 'Registrarme como Empleador' }}
           </button>
+
+          <p class="text-center text-sm text-gray-500 mt-2">
+            ¿Ya tienes cuenta?
+            <router-link to="/login" class="text-[#b5943a] font-medium hover:underline">Inicia sesión</router-link>
+          </p>
         </form>
       </div>
     </div>
@@ -91,16 +96,18 @@ import navbar from '../components/layout/Navbar.vue'
 const router = useRouter()
 
 const showPassword = ref(false)
+const loading = ref(false)
 const porcentajeFuerza = ref(0)
 const colorFuerza = ref('#db0000')
 const etiquetaFuerza = ref('Débil')
+const errorCorreo = ref('')
+const errorConfirmar = ref('')
 
 const form = ref({
   empresa: '',
   nombre: '',
   apellido: '',
   correo: '',
-  direccion: '',
   telefono: '',
   contrasena: '',
   confirmar: ''
@@ -114,27 +121,27 @@ const requisitos = ref([
   { label: 'Un símbolo', met: false }
 ])
 
-// esta funcion estaba vacia
 const calcularFuerza = () => {
   const pwd = form.value.contrasena
   if (!pwd) {
     porcentajeFuerza.value = 0
     etiquetaFuerza.value = 'Débil'
     colorFuerza.value = '#db0000'
+    requisitos.value.forEach(r => r.met = false)
     return
   }
-  
+
   const req = requisitos.value
   req[0].met = pwd.length >= 12
   req[1].met = /[A-Z]/.test(pwd)
   req[2].met = /[a-z]/.test(pwd)
   req[3].met = /[0-9]/.test(pwd)
   req[4].met = /[^A-Za-z0-9]/.test(pwd)
-  
+
   const cumplidos = req.filter(r => r.met).length
   const porcentaje = (cumplidos / req.length) * 100
   porcentajeFuerza.value = porcentaje
-  
+
   if (porcentaje <= 40) {
     etiquetaFuerza.value = 'Débil'
     colorFuerza.value = '#db0000'
@@ -147,38 +154,60 @@ const calcularFuerza = () => {
   }
 }
 
-const handleSubmit = async () => {
-  console.log('CLICK DETECTADO ')
-  // Validación básica
-  if (form.value.contrasena !== form.value.confirmar) {
-    alert('Las contraseñas no coinciden ')
-    return
+const validarFormulario = () => {
+  let valido = true
+  errorCorreo.value = ''
+  errorConfirmar.value = ''
+
+  // Validar dominio UCB
+  const dominioPermitido = 'ucb.edu.bo'
+  const partes = form.value.correo.split('@')
+  if (partes.length !== 2 || partes[1].toLowerCase() !== dominioPermitido) {
+    errorCorreo.value = `El correo debe terminar en @${dominioPermitido}`
+    valido = false
   }
+
+  // Validar que las contraseñas coincidan
+  if (form.value.contrasena !== form.value.confirmar) {
+    errorConfirmar.value = 'Las contraseñas no coinciden'
+    valido = false
+  }
+
+  // Validar que todos los requisitos de contraseña estén cumplidos
+  const requisitosSinCumplir = requisitos.value.filter(r => !r.met)
+  if (requisitosSinCumplir.length > 0) {
+    alert(`La contraseña no cumple los siguientes requisitos:\n${requisitosSinCumplir.map(r => '• ' + r.label).join('\n')}`)
+    valido = false
+  }
+
+  return valido
+}
+
+const handleSubmit = async () => {
+  if (!validarFormulario()) return
+
+  loading.value = true
 
   try {
     const response = await registrarEmpleador({
       empresa: form.value.empresa,
       telefono: form.value.telefono,
-      gmail: form.value.correo, // IMPORTANTE: backend espera "gmail"
+      gmail: form.value.correo,
       contrasena: form.value.contrasena
     })
 
     if (response.success) {
-      alert('Registro exitoso 🚀')
-
-      localStorage.setItem('sesion', JSON.stringify({
-        rol: 'empleador',
-        email: form.value.correo
-      }))
-
-      router.push('/mis-ofertas')
+      alert('¡Registro exitoso! Ahora puedes iniciar sesión.')
+      // FIX #1: redirigir al login, no a mis-ofertas
+      router.push('/login')
     } else {
       alert(response.message || 'Error al registrar ❌')
     }
-
   } catch (error) {
     console.error(error)
     alert('Error de conexión con el servidor ❌')
+  } finally {
+    loading.value = false
   }
 }
 </script>

@@ -24,16 +24,14 @@
             </div>
           </div>
 
+          <!-- FIX #4: validar dominio ucb.edu.bo -->
           <div>
             <label class="text-sm font-medium text-gray-600">Correo institucional (@ucb.edu.bo)</label>
             <input v-model="form.correo" type="email" class="mt-2 w-full px-5 py-4 bg-gray-50 border border-gray-200 rounded-2xl focus:border-[#b5943a]" required />
+            <p v-if="errorCorreo" class="text-xs text-red-500 mt-1">{{ errorCorreo }}</p>
           </div>
 
           <div class="grid grid-cols-2 gap-5">
-            <!-- <div>
-              <label class="text-sm font-medium text-gray-600">Dirección</label>
-              <input v-model="form.direccion" type="text" class="mt-2 w-full px-5 py-4 bg-gray-50 border border-gray-200 rounded-2xl focus:border-[#b5943a]" />
-            </div> -->
             <div>
               <label class="text-sm font-medium text-gray-600">Teléfono</label>
               <input v-model="form.telefono" type="tel" class="mt-2 w-full px-5 py-4 bg-gray-50 border border-gray-200 rounded-2xl focus:border-[#b5943a]" />
@@ -77,8 +75,8 @@
 
             <!-- Requisitos -->
             <ul class="mt-4 space-y-1 text-sm">
-              <li v-for="req in requisitos" :key="req.label" :class="req.met ? 'text-green-600' : 'text-red-500'">
-                {{ req.label }}
+              <li v-for="req in requisitos" :key="req.label" class="flex items-center gap-1.5" :class="req.met ? 'text-green-600' : 'text-gray-400'">
+                <span>{{ req.met ? '✓' : '○' }}</span> {{ req.label }}
               </li>
             </ul>
           </div>
@@ -87,12 +85,18 @@
             <label class="text-sm font-medium text-gray-600">Confirmar Contraseña</label>
             <input v-model="form.confirmar" type="password" 
                    class="mt-2 w-full px-5 py-4 bg-gray-50 border border-gray-200 rounded-2xl focus:border-[#b5943a]" required />
+            <p v-if="errorConfirmar" class="text-xs text-red-500 mt-1">{{ errorConfirmar }}</p>
           </div>
 
           <button type="submit" :disabled="loading" 
-        class="w-full py-4 bg-gradient-to-r from-[#1b2a4a] to-[#002349] text-white font-semibold rounded-2xl hover:brightness-110 transition-all mt-6 disabled:opacity-50">
-  {{ loading ? 'Registrando...' : 'Registrarme como Supervisor' }}
-</button>
+                  class="w-full py-4 bg-gradient-to-r from-[#1b2a4a] to-[#002349] text-white font-semibold rounded-2xl hover:brightness-110 transition-all mt-6 disabled:opacity-50">
+            {{ loading ? 'Registrando...' : 'Registrarme como Supervisor' }}
+          </button>
+
+          <p class="text-center text-sm text-gray-500 mt-2">
+            ¿Ya tienes cuenta?
+            <router-link to="/login" class="text-[#b5943a] font-medium hover:underline">Inicia sesión</router-link>
+          </p>
         </form>
       </div>
     </div>
@@ -112,6 +116,8 @@ const loading = ref(false)
 const porcentajeFuerza = ref(0)
 const colorFuerza = ref('#db0000')
 const etiquetaFuerza = ref('Débil')
+const errorCorreo = ref('')
+const errorConfirmar = ref('')
 
 const form = ref({
   nombre: '',
@@ -123,7 +129,7 @@ const form = ref({
 })
 
 const requisitos = ref([
-  { label: 'Al menos 8 caracteres', met: false },
+  { label: 'Al menos 12 caracteres', met: false },
   { label: 'Una letra mayúscula', met: false },
   { label: 'Una letra minúscula', met: false },
   { label: 'Un número', met: false },
@@ -132,8 +138,16 @@ const requisitos = ref([
 
 const calcularFuerza = () => {
   const p = form.value.contrasena
+  if (!p) {
+    porcentajeFuerza.value = 0
+    etiquetaFuerza.value = 'Débil'
+    colorFuerza.value = '#db0000'
+    requisitos.value.forEach(r => r.met = false)
+    return
+  }
+
   let count = 0
-  if (p.length >= 8) count++
+  if (p.length >= 12) count++
   if (/[A-Z]/.test(p)) count++
   if (/[a-z]/.test(p)) count++
   if (/[0-9]/.test(p)) count++
@@ -145,6 +159,7 @@ const calcularFuerza = () => {
   else if (count <= 3) { colorFuerza.value = '#f59e0b'; etiquetaFuerza.value = 'Regular' }
   else { colorFuerza.value = '#22c55e'; etiquetaFuerza.value = 'Fuerte' }
 
+  // FIX #3: actualizar estado met de cada requisito
   requisitos.value[0].met = p.length >= 8
   requisitos.value[1].met = /[A-Z]/.test(p)
   requisitos.value[2].met = /[a-z]/.test(p)
@@ -152,11 +167,37 @@ const calcularFuerza = () => {
   requisitos.value[4].met = /[^A-Za-z0-9]/.test(p)
 }
 
-const handleSubmit = async () => {
-  if (form.value.contrasena !== form.value.confirmar) {
-    alert('Las contraseñas no coinciden')
-    return
+const validarFormulario = () => {
+  let valido = true
+  errorCorreo.value = ''
+  errorConfirmar.value = ''
+
+  // FIX #4: validar dominio ucb.edu.bo
+  const dominioPermitido = 'ucb.edu.bo'
+  const partes = form.value.correo.split('@')
+  if (partes.length !== 2 || partes[1].toLowerCase() !== dominioPermitido) {
+    errorCorreo.value = `El correo debe terminar en @${dominioPermitido}`
+    valido = false
   }
+
+  // Validar confirmación de contraseña
+  if (form.value.contrasena !== form.value.confirmar) {
+    errorConfirmar.value = 'Las contraseñas no coinciden'
+    valido = false
+  }
+
+  // FIX #3: validar que todos los requisitos de contraseña estén cumplidos
+  const requisitosSinCumplir = requisitos.value.filter(r => !r.met)
+  if (requisitosSinCumplir.length > 0) {
+    alert(`La contraseña no cumple los siguientes requisitos:\n${requisitosSinCumplir.map(r => '• ' + r.label).join('\n')}`)
+    valido = false
+  }
+
+  return valido
+}
+
+const handleSubmit = async () => {
+  if (!validarFormulario()) return
 
   loading.value = true
 
@@ -169,7 +210,7 @@ const handleSubmit = async () => {
     })
 
     if (response.success) {
-      alert('¡Registro exitoso! Ahora puedes iniciar sesión')
+      alert('¡Registro exitoso! Ahora puedes iniciar sesión.')
       router.push('/login')
     } else {
       alert(response.message || 'Error al registrar')

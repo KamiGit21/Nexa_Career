@@ -113,7 +113,7 @@ const form = ref({
 })
 
 const requisitos = ref([
-  { label: 'Al menos 8 caracteres', met: false },
+  { label: 'Al menos 12 caracteres', met: false },
   { label: 'Una letra mayúscula', met: false },
   { label: 'Una letra minúscula', met: false },
   { label: 'Un número', met: false },
@@ -151,7 +151,7 @@ const calcularFuerza = () => {
   else if (count <= 3) { colorFuerza.value = '#f59e0b'; etiquetaFuerza.value = 'Regular' }
   else { colorFuerza.value = '#22c55e'; etiquetaFuerza.value = 'Fuerte' }
 
-  requisitos.value[0].met = p.length >= 8
+  requisitos.value[0].met = p.length >= 12
   requisitos.value[1].met = /[A-Z]/.test(p)
   requisitos.value[2].met = /[a-z]/.test(p)
   requisitos.value[3].met = /[0-9]/.test(p)
