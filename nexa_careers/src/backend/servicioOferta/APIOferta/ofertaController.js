@@ -60,7 +60,7 @@ export const crearOferta = async (req, res) => {
   }
 
   try {
-    const estado = 0; // 0 por defecto al crearse
+    const estado = 1; // 0 por defecto al crearse, pero por ahora es 1 
     const rechazo = ''; // Blanco por defecto
 
     // IMPORTANTE: En el SQL usamos 'id_empleador' para coincidir con tu BD
