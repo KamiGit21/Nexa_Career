@@ -1,34 +1,26 @@
 import axios from 'axios';
 
 // Apuntamos directo al microservicio para probar su funcionamiento interno
-const API_URL = 'http://localhost:3000/api/empleadores';
+const API_URL = 'http://localhost:3004/api/empleadores/';
 
 async function ejecutarPruebas() {
   try {
     console.log('⏳ Iniciando pruebas del microservicio de Empleadores...\n');
 
+    /*
     // 1. POST: Registrar empleador
     console.log('➡️ 1. Ejecutando POST: Registrando nuevo empleador...');
-    const postResponse = await axios.post(`${API_URL}/registrar`, { 
+    const postResponse = await axios.post(`${API_URL}registrar`, { 
       empresa: 'Tech Solutions LLC',
       telefono: 12345678,
       gmail: 'contacto@techsolutions.com',
-      contrasena: 'admin123'
+      contrasena: 'admin123aaa'
     });
     const nuevoId = postResponse.data.id_empleador;
     console.log('✅ Resultado:', postResponse.data);
     console.log('--------------------------------------------------\n');
-
-    const postResponse2 = await axios.post(`${API_URL}/registrar`, { 
-      empresa: 'Tech Solutions LLC',
-      telefono: 12345678,
-      gmail: 'contacto@techsolutions.com',
-      contrasena: 'admin123'
-    });
-    const nuevoId2 = postResponse2.data.id_empleador;
-    console.log('✅ Resultado:', postResponse2.data);
-    console.log('--------------------------------------------------\n');
-
+    */
+    
     // 2. GET: Listar todos
     console.log('➡️ 2. Ejecutando GET: Solicitando todos los empleadores...');
     const getResponse = await axios.get(API_URL);
