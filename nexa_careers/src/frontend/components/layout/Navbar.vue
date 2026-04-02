@@ -22,19 +22,28 @@
         </div>
 
         <div v-if="menuAbierto" 
-             class="absolute right-0 top-16 w-48 bg-white rounded-2xl shadow-xl py-2 z-50 border border-gray-100 overflow-hidden">
-          <router-link to="/perfil-empleador/:id" 
-                       @click="menuAbierto = false"
-                       class="block px-4 py-3 text-gray-700 hover:bg-gray-50 hover:text-[#1b2a4a] transition-colors text-sm font-medium">
-            👤 Mi Perfil
+          class="absolute right-0 top-16 w-48 bg-white rounded-2xl shadow-xl py-2 z-50 border border-gray-100 overflow-hidden">
+          <router-link v-if="sesion.rol !== 'supervisor'"
+          :to="sesion.rol === 'estudiante' ? `/perfil-estudiante/${sesion.id}` : `/perfil-empleador/${sesion.id}`" 
+          @click="menuAbierto = false"
+          class="block px-4 py-3 text-gray-700 hover:bg-gray-50 hover:text-[#1b2a4a] transition-colors text-sm font-medium">
+          👤 Mi Perfil
           </router-link>
+          
+          <router-link v-else
+            to="/dashboard-supervisor"
+            @click="menuAbierto = false"
+            class="block px-4 py-3 text-gray-700 hover:bg-gray-50 hover:text-[#1b2a4a] transition-colors text-sm font-medium">
+            📊 Dashboard
+          </router-link>
+          
           <hr class="border-gray-100">
           <button @click="handleLogout" 
-                  class="w-full text-left px-4 py-3 text-red-600 hover:bg-red-50 transition-colors text-sm font-medium">
-            🚪 Cerrar Sesión
-          </button>
-        </div>
+          class="w-full text-left px-4 py-3 text-red-600 hover:bg-red-50 transition-colors text-sm font-medium">
+          🚪 Cerrar Sesión
+        </button>
       </div>
+    </div>
 
       <router-link v-else to="/login"
                    class="px-6 py-2.5 bg-white text-[#1b2a4a] font-semibold rounded-2xl hover:bg-[#d0b06d] hover:text-white transition-all">

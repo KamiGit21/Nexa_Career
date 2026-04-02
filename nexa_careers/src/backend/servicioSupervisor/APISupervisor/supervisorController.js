@@ -114,3 +114,36 @@ export const cambiarEstado = async (req, res) => {
     res.status(500).json({ success: false, message: 'Error al actualizar estado' });
   }
 };
+
+
+// 8. GET: Estadisticas de supervisores (empleadores, postulantes, ofertas)
+export const obtenerEstadisticasDashboard = async (req, res) => {
+  try {
+    //Contar Empleadores
+    const [[{ totalEmpleadores }]] = await db.query('SELECT COUNT(*) as totalEmpleadores FROM empleador');
+    
+    //Contar Postulaciones totales
+    const [[{ totalPostulaciones }]] = await db.query('SELECT COUNT(*) as totalPostulaciones FROM postulante');
+
+    //Actividad reciente (ultimas ofertas y registros)
+    const [actividad] = await db.query(`
+      (SELECT empresa as usuario, 'Publicó una oferta' as accion, 'Ofertas' as modulo, creado_en as fecha, 'Aprobado' as estado FROM empleador ORDER BY creado_en DESC LIMIT 5)
+      UNION
+      (SELECT nombre as usuario, 'Nuevo registro' as accion, 'Estudiantes' as modulo, creado_en as fecha, 'Activo' as estado FROM estudiante ORDER BY creado_en DESC LIMIT 5)
+      ORDER BY fecha DESC LIMIT 5
+    `);
+
+    res.status(200).json({
+      success: true,
+      metricas: {
+        empleadores: totalEmpleadores,
+        postulaciones: totalPostulaciones,
+        pendientes: pendientes
+      },
+      recientes: actividad
+    });
+  } catch (error) {
+    console.error('Error en estadísticas:', error);
+    res.status(500).json({ success: false, message: 'Error al obtener estadísticas' });
+  }
+};

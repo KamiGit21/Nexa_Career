@@ -62,3 +62,13 @@ export const cambiarContrasenaSupervisor = async (id, data) => {
     return { success: false, message: error.message };
   }
 };
+
+export const obtenerEstadisticasDashboard = async () => {
+  try {
+    const res = await fetch(`${API_URL}/supervisores/dashboard/stats`);
+    return await res.json();
+  } catch (error) {
+    console.error('Error al obtener estadísticas:', error);
+    return { success: false };
+  }
+};

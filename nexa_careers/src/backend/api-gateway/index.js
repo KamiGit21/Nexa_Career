@@ -76,6 +76,7 @@ app.get('/api/supervisores/gmail/:gmail', createProxy('http://localhost:3005'));
 app.put('/api/supervisores/:id/perfil', createProxy('http://localhost:3005'));
 app.put('/api/supervisores/:id/contrasena', createProxy('http://localhost:3005'));
 app.put('/api/supervisores/:id/estado', createProxy('http://localhost:3005'));
+app.get('/api/supervisores/dashboard/stats', createProxy('http://localhost:3005'));
 
 // Servicio de Ofertas (puerto 3006)
 app.use('/api/ofertas', createProxy('http://localhost:3006'));

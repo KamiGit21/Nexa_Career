@@ -57,7 +57,7 @@ const routes = [
     path: '/registro-supervisor',
     name: 'RegistroSupervisor',
     component: RegistroSupervisor,
-    meta: { soloPublico: true }
+    meta: { requiereRol: ['supervisor'] }
   },
 
   { path: '/ofertas', 
@@ -104,11 +104,10 @@ const router = createRouter({
   scrollBehavior() { return { top: 0 } }
 })
 
-// Guard de navegación por roles
+// Navegacion por roles
 router.beforeEach((to, from, next) => {
   const sesion = JSON.parse(localStorage.getItem('sesion') || '{}')
 
-  // evitar loop en hom
   if (to.meta.soloPublico && sesion.rol && to.path !== '/home') {
     return next('/home')
   }
