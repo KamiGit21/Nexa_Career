@@ -12,7 +12,7 @@ export const registrarCursoEstudiante = async (req, res) => {
 
     // IMPORTANTE: En el SQL usamos 'id_empleador' para coincidir con tu BD
     const [result] = await db.query(
-      `INSERT INTO oferta (curso, descripcion, id_estudiante, contacto, estado, tipo_ofertante, fecha_creacion) 
+      `INSERT INTO curso (curso, descripcion, id_estudiante, contacto, estado, tipo_ofertante, fecha_creacion) 
        VALUES (?, ?, ?, ?, ?, ?, ?)`,
       [curso, descripcion, id_estudiante, contacto, estado, tipoOfertante, fechaSQL]
     );
@@ -34,7 +34,7 @@ export const registrarCursoEmpleador = async (req, res) => {
 
     // IMPORTANTE: En el SQL usamos 'id_empleador' para coincidir con tu BD
     const [result] = await db.query(
-      `INSERT INTO oferta (curso, descripcion, id_empleador, contacto, estado, tipo_ofertante, fecha_creacion) 
+      `INSERT INTO curso (curso, descripcion, id_empleador, contacto, estado, tipo_ofertante, fecha_creacion) 
        VALUES (?, ?, ?, ?, ?, ?, ?)`,
       [curso, descripcion, id_empleador, contacto, estado, tipoOfertante, fechaSQL]
     );
