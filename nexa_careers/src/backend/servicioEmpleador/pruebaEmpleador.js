@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 // Apuntamos directo al microservicio para probar su funcionamiento interno
-const API_URL = 'http://localhost:3004/api/empleadores/';
+const API_URL = 'http://localhost:3000/api/empleadores/';
 
 async function ejecutarPruebas() {
   try {

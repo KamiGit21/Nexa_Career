@@ -98,7 +98,7 @@ app.get('/', (req, res) => {
       empleadores: 'http://localhost:3000/api/empleadores',
       supervisores: 'http://localhost:3000/api/supervisores',
       ofertas: 'http://localhost:3000/api/ofertas',
-      ofertantes: 'http://localhost:3000/api/ofertantes'
+      ofertantes: 'http://localhost:3000/api/ofertantes',
       cursos: 'http://localhost:3000/api/cursos'
     }
   });
