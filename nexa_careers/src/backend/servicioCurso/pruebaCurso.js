@@ -9,10 +9,10 @@ async function ejecutarPruebas() {
         // 1. POST: Registrar curso de estudiante
         console.log('➡️ 1. Ejecutando POST: Registrando nuevo curso de estudiante...');
         const postResponse = await axios.post(`${API_URL}registrarPorEstudiante`, {
-            curso: 'Curso de Desarrollo Web',
-            descripcion: 'Aprende a crear sitios web modernos con HTML, CSS y JavaScript.',
+            curso: 'Curso de Frontend con React',
+            descripcion: 'Aprende sobre Frontend usando React para crear tus paginas web.',
             id_estudiante: '1', // Asegúrate de que este ID exista en tu base de datos
-            Contacto: 'cursitos@gmail.com'     
+            contacto: 'cursitos@gmail.com'     
         });
         const nuevoId = postResponse.data.id_curso;
         console.log('✅ Resultado:', postResponse.data);
@@ -21,10 +21,10 @@ async function ejecutarPruebas() {
         // 2. POST: Registrar curso de empleador
         console.log('➡️ 2. Ejecutando POST: Registrando nuevo curso de empleador...');
         const postResponse2 = await axios.post(`${API_URL}registrarPorEmpleador`, {
-            curso: 'Curso de CISCO Packet Tracer',
-            descripcion: 'Aprende a utilizar CISCO Packet Tracer para simular redes.',
+            curso: 'Criptomonedas, el futuro hoy',
+            descripcion: 'Aprende sobre criptomonedas y su impacto en el futuro.',
             id_empleador: '1', // Asegúrate de que este ID exista en tu base de datos
-            Contacto: 'correoSerioINC@gmail.com'     
+            contacto: 'correoSerioINC@gmail.com'     
         });
         const nuevoId2 = postResponse2.data.id_curso;
         console.log('✅ Resultado:', postResponse2.data);
