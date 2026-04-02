@@ -1,7 +1,6 @@
 <template>
   <div class="flex min-h-screen bg-gray-100 font-sans">
-    <Sidebar :stats="{ empleadores: estadisticas.empleadores }" />
-    <main class="flex-1 flex flex-col">
+    <main class="flex-1 flex flex-col : w-full">
       <navbar />
       <section class="p-8">
         </section>
@@ -86,7 +85,6 @@
 import { ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import navbar from '../components/layout/Navbar.vue';
-import Sidebar from '../components/layout/Sidebar.vue';
 import { obtenerEstadisticasDashboard } from '../services/supervisorService.js';
 
 const router = useRouter();
