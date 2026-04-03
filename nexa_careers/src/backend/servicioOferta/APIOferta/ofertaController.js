@@ -87,6 +87,17 @@ export const listarOfertas = async (req, res) => {
   }
 };
 
+// 2.1. GET: Listar ofertas en estado pendiente (estado = 0)
+export const listarOfertasPendientes = async (req, res) => {
+  try {
+    const [rows] = await db.query('SELECT * FROM oferta WHERE estado = 0'); // Solo ofertas pendientes
+    res.status(200).json({ success: true, data: rows });
+  } catch (error) {
+    console.error('Error al listar ofertas pendientes:', error);
+    res.status(500).json({ success: false, message: 'Error al listar ofertas pendientes' });
+  }
+};
+
 // 3. GET: Buscar oferta por ID
 export const buscarOfertaPorId = async (req, res) => {
   const { id } = req.params;
@@ -147,17 +158,44 @@ export const editarOferta = async (req, res) => {
 // 7. PUT: Cambiar solo el estado
 export const cambiarEstadoOferta = async (req, res) => {
   const { id } = req.params;
-  const { estado } = req.body; // Ej: 0 (Pendiente), 1 (Aprobada), 2 (Rechazada)
+  const { estado } = req.body; // 0 pendiente, 1 aceptado, 2 rechazado, 3 archivado
 
-  if (estado === undefined) return res.status(400).json({ success: false, message: 'El estado es obligatorio' });
+  // Validar que el estado sea obligatorio
+  if (estado === undefined || estado === null) {
+    return res.status(400).json({ success: false, message: 'El estado es obligatorio' });
+  }
+
+  // Validar que el estado sea un número valido
+  const estadosValidos = [0, 1, 2, 3]; // 0 pendiente, 1 aceptado, 2 rechazado, 3 archivado
+  if (!estadosValidos.includes(Number(estado))) {
+    return res.status(400).json({
+      success: false,
+      message: 'Estado inválido. Los valores válidos son: 0 (Pendiente), 1 (Aprobada), 2 (Rechazada), 3 (Archivada)'
+    });
+  }
 
   try {
     const [result] = await db.query('UPDATE oferta SET estado = ? WHERE id_oferta = ?', [estado, id]);
-    if (result.affectedRows === 0) return res.status(404).json({ success: false, message: 'Oferta no encontrada' });
-    res.status(200).json({ success: true, message: `Estado de la oferta actualizado a ${estado}` });
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ success: false, message: 'Oferta no encontrada' });
+    }
+
+    const estadoTexto = {
+      0: 'Pendiente',
+      1: 'Aprobada',
+      2: 'Rechazada',
+      3: 'Archivada'
+    };
+
+    res.status(200).json({
+      success: true,
+      message: `Estado de la oferta actualizado a ${estadoTexto[estado]}`,
+      estado_nuevo: estado,
+      fecha_cambio: new Date().toISOString()
+    });
   } catch (error) {
     console.error('Error al cambiar estado:', error);
-    res.status(500).json({ success: false, message: 'Error al actualizar estado' });
+    res.status(500).json({ success: false, message: 'Error al actualizar estado de la oferta' });
   }
 };
 

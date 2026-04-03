@@ -48,7 +48,30 @@ async function ejecutarPruebas() {
       estado: 1 // Asumiendo que 1 significa "Aprobada/Activa"
     });
     console.log('✅ Resultado:', putEstadoResponse.data);
-    console.log('\n🎉 Todas las pruebas de ofertas finalizaron con éxito.');
+    console.log('--------------------------------------------------\n');
+
+    // 6. GET: Listar ofertas pendientes
+    console.log('➡️ 6. Ejecutando GET: Solicitando ofertas pendientes...');
+    const pendientesResponse = await axios.get(`${API_URL}/pendientes`);
+    console.log('✅ Resultado:', pendientesResponse.data);
+    console.log('--------------------------------------------------\n');
+
+    // 7. PUT: Cambiar estado a rechazado
+    console.log(`➡️ 7. Ejecutando PUT: Cambiando estado de la oferta ID ${nuevoId} a 2 (Rechazada)`);
+    const putRechazarResponse = await axios.put(`${API_URL}/${nuevoId}/estado`, {
+      estado: 2 // Rechazada
+    });
+    console.log('✅ Resultado:', putRechazarResponse.data);
+    console.log('--------------------------------------------------\n');
+
+    // 8. PUT: Cambiar estado a pendiente nuevamente
+    console.log(`➡️ 8. Ejecutando PUT: Cambiando estado de la oferta ID ${nuevoId} a 0 (Pendiente)`);
+    const putPendienteResponse = await axios.put(`${API_URL}/${nuevoId}/estado`, {
+      estado: 0 // Pendiente
+    });
+    console.log('✅ Resultado:', putPendienteResponse.data);
+    
+    console.log('\n Todas las pruebas de ofertas finalizaron con éxito.');
 
   } catch (error) {
     console.error('❌ Error durante las pruebas:', error.response ? error.response.data : error.message);

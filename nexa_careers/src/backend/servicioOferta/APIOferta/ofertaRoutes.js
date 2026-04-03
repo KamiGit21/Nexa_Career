@@ -6,6 +6,7 @@ const router = express.Router();
 //  PRIMERO rutas específicas
 router.post('/crear', ofertaController.crearOferta);
 router.get('/', ofertaController.listarOfertas);
+router.get('/pendientes', ofertaController.listarOfertasPendientes);
 router.get('/titulo/:oferta', ofertaController.buscarOfertaPorTitulo);
 router.get('/empleador/:id_empleador', ofertaController.buscarOfertasPorEmpleador);
 
