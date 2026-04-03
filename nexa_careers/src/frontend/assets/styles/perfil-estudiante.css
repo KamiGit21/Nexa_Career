@@ -1,0 +1,131 @@
+.perfil-container {
+  min-height: 100vh;
+  background-color: #002147;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding: 50px 20px;
+  font-family: 'Inter', sans-serif;
+}
+
+.perfil-card {
+  background: white;
+  width: 100%;
+  max-width: 650px;
+  border-radius: 15px;
+  padding: 40px 60px;
+}
+
+.perfil-header h1 {
+  color: #b89b4d;
+  text-align: center;
+  font-size: 22px;
+  margin-bottom: 30px;
+  text-transform: capitalize;
+}
+
+/* Inputs y Labels */
+.label-main {
+  display: block;
+  font-size: 13px;
+  color: #475569;
+  margin-bottom: 5px;
+}
+
+input, textarea {
+  width: 100%;
+  padding: 10px 15px;
+  border: 1px solid #94a3b8;
+  border-radius: 6px;
+  font-size: 14px;
+  color: #1e293b;
+  margin-bottom: 15px;
+}
+
+/* Zona de Carga (Drag & Drop) */
+.drop-zone {
+  border: 1px dashed #475569;
+  border-radius: 8px;
+  padding: 20px;
+  text-align: center;
+  position: relative;
+  transition: all 0.3s ease;
+  margin-bottom: 20px;
+}
+
+.drop-zone--active {
+  background-color: #f1f5f9;
+  border-color: #b89b4d;
+}
+
+.icon-cv { font-size: 30px; margin-bottom: 5px; }
+
+.drop-text {
+  font-size: 12px;
+  color: #64748b;
+  margin-bottom: 10px;
+}
+
+.btn-select {
+  background-color: #0f172a;
+  color: white;
+  padding: 6px 15px;
+  border-radius: 4px;
+  font-size: 11px;
+  cursor: pointer;
+  display: inline-block;
+}
+
+.clip-icon {
+  position: absolute;
+  bottom: 10px;
+  left: 10px;
+  font-size: 20px;
+}
+
+.action-buttons .btn-sm {
+  background-color: #0f172a;
+  color: white;
+  border: none;
+  padding: 5px 12px;
+  border-radius: 4px;
+  font-size: 11px;
+  margin-left: 5px;
+  cursor: pointer;
+}
+
+/* Botón Guardar Cambios */
+.btn-submit {
+  background-color: #0f172a;
+  color: white;
+  width: 100%;
+  max-width: 200px;
+  padding: 12px;
+  border-radius: 8px;
+  font-weight: bold;
+  border: none;
+  cursor: pointer;
+  display: block;
+  margin: 30px auto 0;
+}
+
+.strength-bar {
+  height: 4px;
+  background: #e2e8f0;
+  border-radius: 2px;
+  margin-top: -10px;
+  margin-bottom: 15px;
+  position: relative;
+}
+
+.strength-fill {
+  width: 30%;
+  height: 100%;
+  background: #b89b4d;
+}
+
+.strength-text {
+  font-size: 10px;
+  color: #b89b4d;
+  float: right;
+}
