@@ -1,18 +1,6 @@
 <template>
   <div class="flex min-h-screen bg-gray-100 font-sans">
     <main class="flex-1 flex flex-col : w-full">
-      <navbar />
-      <section class="p-8">
-        </section>
-      <!--<header class="bg-[#1e293b] text-white px-8 py-4 flex justify-end gap-8 items-center">
-        <nav class="flex gap-6 text-sm">
-          <a href="/home" class="hover:text-yellow-500">Home</a>
-          <a href="#" class="text-yellow-500 border-b-2 border-yellow-500">Panel</a>
-          <a href="/catalogo-ofertas" class="hover:text-yellow-500">Ofertas</a>
-        </nav>
-        <div class="w-8 h-8 bg-white rounded-full"></div>
-      </header>-->
-
       <section class="p-8 overflow-y-auto">
         <div class="mb-8">
           <h1 class="text-2xl font-bold text-slate-800">Bienvenido, {{ supervisor.nombre }}</h1>

@@ -1,6 +1,5 @@
 <template>
   <div class="min-h-screen bg-[#f8f5f0]">
-    <Navbar />
     
     <header class="bg-[#1b2a4a] text-white py-16 px-8 text-center">
       <h1 class="text-4xl font-extrabold mb-4">Encuentra tu próximo desafío profesional</h1>
@@ -83,7 +82,6 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import Navbar from '@/components/layout/Navbar.vue'
 import { listarOfertas } from '../services/ofertaService.js'
 
 const router = useRouter()

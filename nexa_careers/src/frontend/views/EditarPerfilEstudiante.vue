@@ -1,7 +1,5 @@
 <template>
   <div class="min-h-screen bg-[#1e293b] pb-12">
-    <Navbar />
-
     <main class="max-w-4xl mx-auto mt-10 px-4">
       <div class="bg-white rounded-2xl shadow-2xl overflow-hidden border border-slate-700/10">
         
@@ -19,7 +17,6 @@
 </template>
 
 <script setup>
-import Navbar from "../components/layout/Navbar.vue";
 import PerfilForm from "../components/perfilEstudiante/PerfilForm.vue";
 </script>
 

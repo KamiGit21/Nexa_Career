@@ -1,6 +1,5 @@
 <template>
   <div class="min-h-screen bg-[#fffffd]">
-    <Navbar />
     
     <HeroSection />
     <CategoryGrid />
@@ -38,7 +37,6 @@
 
 <script setup>
 import { ref } from 'vue'
-import Navbar from '@/components/layout/Navbar.vue'
 import HeroSection from '@/components/home/HeroSection.vue'
 import CategoryGrid from '@/components/home/CategoryGrid.vue'
 import JobList from '@/components/home/JobList.vue'

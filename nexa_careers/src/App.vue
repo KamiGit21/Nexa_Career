@@ -1,6 +1,6 @@
 <template>
   <div class="min-h-screen flex flex-col">
-    <!-- <Navbar /> -->
+    <Navbar />
 
     <div :class="{ 'flex flex-1': esSupervisor }">
       
@@ -15,19 +15,18 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue';
+import { computed } from 'vue';
 import { useRoute } from 'vue-router';
-//import Navbar from './frontend/components/layout/Navbar.vue';
-//import Sidebar from './fronten/components/layout/Sidebar.vue';
+import { authState } from './frontend/auth.js'; 
+import Navbar from './frontend/components/layout/Navbar.vue';
+import Sidebar from './frontend/components/layout/Sidebar.vue';
 
 const route = useRoute();
-const sesion = ref({ rol: '' });
-
-onMounted(() => {
-  sesion.value = JSON.parse(localStorage.getItem('sesion') || '{}');
-});
 
 const esSupervisor = computed(() => {
-  return sesion.value.rol === 'supervisor';
+  const esRolSupervisor = authState.rol === 'supervisor';
+  const paginasSinSidebar = ['Home', 'InicioSesion', 'RegistroEstudiante', 'RegistroEmpleador'];
+  const esPaginaPublica = paginasSinSidebar.includes(route.name);
+  return esRolSupervisor && !esPaginaPublica;
 });
 </script>

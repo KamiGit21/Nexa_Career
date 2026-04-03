@@ -1,6 +1,5 @@
 <template>
   <div class="min-h-screen bg-[#f8f5f0]">
-    <Navbar />
 
     <div class="max-w-7xl mx-auto px-6 py-10">
       <div class="flex items-center gap-2 text-sm text-gray-500 mb-6">

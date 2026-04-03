@@ -1,6 +1,5 @@
 <template>
   <div class="min-h-screen bg-[#f8f5f0]">
-    <Navbar />
 
     <div class="max-w-5xl mx-auto px-6 py-10">
       <button @click="$router.back()" class="flex items-center gap-2 text-gray-500 hover:text-[#1b2a4a] mb-8">
@@ -48,7 +47,6 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import Navbar from '@/components/layout/Navbar.vue'
 
 const route = useRoute()
 const router = useRouter()

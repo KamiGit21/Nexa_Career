@@ -1,6 +1,5 @@
 <template>
   <div>
-  <navbar />
   <div class="min-h-screen bg-gradient-to-br from-[#0f172a] via-[#1e2937] to-[#0f172a] flex items-center justify-center p-6">
     <div class="w-full max-w-lg bg-white rounded-3xl shadow-2xl overflow-hidden">
       <div class="bg-[#1b2a4a] px-10 py-12 text-center">
@@ -91,7 +90,6 @@
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { registrarEmpleador } from '../services/empleadorService.js'
-import navbar from '../components/layout/Navbar.vue'
 
 const router = useRouter()
 

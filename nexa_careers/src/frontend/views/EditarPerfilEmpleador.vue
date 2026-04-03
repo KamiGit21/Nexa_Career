@@ -1,6 +1,5 @@
 <template>
   <div class="min-h-screen bg-[#1e293b] pb-12">
-    <Navbar />
     <main class="max-w-6xl mx-auto mt-10 px-6">
 
       <div class="bg-slate-50/5 rounded-3xl p-1 backdrop-blur-sm border border-white/5">
@@ -11,6 +10,5 @@
 </template>
 
 <script setup>
-import Navbar from "@/components/layout/Navbar.vue";
 import PerfilEmpleadorForm from "@/components/perfilEmpleador/PerfilEmpleadorForm.vue";
 </script>

@@ -1,6 +1,5 @@
 <template>
   <div class="min-h-screen bg-[#f8f5f0]">
-    <Navbar />
     
     <div class="max-w-4xl mx-auto px-6 py-10">
       <div class="flex items-center gap-4 mb-6">
@@ -66,7 +65,6 @@
 import { ref, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { obtenerOfertaPorId, editarOferta } from '../services/ofertaService.js'
-// import Navbar from '@/components/layout/Navbar.vue'
 
 const router = useRouter()
 const route = useRoute()
