@@ -155,7 +155,7 @@ export const editarOferta = async (req, res) => {
   }
 };
 
-// 7. PUT: Cambiar solo el estado
+// 7. PUT: Cambiar solo el estado del a oferta 
 export const cambiarEstadoOferta = async (req, res) => {
   const { id } = req.params;
   const { estado } = req.body; // 0 pendiente, 1 aceptado, 2 rechazado, 3 archivado
@@ -191,7 +191,29 @@ export const cambiarEstadoOferta = async (req, res) => {
       success: true,
       message: `Estado de la oferta actualizado a ${estadoTexto[estado]}`,
       estado_nuevo: estado,
-      fecha_cambio: new Date().toISOString()
+      // fecha_cambio: new Date().toISOString()
+    });
+  } catch (error) {
+    console.error('Error al cambiar estado:', error);
+    res.status(500).json({ success: false, message: 'Error al actualizar estado de la oferta' });
+  }
+};
+
+// 7.1 PUT: Cambiar el estado de una oferta a "Inactiva"/Archivado (estado = 3) 
+export const cambiarEstadoOfertaAPendiente = async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const [result] = await db.query('UPDATE oferta SET estado = 3 WHERE id_oferta = ?', [id]);
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ success: false, message: 'Oferta no encontrada' });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: `Estado de la oferta actualizado a "Inactivo"}`,
+      estado_nuevo: estado,
+      // fecha_cambio: new Date().toISOString()
     });
   } catch (error) {
     console.error('Error al cambiar estado:', error);
@@ -222,7 +244,7 @@ export const obtenerPostulantesPorOferta = async (req, res) => {
       WHERE ofe.id_oferta = ?
       ORDER BY ofe.id_ofertante DESC
     `;
-    
+
     const [rows] = await db.query(query, [id]);
     res.status(200).json({ success: true, data: rows });
   } catch (error) {

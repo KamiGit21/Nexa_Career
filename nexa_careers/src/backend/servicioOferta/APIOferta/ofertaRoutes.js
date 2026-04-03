@@ -17,5 +17,6 @@ router.get('/:id/postulantes', ofertaController.obtenerPostulantesPorOferta);
 router.get('/:id', ofertaController.obtenerOfertaPorId);
 router.put('/:id/editar', ofertaController.editarOferta);
 router.put('/:id/estado', ofertaController.cambiarEstadoOferta);
+router.put('/:id/archivar', ofertaController.cambiarEstadoOfertaAPendiente); // estado = 3 (inactivo), para dar de baja una oferta
 
 export default router;

@@ -9,7 +9,7 @@ async function ejecutarPruebas() {
 
     // 1. POST: Crear oferta
     console.log('➡️ 1. Ejecutando POST: Creando nueva oferta...');
-    const postResponse = await axios.post(`${API_URL}/crear`, { 
+    const postResponse = await axios.post(`${API_URL}/crear`, {
       descripcion: 'Buscamos desarrollador Vue.js Junior',
       fecha_apertura: '2026-04-01', // Formato YYYY-MM-DD
       oferta: 'Desarrollador Frontend Vue',
@@ -70,7 +70,13 @@ async function ejecutarPruebas() {
       estado: 0 // Pendiente
     });
     console.log('✅ Resultado:', putPendienteResponse.data);
-    
+
+    // 9 PUT: Cambiar estado a inactivo/archivado
+    console.log(`➡️ 9. Ejecutando PUT: Cambiando estado de la oferta ID ${nuevoId} a 3 (Inactiva/Archivada)`);
+    const putArchivarResponse = await axios.put(`${API_URL}/${nuevoId}/archivar`);
+    console.log('✅ Resultado:', putArchivarResponse.data);
+    console.log('--------------------------------------------------\n');
+
     console.log('\n Todas las pruebas de ofertas finalizaron con éxito.');
 
   } catch (error) {
