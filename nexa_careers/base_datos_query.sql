@@ -83,7 +83,7 @@ CREATE TABLE `curso` (
   `estado`         INT, -- 0 pendiente, 1 aceptado, 2 rechazado, 3 archivado
   `id_estudiante`  INT,
   `id_empleador`   INT,
-  `tipo_ofertante` BOOLEAN      NOT NULL,
+  `tipo_ofertante` BOOLEAN      NOT NULL, -- 0 estudiante, 1 empleador
   `contacto`       VARCHAR(255),
   PRIMARY KEY (`id_curso`),
   FOREIGN KEY (`id_estudiante`) REFERENCES `estudiante`(`id_estudiante`),

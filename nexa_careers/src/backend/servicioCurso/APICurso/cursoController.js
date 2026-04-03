@@ -3,7 +3,7 @@ import db from '../../api-gateway/db.js';
 
 //1. Crear Curso por estudiante
 export const registrarCursoEstudiante = async (req, res) => {
-  const { curso, descripcion, id_estudiante, contacto} = req.body;
+  const { curso, descripcion, id_estudiante, contacto } = req.body;
 
   try {
     const estado = 0; // 0 por defecto al crearse
@@ -25,7 +25,7 @@ export const registrarCursoEstudiante = async (req, res) => {
 
 //2. Crear Curso por empleador
 export const registrarCursoEmpleador = async (req, res) => {
-  const { curso, descripcion, id_empleador, contacto} = req.body;
+  const { curso, descripcion, id_empleador, contacto } = req.body;
 
   try {
     const estado = 0; // 0 por defecto al crearse
@@ -45,7 +45,6 @@ export const registrarCursoEmpleador = async (req, res) => {
   }
 };
 
-
 // 3. GET: Listar todas los cursos
 export const listarCursos = async (req, res) => {
   try {
@@ -54,5 +53,42 @@ export const listarCursos = async (req, res) => {
   } catch (error) {
     console.error('Error al listar cursos:', error);
     res.status(500).json({ success: false, message: 'Error al listar cursos' });
+  }
+};
+
+// 4. GET: Listar solo los cursos disponibles para el estudiante (estado = 1)
+export const listarCursosDisponibles = async (req, res) => {
+  try {
+    const [rows] = await db.query('SELECT * FROM curso WHERE estado = 1'); // Solo cursos con estado 1 (aceptados/disponibles)
+    res.status(200).json({ success: true, data: rows });
+  } catch (error) {
+    console.error('Error al listar cursos disponibles:', error);
+    res.status(500).json({ success: false, message: 'Error al listar cursos' });
+  }
+};
+
+// 5. GET: Listar cursos publicados por un estudiante específico (tipo_ofertante = 0, para estudiante)
+export const listarCursosPorEstudiante = async (req, res) => {
+  const { id_estudiante } = req.params;
+  try {
+    const [rows] = await db.query('SELECT * FROM curso WHERE tipo_ofertante = 0 AND id_estudiante = ?', [id_estudiante]);
+    // Siempre devolver 200, incluso si no hay cursos
+    res.status(200).json({ success: true, data: rows || [] });
+  } catch (error) {
+    console.error('Error al listar cursos del estudiante:', error);
+    res.status(500).json({ success: false, message: 'Error al listar cursos del estudiante' });
+  }
+};
+
+// 6. GET: Listar cursos publicados por un empleador específico (tipo_ofertante = 1, para empleador)
+export const listarCursosPorEmpleador = async (req, res) => {
+  const { id_empleador } = req.params;
+  try {
+    const [rows] = await db.query('SELECT * FROM curso WHERE tipo_ofertante = 1 AND id_empleador = ?', [id_empleador]);
+    // Siempre devolver 200, incluso si no hay cursos
+    res.status(200).json({ success: true, data: rows || [] });
+  } catch (error) {
+    console.error('Error al listar cursos del empleador:', error);
+    res.status(500).json({ success: false, message: 'Error al listar cursos del empleador' });
   }
 };
