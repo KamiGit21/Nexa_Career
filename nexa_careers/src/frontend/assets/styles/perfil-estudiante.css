@@ -24,7 +24,6 @@
   text-transform: capitalize;
 }
 
-/* Inputs y Labels */
 .label-main {
   display: block;
   font-size: 13px;
@@ -128,4 +127,44 @@ input, textarea {
   font-size: 10px;
   color: #b89b4d;
   float: right;
+}
+
+.drop-zone--success {
+  border-color: #10b981 !important; /* Verde exito */
+  background-color: #f0fdf4;
+}
+
+.drop-zone--error {
+  border-color: #ef4444 !important; /* Rojo error */
+  background-color: #fef2f2;
+}
+
+/*Estilos del mensaje */
+.feedback-msg {
+  margin-top: 10px;
+  font-size: 12px;
+  font-weight: 600;
+  text-align: center;
+  padding: 8px;
+  border-radius: 6px;
+}
+
+.msg-success {
+  color: #065f46;
+  background-color: #d1fae5;
+}
+
+.msg-error {
+  color: #991b1b;
+  background-color: #fee2e2;
+}
+
+/* Animaciones */
+.fade-enter-active, .fade-leave-active {
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.fade-enter-from, .fade-leave-to {
+  opacity: 0;
+  transform: translateY(-10px);
 }
