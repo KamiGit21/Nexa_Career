@@ -1,6 +1,5 @@
 <template>
   <div class="min-h-screen bg-gray-50">
-    <navbar/>
 
     <!-- Breadcrumb -->
     <header class="bg-slate-800 py-4 px-8">
@@ -98,7 +97,7 @@
             </div>
           </dl>
 
-          <!-- Botón postular (solo si hay sesión de estudiante) -->
+          <!-- Botón de postulación -->
           <template v-if="sesion.rol === 'estudiante'">
             <button
               v-if="!yaPostulado"
@@ -114,6 +113,16 @@
             >
               ✓ Ya postulaste a esta oferta
             </div>
+          </template>
+
+          <!-- Mensaje para usuarios NO logueados -->
+          <template v-else>
+            <button
+              @click="irALogin"
+              class="w-full py-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-white font-semibold transition"
+            >
+              Inicia sesión como estudiante para postular
+            </button>
           </template>
 
           <!-- Volver -->
@@ -165,12 +174,12 @@
 
 <script setup>
 import { ref, onMounted } from 'vue'
-import { useRoute } from 'vue-router'
-import Navbar from '@/components/layout/Navbar.vue'
+import { useRoute, useRouter } from 'vue-router'
 import { obtenerOfertaPorId } from '@/services/ofertaService.js'
 import { obtenerPostulaciones, postularAOferta } from '@/services/postulacionService.js'
 
 const route = useRoute()
+const router = useRouter()
 
 // Sesión del usuario 
 const sesion = JSON.parse(localStorage.getItem('sesion') || '{}')
@@ -182,6 +191,20 @@ const modalVisible     = ref(false)
 const postulando       = ref(false)
 const yaPostulado      = ref(false)
 const errorPostulacion = ref(null)
+
+// Redirige al login si no es estudiante logueado
+const irALogin = () => {
+  router.push('/login')
+}
+
+// Verifica si necesita login antes de abrir el modal
+const abrirModal = () => {
+  if (!sesion.rol || sesion.rol !== 'estudiante') {
+    irALogin()
+    return
+  }
+  modalVisible.value = true
+}
 
 async function cargarDetalle() {
   cargando.value = true
@@ -225,8 +248,10 @@ async function confirmarPostulacion() {
   }
 }
 
-function abrirModal()  { modalVisible.value = true }
-function cerrarModal() { modalVisible.value = false; errorPostulacion.value = null }
+function cerrarModal() {
+  modalVisible.value = false
+  errorPostulacion.value = null
+}
 
 onMounted(() => {
   cargarDetalle()

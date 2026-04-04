@@ -24,6 +24,12 @@ import PerfilEmpleador from '@/views/EditarPerfilEmpleador.vue'
 // Dashboard
 import DashboardSupervisor from '@/views/DashboardSupervisor.vue'
 
+//Cursos
+import PublicarCurso from '@/views/PublicarCurso.vue'
+import MisCursos from '@/views/MisCursos.vue'
+import CatalogoCursos from '@/views/CatalogoCursos.vue'
+import DetalleCurso from '@/views/DetalleCurso.vue'
+
 const routes = [
   { path: '/', redirect: '/home' },
   {
@@ -76,6 +82,31 @@ const routes = [
   { path: '/postulante/:id', name: 'DetallePostulante', component: DetallePostulante, meta: { requiereRol: ['empleador'] } },
   { path: '/mis-ofertas/:ofertaId/editar', name: 'EditarOferta', component: EditarOferta, meta: { requiereRol: ['empleador'] } }, //cambie esto
   //{ path: '/:pathMatch(.*)*', redirect: '/home' },
+
+  // Cursos
+  {
+    path: '/publicar-curso',
+    name: 'PublicarCurso',
+    component: PublicarCurso,
+    meta: { requiereRol: ['estudiante', 'empleador'] }
+  },
+
+  { 
+    path: '/mis-cursos', 
+    name: 'MisCursos', 
+    component: MisCursos, 
+    meta: { requiereRol: ['estudiante', 'empleador'] } 
+  },
+
+  { path: '/cursos',
+    name: 'CatalogoCursos',
+    component: CatalogoCursos 
+  },
+
+  { path: '/cursos/:id',
+    name: 'DetalleCurso',
+    component: DetalleCurso   
+  },
 
   // Perfiles
   {

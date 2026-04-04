@@ -62,7 +62,7 @@ const processFile = (file) => {
   } else {
     status.value = 'error';
     fileName.value = '';
-    // Limpiamos el error después de 3 segundos
+    // Limpiar el error luego de 3 seg
     setTimeout(() => { status.value = null; }, 3000);
   }
 };

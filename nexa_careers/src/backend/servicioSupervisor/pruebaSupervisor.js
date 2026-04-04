@@ -9,7 +9,7 @@ async function ejecutarPruebas() {
 
     // 1. POST: Registrar supervisor
     console.log('➡️ 1. Ejecutando POST: Registrando nuevo supervisor...');
-    const postResponse = await axios.post(`${API_URL}/registrar`, { 
+    const postResponse = await axios.post(`${API_URL}/registrar`, {
       nombre: 'Carlos Administrador',
       telefono: 65432100,
       gmail: 'carlos.jefe@nexacareers.com',
@@ -55,6 +55,13 @@ async function ejecutarPruebas() {
       activo: 0 // Lo pasamos a inactivo
     });
     console.log('✅ Resultado:', putEstadoResponse.data);
+
+    // 7. PUT: Bloquear usuario
+    console.log(`➡️ 7. Ejecutando PUT: Bloqueando al estudiante ID ${nuevoId}...`);
+    const putBloquearResponse = await axios.put(`${API_URL}/${nuevoId}/bloquear`);
+    console.log('✅ Resultado:', putBloquearResponse.data);
+    console.log('--------------------------------------------------\n');
+
     console.log('\n🎉 Todas las pruebas del supervisor finalizaron con éxito.');
 
   } catch (error) {

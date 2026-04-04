@@ -11,5 +11,6 @@ router.get('/gmail/:gmail', supervisorController.buscarSupervisorPorGmail);
 router.put('/:id/perfil', supervisorController.actualizarPerfil);
 router.put('/:id/contrasena', supervisorController.cambiarContrasena);
 router.put('/:id/estado', supervisorController.cambiarEstado);
+router.put('/:id_supervisor/bloquear', supervisorController.bloquearUsuario);
 
 export default router;

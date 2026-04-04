@@ -87,6 +87,11 @@ app.use('/api/ofertantes', createProxy('http://localhost:3007'));
 // Servicio de Cursos (puerto 3008)
 app.use('/api/cursos', createProxy('http://localhost:3008'));
 
+// Servicio de Categorias (puerto 3009)
+app.get('/api/categorias', createProxy('http://localhost:3009'));
+app.get('/api/categorias/:id', createProxy('http://localhost:3009'));
+app.post('/api/categorias/registrar', createProxy('http://localhost:3009'));
+
 // Ruta raíz
 app.get('/', (req, res) => {
   res.json({
@@ -99,7 +104,8 @@ app.get('/', (req, res) => {
       supervisores: 'http://localhost:3000/api/supervisores',
       ofertas: 'http://localhost:3000/api/ofertas',
       ofertantes: 'http://localhost:3000/api/ofertantes',
-      cursos: 'http://localhost:3000/api/cursos'
+      cursos: 'http://localhost:3000/api/cursos',
+      categorias: 'http://localhost:3000/api/categorias'
     }
   });
 });
