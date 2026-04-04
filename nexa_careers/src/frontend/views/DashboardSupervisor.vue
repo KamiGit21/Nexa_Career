@@ -9,19 +9,33 @@
 
         <div class="grid grid-cols-4 gap-4 mb-8">
           <div class="bg-white p-6 rounded-xl border-l-4 border-blue-500 shadow-sm">
+            <p class="text-xs text-gray-500 font-semibold uppercase">Estudiantes registrados</p>
+            <div class="flex items-end gap-4 mt-2">
+              <span class="text-3xl font-bold text-slate-800">{{ estadisticas.estudiantes }}</span>
+              <!--<span class="text-xs text-green-500 pb-1">+2 este mes</span>-->
+            </div>
+          </div>
+          <div class="bg-white p-6 rounded-xl border-l-4 border-blue-500 shadow-sm">
             <p class="text-xs text-gray-500 font-semibold uppercase">Empleadores registrados</p>
             <div class="flex items-end gap-4 mt-2">
               <span class="text-3xl font-bold text-slate-800">{{ estadisticas.empleadores }}</span>
               <!--<span class="text-xs text-green-500 pb-1">+2 este mes</span>-->
             </div>
           </div>
-          <!--<div class="bg-[#1e293b] p-6 rounded-xl shadow-sm text-white">
-              <p class="text-xs text-gray-400 font-semibold uppercase">Total postulaciones</p>
+          <div class="bg-white p-6 rounded-xl border-l-4 border-blue-500 shadow-sm">
+              <p class="text-xs text-gray-500 font-semibold uppercase">Ofertas realizadas</p>
               <div class="flex items-end gap-4 mt-2">
-                <span class="text-3xl font-bold text-yellow-500">247</span>
-                <span class="text-xs text-yellow-600/80 pb-1">+38 esta semana</span>
+                <span class="text-3xl font-bold text-SLATE-800">{{ estadisticas.ofertas }}</span>
+                <!--span class="text-xs text-yellow-600/80 pb-1">+38 esta semana</span-->
               </div>
-            </div>-->
+            </div>
+          <div class="bg-white p-6 rounded-xl border-l-4 border-blue-500 shadow-sm">
+              <p class="text-xs text-gray-500 font-semibold uppercase">Cursos creados</p>
+              <div class="flex items-end gap-4 mt-2">
+                <span class="text-3xl font-bold text-SLATE-800">{{ estadisticas.cursos }}</span>
+                <!--span class="text-xs text-yellow-600/80 pb-1">+38 esta semana</span-->
+              </div>
+            </div>
         </div>
 
         <h3 class="font-bold text-slate-800 mb-4 uppercase text-sm tracking-wider">Acciones rápidas</h3>
@@ -77,7 +91,7 @@ import { obtenerEstadisticasDashboard } from '../services/supervisorService.js';
 
 const router = useRouter();
 const supervisor = ref({ nombre: '', email: '' });
-const estadisticas = ref({ empleadores: 0, postulaciones: 0, pendientes: 0 });
+const estadisticas = ref({ empleadores: 0, ofertas: 0, cursos: 0 });
 const actividades = ref([]);
 const loading = ref(true);
 
