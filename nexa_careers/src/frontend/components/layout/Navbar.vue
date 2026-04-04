@@ -8,56 +8,50 @@
       <span class="text-2xl font-semibold tracking-tight">Nexa Careers</span>
     </div>
 
-    <!-- Enlaces centrales -->
-    <div class="flex-1 flex justify-center gap-10 text-lg">
-<<<<<<< HEAD
-      <router-link to="/home" class="hover:text-[#d0b06d] transition-colors">Inicio</router-link>
-      <router-link v-if="authState.rol === 'empleador'" to="/mis-ofertas"
-        class="hover:text-[#d0b06d] transition-colors">Mis Ofertas</router-link>
-      <router-link v-if="authState.rol === 'empleador'" to="/mis-cursos"
-        class="hover:text-[#d0b06d] transition-colors">Mis Cursos</router-link>
-=======
-      <router-link to="/home" class="hover:text-[#d0b06d] transition-colors">
-        Inicio
-      </router-link>
+  <!-- Enlaces centrales -->
+<div class="flex-1 flex justify-center gap-10 text-lg">
 
-      <!-- Siempre visibles (públicos) -->
-      <router-link to="/ofertas" class="hover:text-[#d0b06d] transition-colors">
-        Ofertas Laborales
-      </router-link>
+  <router-link to="/home" class="hover:text-[#d0b06d] transition-colors">
+    Inicio
+  </router-link>
 
-      <router-link to="/cursos" class="hover:text-[#d0b06d] transition-colors">
-        Catálogo de Cursos
-      </router-link>
+  <!-- Públicos -->
+  <router-link to="/ofertas" class="hover:text-[#d0b06d] transition-colors">
+    Ofertas Laborales
+  </router-link>
 
-      <!-- Solo visibles cuando hay sesión -->
-      <template v-if="authState.rol">
-        <!-- Empleador -->
-        <router-link v-if="authState.rol === 'empleador'" to="/mis-ofertas"
-          class="hover:text-[#d0b06d] transition-colors">
-          Mis Ofertas
-        </router-link>
-        <router-link v-if="authState.rol === 'empleador'" to="/mis-cursos"
-          class="hover:text-[#d0b06d] transition-colors">
-          Mis Cursos
-        </router-link>
-        <router-link v-if="authState.rol === 'empleador'" to="/publicar-curso"
-          class="hover:text-[#d0b06d] transition-colors">
-          Publicar Curso
-        </router-link>
+  <router-link to="/cursos" class="hover:text-[#d0b06d] transition-colors">
+    Catálogo de Cursos
+  </router-link>
 
-        <!-- Estudiante -->
-        <router-link v-if="authState.rol === 'estudiante'" to="/mis-cursos"
-          class="hover:text-[#d0b06d] transition-colors">
-          Mis Cursos
-        </router-link>
-        <router-link v-if="authState.rol === 'estudiante'" to="/publicar-curso"
-          class="hover:text-[#d0b06d] transition-colors">
-          Publicar Curso
-        </router-link>
-      </template>
->>>>>>> 6db50f554b328614f81eb9f29c026894cb61cfd9
-    </div>
+  <!-- Con sesión -->
+  <template v-if="authState.rol">
+
+    <!-- EMPLEADOR -->
+    <router-link v-if="authState.rol === 'empleador'" to="/mis-ofertas"
+      class="hover:text-[#d0b06d] transition-colors">
+      Mis Ofertas
+    </router-link>
+
+    <router-link v-if="authState.rol === 'empleador'" to="/mis-cursos"
+      class="hover:text-[#d0b06d] transition-colors">
+      Mis Cursos
+    </router-link>
+
+    <router-link v-if="authState.rol === 'empleador'" to="/publicar-curso"
+      class="hover:text-[#d0b06d] transition-colors">
+      Publicar Curso
+    </router-link>
+
+    <!-- ESTUDIANTE -->
+    <router-link v-if="authState.rol === 'estudiante'" to="/mis-cursos"
+      class="hover:text-[#d0b06d] transition-colors">
+      Mis Cursos
+    </router-link>
+
+  </template>
+
+</div>
 
     <!-- Zona derecha -->
     <div class="flex items-center gap-6 relative">
