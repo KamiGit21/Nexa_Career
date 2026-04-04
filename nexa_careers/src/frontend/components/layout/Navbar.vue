@@ -33,8 +33,7 @@
       Mis Ofertas
     </router-link>
 
-    <router-link v-if="authState.rol === 'empleador'" to="/mis-cursos"
-      class="hover:text-[#d0b06d] transition-colors">
+    <router-link v-if="authState.rol === 'empleador'" to="/mis-cursos-empleador">
       Mis Cursos
     </router-link>
 

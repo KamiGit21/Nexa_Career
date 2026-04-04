@@ -84,12 +84,18 @@ const routes = [
   //{ path: '/:pathMatch(.*)*', redirect: '/home' },
 
   // Cursos
-  {
-    path: '/publicar-curso',
-    name: 'PublicarCurso',
-    component: PublicarCurso,
-    meta: { requiereRol: ['estudiante', 'empleador'] }
-  },
+{ 
+  path: '/mis-cursos-empleador', 
+  name: 'EmpleadorCursos', 
+  component: EmpleadorCursos, 
+  meta: { requiereRol: ['empleador'] } 
+},
+{ 
+  path: '/mis-cursos', 
+  name: 'EstudianteCursos', 
+  component: () => import('@/views/EstudianteCursos.vue'), 
+  meta: { requiereRol: ['estudiante'] } 
+},
 
   { 
     path: '/mis-cursos', 
