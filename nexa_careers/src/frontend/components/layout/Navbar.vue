@@ -8,8 +8,22 @@
 
     <div class="flex-1 flex justify-center gap-10 text-lg">
       <router-link to="/home" class="hover:text-[#d0b06d] transition-colors">Inicio</router-link>
+
+      <!-- Catálogo visible para todos los roles autenticados -->
+      <router-link v-if="authState.rol" to="/ofertas"
+        class="hover:text-[#d0b06d] transition-colors">Ofertas</router-link>
+
+      <!-- Empleador -->
       <router-link v-if="authState.rol === 'empleador'" to="/mis-ofertas"
         class="hover:text-[#d0b06d] transition-colors">Mis Ofertas</router-link>
+      <router-link v-if="authState.rol === 'empleador'" to="/publicar-curso"
+        class="hover:text-[#d0b06d] transition-colors">Publicar Curso</router-link>
+
+      <!-- Estudiante -->
+      <router-link v-if="authState.rol === 'estudiante'" to="/publicar-curso"
+        class="hover:text-[#d0b06d] transition-colors">Publicar Curso</router-link>
+
+      <!-- Supervisor: sin links extra, tiene sidebar propio -->
     </div>
 
     <div class="flex items-center gap-6 relative">
@@ -46,7 +60,6 @@
         </div>
       </div>
 
-
       <router-link v-else to="/login"
         class="px-6 py-2.5 bg-white text-[#1b2a4a] font-semibold rounded-2xl hover:bg-[#d0b06d] hover:text-white transition-all">
         Iniciar Sesión
@@ -62,11 +75,6 @@ import { authState } from '../../auth.js'
 
 const router = useRouter()
 const menuAbierto = ref(false)
-
-import { computed } from 'vue'
-const sesion = computed(() => {
-  return JSON.parse(localStorage.getItem('sesion') || '{}')
-})
 
 onMounted(() => {
   window.addEventListener('click', cerrarSiFuera)
