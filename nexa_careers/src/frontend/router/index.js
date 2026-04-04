@@ -25,6 +25,7 @@ import DashboardSupervisor from '@/views/DashboardSupervisor.vue'
 
 //Cursos
 import PublicarCurso from '@/views/PublicarCurso.vue'
+import MisCursos from '@/views/MisCursos.vue'
 
 const routes = [
   { path: '/', redirect: '/home' },
@@ -84,6 +85,13 @@ const routes = [
     name: 'PublicarCurso',
     component: PublicarCurso,
     meta: { requiereRol: ['estudiante', 'empleador'] }
+  },
+
+  { 
+    path: '/mis-cursos', 
+    name: 'MisCursos', 
+    component: MisCursos, 
+    meta: { requiereRol: ['estudiante', 'empleador'] } 
   },
 
   // Perfiles
