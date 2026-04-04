@@ -10,6 +10,8 @@
       <router-link to="/home" class="hover:text-[#d0b06d] transition-colors">Inicio</router-link>
       <router-link v-if="authState.rol === 'empleador'" to="/mis-ofertas"
         class="hover:text-[#d0b06d] transition-colors">Mis Ofertas</router-link>
+      <router-link v-if="authState.rol === 'empleador'" to="/mis-cursos"
+        class="hover:text-[#d0b06d] transition-colors">Mis Cursos</router-link>
     </div>
 
     <div class="flex items-center gap-6 relative">

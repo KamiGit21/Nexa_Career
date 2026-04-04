@@ -11,6 +11,7 @@ import RegistroSupervisor from '@/views/RegistroSupervisor.vue'
 import CatalogoOfertas from '@/views/CatalogoOfertas.vue'
 import DetalleOferta from '@/views/DetalleOferta.vue'     // ← LÍNEA NUEVA
 import MisOfertas from '@/views/MisOfertas.vue'
+import EmpleadorCursos from '@/views/EmpleadorCursos.vue'  //cursos del empleador
 import NuevaOferta from '@/views/NuevaOferta.vue'
 import ListaPostulantes from '@/views/ListaPostulantes.vue'
 import DetallePostulante from '@/views/DetallePostulante.vue'
@@ -69,11 +70,12 @@ const routes = [
   { path: '/ofertas/:id', name: 'DetalleOferta', component: DetalleOferta }, // ← LÍNEA NUEVA
 
   { path: '/mis-ofertas', name: 'MisOfertas', component: MisOfertas, meta: { requiereRol: ['empleador'] } },
+  { path: '/mis-cursos', name: 'EmpleadorCursos', component: EmpleadorCursos, meta: { requiereRol: ['empleador'] } }, //emplesaor cursos
   { path: '/mis-ofertas/nueva', name: 'NuevaOferta', component: NuevaOferta, meta: { requiereRol: ['empleador'] } },
   { path: '/mis-ofertas/:ofertaId/postulantes', name: 'ListaPostulantes', component: ListaPostulantes, meta: { requiereRol: ['empleador'] } },
   { path: '/postulante/:id', name: 'DetallePostulante', component: DetallePostulante, meta: { requiereRol: ['empleador'] } },
   { path: '/mis-ofertas/:ofertaId/editar', name: 'EditarOferta', component: EditarOferta, meta: { requiereRol: ['empleador'] } }, //cambie esto
-  { path: '/:pathMatch(.*)*', redirect: '/home' },
+  //{ path: '/:pathMatch(.*)*', redirect: '/home' },
 
   // Perfiles
   {
@@ -95,8 +97,11 @@ const routes = [
     name: 'DashboardSupervisor',
     component: DashboardSupervisor,
     meta: { requiereRol: ['supervisor'] }
-  }
+  },
+
+    { path: '/:pathMatch(.*)*', redirect: '/home' }
 ]
+
 
 const router = createRouter({
   history: createWebHistory(),
