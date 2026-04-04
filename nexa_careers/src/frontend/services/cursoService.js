@@ -69,3 +69,13 @@ export const listarCursosPublicos = async () => {
     return { success: false, message: error.message }
   }
 }
+
+export const obtenerCursoPorId = async (id) => {
+  try {
+    const res = await fetch(`${API_URL}/cursos/${id}`)
+    return await res.json()
+  } catch (error) {
+    console.error('Error en obtenerCursoPorId:', error)
+    return { success: false, message: error.message }
+  }
+}

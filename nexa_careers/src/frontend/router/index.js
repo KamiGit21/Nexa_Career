@@ -27,6 +27,7 @@ import DashboardSupervisor from '@/views/DashboardSupervisor.vue'
 import PublicarCurso from '@/views/PublicarCurso.vue'
 import MisCursos from '@/views/MisCursos.vue'
 import CatalogoCursos from '@/views/CatalogoCursos.vue'
+import DetalleCurso from '@/views/DetalleCurso.vue'
 
 const routes = [
   { path: '/', redirect: '/home' },
@@ -98,6 +99,11 @@ const routes = [
   { path: '/cursos',
     name: 'CatalogoCursos',
     component: CatalogoCursos 
+  },
+
+  { path: '/cursos/:id',
+    name: 'DetalleCurso',
+    component: DetalleCurso   
   },
 
   // Perfiles
