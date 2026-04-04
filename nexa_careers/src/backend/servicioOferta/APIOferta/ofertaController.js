@@ -221,28 +221,27 @@ export const cambiarEstadoOfertaAPendiente = async (req, res) => {
   }
 };
 
-//nuevooo
-// 8. GET: Obtener postulantes de una oferta con tabla ofertante
+// 8. GET: Obtener postulantes de una oferta con tabla postulante
 export const obtenerPostulantesPorOferta = async (req, res) => {
   const { id } = req.params;
   try {
     const query = `
       SELECT 
-        ofe.id_ofertante,
-        ofe.id_estudiante,
-        ofe.id_oferta,
-        ofe.estado as estado_postulacion,
+        p.id_postulante,
+        p.id_estudiante,
+        p.id_oferta,
+        p.estado as estado_postulacion,
         e.nombre,
         e.apellido,
         e.gmail,
         e.cv,
         e.telefono,
         c.carrera
-      FROM ofertante ofe
-      INNER JOIN estudiante e ON ofe.id_estudiante = e.id_estudiante
+      FROM postulante p
+      INNER JOIN estudiante e ON p.id_estudiante = e.id_estudiante
       LEFT JOIN carrera c ON e.id_carrera = c.id_carrera
-      WHERE ofe.id_oferta = ?
-      ORDER BY ofe.id_ofertante DESC
+      WHERE p.id_oferta = ?
+      ORDER BY p.id_postulante DESC
     `;
 
     const [rows] = await db.query(query, [id]);
