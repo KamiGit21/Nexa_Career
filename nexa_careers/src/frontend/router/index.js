@@ -23,6 +23,9 @@ import PerfilEmpleador from '@/views/EditarPerfilEmpleador.vue'
 // Dashboard
 import DashboardSupervisor from '@/views/DashboardSupervisor.vue'
 
+//Cursos
+import PublicarCurso from '@/views/PublicarCurso.vue'
+
 const routes = [
   { path: '/', redirect: '/home' },
   {
@@ -74,6 +77,14 @@ const routes = [
   { path: '/postulante/:id', name: 'DetallePostulante', component: DetallePostulante, meta: { requiereRol: ['empleador'] } },
   { path: '/mis-ofertas/:ofertaId/editar', name: 'EditarOferta', component: EditarOferta, meta: { requiereRol: ['empleador'] } }, //cambie esto
   { path: '/:pathMatch(.*)*', redirect: '/home' },
+
+  // Cursos
+  {
+    path: '/publicar-curso',
+    name: 'PublicarCurso',
+    component: PublicarCurso,
+    meta: { requiereRol: ['estudiante', 'empleador'] }
+  },
 
   // Perfiles
   {
