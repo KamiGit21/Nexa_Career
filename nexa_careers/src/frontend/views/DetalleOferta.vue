@@ -1,6 +1,5 @@
 <template>
   <div class="min-h-screen bg-gray-50">
-    <navbar/>
 
     <!-- Breadcrumb -->
     <header class="bg-slate-800 py-4 px-8">
@@ -166,7 +165,6 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
-import Navbar from '@/components/layout/Navbar.vue'
 import { obtenerOfertaPorId } from '@/services/ofertaService.js'
 import { obtenerPostulaciones, postularAOferta } from '@/services/postulacionService.js'
 

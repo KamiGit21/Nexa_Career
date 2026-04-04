@@ -1,5 +1,5 @@
 <template>
-  <div class="min-h-screen flex flex-col">
+  <div class="flex flex-col min-h-screen">
     <Navbar />
 
     <div :class="{ 'flex flex-1': esSupervisor }">
@@ -30,3 +30,15 @@ const esSupervisor = computed(() => {
   return esRolSupervisor && !esPaginaPublica;
 });
 </script>
+
+<style scoped>
+* {
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body {
+  width: 100%;
+  height: 100%;
+}
+</style>

@@ -1,5 +1,5 @@
 <template>
-  <div class="min-h-screen bg-gradient-to-br from-[#0f172a] to-[#1e2937] flex items-center justify-center p-6">
+  <div class="flex min-h-screen bg-gradient-to-br from-[#0f172a] to-[#1e2937] flex items-center justify-center pt-12 pb-12">
     <div class="w-full max-w-md bg-white rounded-3xl shadow-2xl overflow-hidden">
       
       <!-- Header -->
@@ -149,7 +149,7 @@ const handleSubmit = async () => {
           }))
           // 👇 AVISAR AL ESTADO GLOBAL
           authState.actualizarSesion()
-          router.push('/home')
+          router.push('/ofertas')
         } else {
           alert('Contraseña incorrecta o cuenta inactiva')
         }

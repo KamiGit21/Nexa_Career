@@ -1,8 +1,11 @@
 <template>
-  <div class="min-h-screen bg-gradient-to-br from-[#0f172a] via-[#1e2937] to-[#0f172a] flex items-center justify-center p-6">
+  <div
+    class="min-h-screen bg-gradient-to-br from-[#0f172a] via-[#1e2937] to-[#0f172a] flex items-center justify-center p-6">
     <div class="w-full max-w-lg bg-white rounded-3xl shadow-2xl overflow-hidden">
       <div class="bg-[#1b2a4a] px-10 py-12 text-center">
-        <div class="mx-auto w-20 h-20 bg-white/10 backdrop-blur rounded-2xl flex items-center justify-center mb-6 text-5xl">🎓</div>
+        <div
+          class="mx-auto w-20 h-20 bg-white/10 backdrop-blur rounded-2xl flex items-center justify-center mb-6 text-5xl">
+          🎓</div>
         <h1 class="text-white text-3xl font-bold">Registro de Estudiante</h1>
         <p class="text-[#d0b06d] mt-2">Crea tu cuenta para acceder a oportunidades laborales</p>
       </div>
@@ -12,33 +15,33 @@
           <div class="grid grid-cols-2 gap-5">
             <div>
               <label class="text-sm font-medium text-gray-600">Nombre</label>
-              <input v-model="form.nombre" type="text" class="mt-2 w-full px-5 py-4 bg-gray-50 border border-gray-200 rounded-2xl focus:border-[#b5943a]" required />
+              <input v-model="form.nombre" type="text"
+                class="mt-2 w-full px-5 py-4 bg-gray-50 border border-gray-200 rounded-2xl focus:border-[#b5943a]"
+                required />
             </div>
             <div>
               <label class="text-sm font-medium text-gray-600">Apellido</label>
-              <input v-model="form.apellido" type="text" class="mt-2 w-full px-5 py-4 bg-gray-50 border border-gray-200 rounded-2xl focus:border-[#b5943a]" required />
+              <input v-model="form.apellido" type="text"
+                class="mt-2 w-full px-5 py-4 bg-gray-50 border border-gray-200 rounded-2xl focus:border-[#b5943a]"
+                required />
             </div>
           </div>
 
           <div>
             <label class="text-sm font-medium text-gray-600">Correo institucional (@ucb.edu.bo)</label>
-            <input v-model="form.correo" type="email" class="mt-2 w-full px-5 py-4 bg-gray-50 border border-gray-200 rounded-2xl focus:border-[#b5943a]" required />
+            <input v-model="form.correo" type="email"
+              class="mt-2 w-full px-5 py-4 bg-gray-50 border border-gray-200 rounded-2xl focus:border-[#b5943a]"
+              required />
           </div>
 
           <div class="grid grid-cols-2 gap-5">
             <div>
               <label class="text-sm font-medium text-gray-600">Carrera</label>
-              <select
-                v-model="form.id_carrera"
+              <select v-model="form.id_carrera"
                 class="mt-2 w-full px-5 py-4 bg-gray-50 border border-gray-200 rounded-2xl focus:border-[#b5943a] text-gray-700"
-                required
-              >
+                required>
                 <option value="" disabled>Selecciona tu carrera</option>
-                <option
-                  v-for="carrera in carreras"
-                  :key="carrera.id_carrera"
-                  :value="carrera.id_carrera"
-                >
+                <option v-for="carrera in carreras" :key="carrera.id_carrera" :value="carrera.id_carrera">
                   {{ carrera.carrera }}
                 </option>
               </select>
@@ -46,7 +49,8 @@
             </div>
             <div>
               <label class="text-sm font-medium text-gray-600">Teléfono</label>
-              <input v-model="form.telefono" type="tel" class="mt-2 w-full px-5 py-4 bg-gray-50 border border-gray-200 rounded-2xl focus:border-[#b5943a]" />
+              <input v-model="form.telefono" type="tel"
+                class="mt-2 w-full px-5 py-4 bg-gray-50 border border-gray-200 rounded-2xl focus:border-[#b5943a]" />
             </div>
           </div>
 
@@ -55,33 +59,55 @@
             <label class="text-sm font-medium text-gray-600">Contraseña</label>
             <div class="relative">
               <input v-model="form.contrasena" :type="showPassword ? 'text' : 'password'" @input="calcularFuerza"
-                     class="mt-2 w-full px-5 py-4 bg-gray-50 border border-gray-200 rounded-2xl focus:border-[#b5943a] pr-12" required />
-              <button type="button" @click="showPassword = !showPassword" class="absolute right-6 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
-                <svg v-if="showPassword" xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5 16.477 5 20.268 7.943 21.542 12 20.268 16.057 16.477 19 12 19 7.523 19 3.732 19 3.732 16.057 2.458 12z" /></svg>
-                <svg v-else xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908l3.42 3.42" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3l18 18" /></svg>
+                class="mt-2 w-full px-5 py-4 bg-gray-50 border border-gray-200 rounded-2xl focus:border-[#b5943a] pr-12"
+                required />
+              <button type="button" @click="showPassword = !showPassword"
+                class="absolute right-6 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
+                <svg v-if="showPassword" xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none"
+                  viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M2.458 12C3.732 7.943 7.523 5 12 5 16.477 5 20.268 7.943 21.542 12 20.268 16.057 16.477 19 12 19 7.523 19 3.732 19 3.732 16.057 2.458 12z" />
+                </svg>
+                <svg v-else xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24"
+                  stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908l3.42 3.42" />
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3l18 18" />
+                </svg>
               </button>
             </div>
 
             <div class="flex items-center gap-3 mt-3">
               <div class="flex-1 h-2.5 bg-gray-200 rounded-full overflow-hidden">
-                <div class="h-full transition-all duration-300" :style="{ width: porcentajeFuerza + '%', backgroundColor: colorFuerza }"></div>
+                <div class="h-full transition-all duration-300"
+                  :style="{ width: porcentajeFuerza + '%', backgroundColor: colorFuerza }"></div>
               </div>
               <span class="text-xs font-medium" :style="{ color: colorFuerza }">{{ etiquetaFuerza }}</span>
             </div>
 
             <ul class="mt-4 space-y-1 text-sm">
-              <li v-for="req in requisitos" :key="req.label" :class="req.met ? 'text-green-600' : 'text-red-500'">{{ req.label }}</li>
+              <li v-for="req in requisitos" :key="req.label" :class="req.met ? 'text-green-600' : 'text-red-500'">{{
+                req.label }}</li>
             </ul>
           </div>
 
           <div>
             <label class="text-sm font-medium text-gray-600">Confirmar Contraseña</label>
-            <input v-model="form.confirmar" type="password" class="mt-2 w-full px-5 py-4 bg-gray-50 border border-gray-200 rounded-2xl focus:border-[#b5943a]" required />
+            <input v-model="form.confirmar" type="password"
+              class="mt-2 w-full px-5 py-4 bg-gray-50 border border-gray-200 rounded-2xl focus:border-[#b5943a]"
+              required />
           </div>
 
-          <button type="submit" :disabled="loading" class="w-full py-4 bg-gradient-to-r from-[#1b2a4a] to-[#002349] text-white font-semibold rounded-2xl hover:brightness-110 mt-6 disabled:opacity-50">
+          <button type="submit" :disabled="loading"
+            class="w-full py-4 bg-gradient-to-r from-[#1b2a4a] to-[#002349] text-white font-semibold rounded-2xl hover:brightness-110 mt-6 disabled:opacity-50">
             {{ loading ? 'Registrando...' : 'Registrarme como Estudiante' }}
           </button>
+          <p class="text-center text-sm text-gray-500 mt-2">
+          ¿Ya tienes cuenta?
+          <router-link to="/login" class="text-[#b5943a] font-medium hover:underline">Inicia sesión</router-link>
+        </p>
         </form>
       </div>
     </div>
