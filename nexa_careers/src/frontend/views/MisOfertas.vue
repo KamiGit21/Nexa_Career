@@ -8,7 +8,7 @@
           <p class="text-gray-500 mt-1">Gestiona las oportunidades que has publicado</p>
         </div>
         <router-link to="/mis-ofertas/nueva"
-                     class="px-6 py-3 bg-[#1b2a4a] text-white rounded-2xl font-medium flex items-center gap-2 hover:bg-[#0f1a2e]">
+          class="px-6 py-3 bg-[#1b2a4a] text-white rounded-2xl font-medium flex items-center gap-2 hover:bg-[#0f1a2e]">
           + Nueva Oferta
         </router-link>
       </div>
@@ -26,31 +26,64 @@
           <div class="col-span-2">Categoría</div>
           <div class="col-span-2">Apertura</div>
           <div class="col-span-1 text-center">Postulantes</div>
-          <div class="col-span-2 text-center">Acciones</div>
+          <div class="col-span-3 text-center">Acciones</div>
         </div>
 
-        <div v-for="oferta in ofertas" :key="oferta.id_oferta" 
-             class="grid grid-cols-12 items-center px-8 py-6 border-b hover:bg-gray-50">
-          <div class="col-span-5">
+        <div v-for="oferta in ofertas" :key="oferta.id_oferta"
+          class="grid grid-cols-12 items-center px-8 py-6 border-b hover:bg-gray-50">
+          <div class="col-span-4">
             <p class="font-semibold text-[#1b2a4a]">{{ oferta.oferta }}</p>
             <p class="text-sm text-gray-500 line-clamp-2">{{ oferta.descripcion }}</p>
           </div>
           <div class="col-span-2">{{ oferta.categoria || 'General' }}</div>
           <div class="col-span-2">{{ formatearFecha(oferta.fecha_apertura) }}</div>
           <div class="col-span-1 text-center font-medium">{{ oferta.postulantes_count || 0 }}</div>
-          <div class="col-span-2 text-center flex gap-2 justify-center">
-            <button @click="verPostulantes(oferta.id_oferta)" 
-                    class="px-3 py-1 bg-green-600 text-white rounded-lg text-sm hover:bg-green-700">
+
+          <div class="col-span-3 text-center flex gap-3 justify-center"> <button
+              @click="verPostulantes(oferta.id_oferta)"
+              class="px-4 py-2 bg-green-600 text-white rounded-xl text-xs font-medium hover:bg-green-700 transition-colors">
               Postulantes
             </button>
-            <button @click="editarOferta(oferta.id_oferta)" 
-                    class="px-3 py-1 bg-yellow-500 text-white rounded-lg text-sm hover:bg-yellow-600">
+            <button @click="editarOferta(oferta.id_oferta)"
+              class="px-4 py-2 bg-yellow-500 text-white rounded-xl text-xs font-medium hover:bg-yellow-600 transition-colors">
               Editar
+            </button>
+            <button @click="prepararBaja(oferta)"
+              class="px-4 py-2 bg-red-600 text-white rounded-xl text-xs font-medium hover:bg-red-700 transition-colors">
+              Dar de Baja
             </button>
           </div>
         </div>
       </div>
     </div>
+    <Transition name="fade">
+      <div v-if="showModal"
+        class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm px-4">
+        <div class="bg-white rounded-3xl p-8 max-w-md w-full shadow-2xl transform transition-all">
+          <div class="text-center">
+            <div class="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-red-100 mb-6">
+              <span class="text-red-600 text-3xl">⚠️</span>
+            </div>
+            <h3 class="text-xl font-bold text-[#1b2a4a] mb-2">¿Está seguro que desea cerrar esta oferta?</h3>
+            <p class="text-gray-500 mb-8">
+              Estás a punto de dar de baja la oferta: <br>
+              <span class="font-bold text-slate-800">"{{ ofertaSeleccionada?.oferta }}"</span>.
+            </p>
+
+            <div class="flex gap-4">
+              <button @click="showModal = false"
+                class="flex-1 px-4 py-3 bg-gray-100 text-gray-700 rounded-xl font-semibold hover:bg-gray-200 transition-colors">
+                Cancelar
+              </button>
+              <button @click="confirmarBaja"
+                class="flex-1 px-4 py-3 bg-red-600 text-white rounded-xl font-semibold hover:bg-red-700 transition-colors">
+                Sí, Dar de Baja
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </Transition>
   </div>
 </template>
 
@@ -62,6 +95,22 @@ import { listarOfertasPorEmpleador } from '../services/ofertaService.js'
 const router = useRouter()
 const ofertas = ref([])
 const loading = ref(true)
+
+const showModal = ref(false)
+const ofertaSeleccionada = ref(null)
+
+const prepararBaja = (oferta) => {
+  ofertaSeleccionada.value = oferta
+  showModal.value = true
+}
+
+const confirmarBaja = async () => {
+  console.log('Iniciando proceso de baja para ID:', ofertaSeleccionada.value.id_oferta)
+
+  //Funcion de eliminar logica
+
+  showModal.value = false
+}
 
 const formatearFecha = (fecha) => {
   if (!fecha) return 'No especificada'
@@ -77,13 +126,13 @@ const cargarOfertas = async () => {
       router.push('/inicio-sesion')
       return
     }
-    
+
     const idEmpleador = sesion.id
     console.log('Cargando ofertas para empleador:', idEmpleador)
-    
+
     const response = await listarOfertasPorEmpleador(idEmpleador)
     console.log('Respuesta del backend:', response)
-    
+
     if (response.success) {
       ofertas.value = response.data || []
     } else {
@@ -106,3 +155,23 @@ const editarOferta = (idOferta) => {
 
 onMounted(cargarOfertas)
 </script>
+
+<style scoped>
+/* Animacion de modal*/
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.3s ease;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}
+
+.line-clamp-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+</style>

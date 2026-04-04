@@ -39,6 +39,8 @@ const menuItems = computed(() => [
   { path: '/ofertas', text: 'Ofertas Laborales', icon: '🏢' },
   { path: '#', text: 'Estudiantes', icon: '🎓', count: props.stats.estudiantes },
   { path: '#', text: 'Empleadores', icon: '💻', count: props.stats.empleadores },
+  { path: '#', text: 'Supervisores', icon: '👨‍💼' },
   { path: '/registro-supervisor', text: 'Registrar Supervisor', icon: '📋' },
+  
 ]);
 </script>

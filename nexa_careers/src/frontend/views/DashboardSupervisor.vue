@@ -5,7 +5,7 @@
       <section class="p-8 overflow-y-auto">
 
         <div class="mb-8">
-          <h1 class="text-2xl font-bold text-slate-800">Bienvenido, {{ supervisor.nombre }}</h1>
+          <h1 class="text-2xl font-bold text-slate-800">Bienvenid@, {{ supervisor.nombre }}</h1>
           <p class="text-sm text-gray-500">{{ fechaFormateada }} · Resumen general del sistema</p>
         </div>
 
