@@ -59,3 +59,13 @@ export const listarCategorias = async () => {
     return { success: false, data: [] }
   }
 }
+
+export const listarCursosPublicos = async () => {
+  try {
+    const res = await fetch(`${API_URL}/cursos`)
+    return await res.json()
+  } catch (error) {
+    console.error('Error en listarCursosPublicos:', error)
+    return { success: false, message: error.message }
+  }
+}
