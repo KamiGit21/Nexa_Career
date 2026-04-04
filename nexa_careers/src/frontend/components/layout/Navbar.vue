@@ -9,17 +9,21 @@
     <div class="flex-1 flex justify-center gap-10 text-lg">
       <router-link to="/home" class="hover:text-[#d0b06d] transition-colors">Inicio</router-link>
 
-      <!-- Catálogo visible para todos los roles autenticados -->
+      <!-- Visible para todos los autenticados -->
       <router-link v-if="authState.rol" to="/ofertas"
         class="hover:text-[#d0b06d] transition-colors">Ofertas</router-link>
 
       <!-- Empleador -->
       <router-link v-if="authState.rol === 'empleador'" to="/mis-ofertas"
         class="hover:text-[#d0b06d] transition-colors">Mis Ofertas</router-link>
+      <router-link v-if="authState.rol === 'empleador'" to="/mis-cursos"
+        class="hover:text-[#d0b06d] transition-colors">Mis Cursos</router-link>
       <router-link v-if="authState.rol === 'empleador'" to="/publicar-curso"
         class="hover:text-[#d0b06d] transition-colors">Publicar Curso</router-link>
 
       <!-- Estudiante -->
+      <router-link v-if="authState.rol === 'estudiante'" to="/mis-cursos"
+        class="hover:text-[#d0b06d] transition-colors">Mis Cursos</router-link>
       <router-link v-if="authState.rol === 'estudiante'" to="/publicar-curso"
         class="hover:text-[#d0b06d] transition-colors">Publicar Curso</router-link>
 
