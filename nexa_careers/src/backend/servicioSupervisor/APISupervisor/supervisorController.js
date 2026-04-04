@@ -3,7 +3,7 @@ import db from '../../api-gateway/db.js';
 // 1. POST: Registrar supervisor (activo = 1 por defecto)
 export const registrarSupervisor = async (req, res) => {
   const { nombre, telefono, gmail, contrasena } = req.body;
-  
+
   if (!nombre || !gmail || !contrasena) {
     return res.status(400).json({ success: false, message: 'El nombre, gmail y contraseña son obligatorios' });
   }
@@ -14,7 +14,7 @@ export const registrarSupervisor = async (req, res) => {
     if (existingEmail.length > 0) {
       return res.status(400).json({ success: false, message: 'Este correo electrónico ya está registrado.' });
     }
-    
+
     const activo = 1; // 1 equivale a true/activo en tinyint(1)
     const [result] = await db.query(
       `INSERT INTO supervisor (nombre, telefono, gmail, contrasena, activo) 
@@ -69,7 +69,7 @@ export const buscarSupervisorPorGmail = async (req, res) => {
 export const actualizarPerfil = async (req, res) => {
   const { id } = req.params;
   const { nombre, telefono, gmail } = req.body;
-  
+
   try {
     const [result] = await db.query(
       `UPDATE supervisor SET nombre = ?, telefono = ?, gmail = ? WHERE id_supervisor = ?`,
@@ -87,7 +87,7 @@ export const actualizarPerfil = async (req, res) => {
 export const cambiarContrasena = async (req, res) => {
   const { id } = req.params;
   const { contrasena } = req.body;
-  
+
   if (!contrasena) return res.status(400).json({ success: false, message: 'La nueva contraseña es obligatoria' });
 
   try {
@@ -115,13 +115,110 @@ export const cambiarEstado = async (req, res) => {
   }
 };
 
+// 8. PUT: Bloquear usuario (cambiar estado a inactivo) - GPA 300
+export const bloquearUsuario = async (req, res) => {
+  const { tipo_usuario, id_usuario } = req.body;
+  const { id_supervisor } = req.params; // ID del supervisor que realiza el bloqueo
 
-// 8. GET: Estadisticas de supervisores (empleadores, postulantes, ofertas)
+  // Validar parámetros
+  if (!tipo_usuario || !id_usuario || !id_supervisor) {
+    return res.status(400).json({
+      success: false,
+      message: 'tipo_usuario, id_usuario e id_supervisor son obligatorios'
+    });
+  }
+
+  const tiposValidos = ['estudiante', 'empleador', 'supervisor'];
+  if (!tiposValidos.includes(tipo_usuario)) {
+    return res.status(400).json({
+      success: false,
+      message: 'tipo_usuario debe ser: estudiante, empleador o supervisor'
+    });
+  }
+
+  try {
+    // Verificar que el supervisor existe y está activo
+    const [supervisor] = await db.query('SELECT activo FROM supervisor WHERE id_supervisor = ? AND activo = 1', [id_supervisor]);
+    if (supervisor.length === 0) {
+      return res.status(403).json({ success: false, message: 'Supervisor no autorizado o inactivo' });
+    }
+
+    // DEMO. Para bloqueo de supervisor (extra): verificar confirmaciones
+    if (tipo_usuario === 'supervisor') {
+      const confirmadores = req.body.confirmadores || [];
+      if (!Array.isArray(confirmadores) || confirmadores.length < 2) {
+        return res.status(400).json({
+          success: false,
+          message: 'Para bloquear un supervisor, se requieren al menos 2 confirmadores (array de id_supervisor)'
+        });
+      }
+
+      // Verificar que los confirmadores existen y están activos
+      for (const id_conf of confirmadores) {
+        const [conf] = await db.query('SELECT activo FROM supervisor WHERE id_supervisor = ? AND activo = 1', [id_conf]);
+        if (conf.length === 0) {
+          return res.status(400).json({
+            success: false,
+            message: `Confirmador ${id_conf} no existe o no está activo`
+          });
+        }
+      }
+    }
+
+    // Determinar tabla y columna ID según tipo_usuario
+    let tabla, columnaId;
+    switch (tipo_usuario) {
+      case 'estudiante':
+        tabla = 'estudiante';
+        columnaId = 'id_estudiante';
+        break;
+      case 'empleador':
+        tabla = 'empleador';
+        columnaId = 'id_empleador';
+        break;
+      case 'supervisor':
+        tabla = 'supervisor';
+        columnaId = 'id_supervisor';
+        break;
+    }
+
+    // Verificar que el usuario existe
+    const [usuario] = await db.query(`SELECT activo FROM ${tabla} WHERE ${columnaId} = ?`, [id_usuario]);
+    if (usuario.length === 0) {
+      return res.status(404).json({ success: false, message: `${tipo_usuario} no encontrado` });
+    }
+
+    if (usuario[0].activo === 0) {
+      return res.status(400).json({ success: false, message: `${tipo_usuario} ya está inactivo` });
+    }
+
+    // Bloquear usuario (activo = 0, para inactivar dicho usuario)
+    const [result] = await db.query(`UPDATE ${tabla} SET activo = 0 WHERE ${columnaId} = ?`, [id_usuario]);
+
+    if (result.affectedRows === 0) {
+      return res.status(500).json({ success: false, message: 'Error al bloquear usuario' });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: `${tipo_usuario} bloqueado exitosamente`,
+      tipo_usuario,
+      id_usuario,
+      //fecha_bloqueo: new Date().toISOString()
+    });
+
+  } catch (error) {
+    console.error('Error al bloquear usuario:', error);
+    res.status(500).json({ success: false, message: 'Error interno al bloquear usuario' });
+  }
+};
+
+// 9. GET: Estadisticas de supervisores (empleadores, postulantes, ofertas)
 export const obtenerEstadisticasDashboard = async (req, res) => {
   try {
     //Contar Empleadores
     const [[{ totalEmpleadores }]] = await db.query('SELECT COUNT(*) as totalEmpleadores FROM empleador');
-    
+
     //Contar Postulaciones totales
     const [[{ totalPostulaciones }]] = await db.query('SELECT COUNT(*) as totalPostulaciones FROM postulante');
 
