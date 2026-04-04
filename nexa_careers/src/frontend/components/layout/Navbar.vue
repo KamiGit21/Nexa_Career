@@ -1,35 +1,57 @@
 <template>
   <nav class="bg-[#1b2a4a] h-20 flex items-center px-8 text-white sticky top-0 z-50 shadow-lg">
+    <!-- Logo -->
     <div class="flex items-center gap-3">
-      <div class="w-9 h-9 bg-[#d0b06d] rounded-2xl flex items-center justify-center text-[#1b2a4a] font-bold text-xl">N
+      <div class="w-9 h-9 bg-[#d0b06d] rounded-2xl flex items-center justify-center text-[#1b2a4a] font-bold text-xl">
+        N
       </div>
       <span class="text-2xl font-semibold tracking-tight">Nexa Careers</span>
     </div>
 
+    <!-- Enlaces centrales -->
     <div class="flex-1 flex justify-center gap-10 text-lg">
-      <router-link to="/home" class="hover:text-[#d0b06d] transition-colors">Inicio</router-link>
+      <router-link to="/home" class="hover:text-[#d0b06d] transition-colors">
+        Inicio
+      </router-link>
 
-      <!-- Visible para todos los autenticados -->
-      <router-link v-if="authState.rol" to="/ofertas"
-        class="hover:text-[#d0b06d] transition-colors">Ofertas</router-link>
+      <!-- Siempre visibles (públicos) -->
+      <router-link to="/ofertas" class="hover:text-[#d0b06d] transition-colors">
+        Ofertas Laborales
+      </router-link>
 
-      <!-- Empleador -->
-      <router-link v-if="authState.rol === 'empleador'" to="/mis-ofertas"
-        class="hover:text-[#d0b06d] transition-colors">Mis Ofertas</router-link>
-      <router-link v-if="authState.rol === 'empleador'" to="/mis-cursos"
-        class="hover:text-[#d0b06d] transition-colors">Mis Cursos</router-link>
-      <router-link v-if="authState.rol === 'empleador'" to="/publicar-curso"
-        class="hover:text-[#d0b06d] transition-colors">Publicar Curso</router-link>
+      <router-link to="/cursos" class="hover:text-[#d0b06d] transition-colors">
+        Catálogo de Cursos
+      </router-link>
 
-      <!-- Estudiante -->
-      <router-link v-if="authState.rol === 'estudiante'" to="/mis-cursos"
-        class="hover:text-[#d0b06d] transition-colors">Mis Cursos</router-link>
-      <router-link v-if="authState.rol === 'estudiante'" to="/publicar-curso"
-        class="hover:text-[#d0b06d] transition-colors">Publicar Curso</router-link>
+      <!-- Solo visibles cuando hay sesión -->
+      <template v-if="authState.rol">
+        <!-- Empleador -->
+        <router-link v-if="authState.rol === 'empleador'" to="/mis-ofertas"
+          class="hover:text-[#d0b06d] transition-colors">
+          Mis Ofertas
+        </router-link>
+        <router-link v-if="authState.rol === 'empleador'" to="/mis-cursos"
+          class="hover:text-[#d0b06d] transition-colors">
+          Mis Cursos
+        </router-link>
+        <router-link v-if="authState.rol === 'empleador'" to="/publicar-curso"
+          class="hover:text-[#d0b06d] transition-colors">
+          Publicar Curso
+        </router-link>
 
-      <!-- Supervisor: sin links extra, tiene sidebar propio -->
+        <!-- Estudiante -->
+        <router-link v-if="authState.rol === 'estudiante'" to="/mis-cursos"
+          class="hover:text-[#d0b06d] transition-colors">
+          Mis Cursos
+        </router-link>
+        <router-link v-if="authState.rol === 'estudiante'" to="/publicar-curso"
+          class="hover:text-[#d0b06d] transition-colors">
+          Publicar Curso
+        </router-link>
+      </template>
     </div>
 
+    <!-- Zona derecha -->
     <div class="flex items-center gap-6 relative">
       <div v-if="authState.rol" class="flex items-center gap-4">
         <div class="text-right">
@@ -42,6 +64,7 @@
           {{ authState.email?.charAt(0).toUpperCase() }}
         </div>
 
+        <!-- Menú desplegable -->
         <div v-if="menuAbierto"
           class="absolute right-0 top-16 w-48 bg-white rounded-2xl shadow-xl py-2 z-50 border border-gray-100 overflow-hidden">
           <router-link v-if="authState.rol !== 'supervisor'"
@@ -64,6 +87,7 @@
         </div>
       </div>
 
+      <!-- Botón cuando NO está logueado -->
       <router-link v-else to="/login"
         class="px-6 py-2.5 bg-white text-[#1b2a4a] font-semibold rounded-2xl hover:bg-[#d0b06d] hover:text-white transition-all">
         Iniciar Sesión
