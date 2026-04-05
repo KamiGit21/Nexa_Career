@@ -72,3 +72,58 @@ export const obtenerPostulacionesPorEstudiante = async (id) => {
     return { success: false, message: error.message };
   }
 };
+
+// Subir CV
+export const subirCV = async (idEstudiante, file) => {
+  try {
+    console.log('=== estudianteService.subirCV ===');
+    console.log('ID Estudiante:', idEstudiante);
+    console.log('Archivo:', file.name, file.type, file.size);
+    
+    const formData = new FormData();
+    formData.append('cv', file);
+    
+    // Verificar el contenido del FormData
+    for (let pair of formData.entries()) {
+      console.log('FormData entry:', pair[0], pair[1]);
+    }
+    
+    const res = await fetch(`${API_URL}/estudiantes/${idEstudiante}/cv/upload`, {
+      method: 'POST',
+      body: formData
+      // No incluir Content-Type, el navegador lo setea automáticamente
+    });
+    
+    console.log('Response status:', res.status);
+    const data = await res.json();
+    console.log('Response data:', data);
+    return data;
+  } catch (error) {
+    console.error('Error en subirCV:', error);
+    return { success: false, message: error.message };
+  }
+};
+
+// Obtener información del CV
+export const obtenerInfoCV = async (idEstudiante) => {
+  try {
+    const res = await fetch(`${API_URL}/estudiantes/${idEstudiante}/cv/info`);
+    return await res.json();
+  } catch (error) {
+    console.error('Error en obtenerInfoCV:', error);
+    return { success: false, message: error.message };
+  }
+};
+
+// Eliminar CV
+export const eliminarCV = async (idEstudiante) => {
+  try {
+    const res = await fetch(`${API_URL}/estudiantes/${idEstudiante}/cv`, {
+      method: 'DELETE'
+    });
+    return await res.json();
+  } catch (error) {
+    console.error('Error en eliminarCV:', error);
+    return { success: false, message: error.message };
+  }
+};

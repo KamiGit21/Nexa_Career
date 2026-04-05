@@ -19,12 +19,17 @@
     <TextAreaField label="Descripción / Perfil profesional:"
       placeholder="Cuéntanos sobre ti, tus habilidades y experiencia académica..." maxlength="500" />
 
+    <!-- SECCIÓN DE CV -->
     <div class="cv-section">
       <label class="label-main">Hoja de Vida (CV):</label>
-      <FileUpload ref="cvUploadRef" @file-uploaded="handleFileUpload" />
-      <div class="action-buttons">
-          <button type="button" class="btn-sm btn-dark" @click="eliminarCV">Eliminar</button>
-      </div>
+      <CvUpload 
+        :idEstudiante="idEstudiante"
+        @cv-subido="handleCVSubido"
+        @cv-eliminado="handleCVEliminado"
+      />
+      <p class="text-xs text-gray-500 mt-1">
+        Solo archivos PDF, máximo 5MB
+      </p>
     </div>
 
     <div class="password-group">
@@ -43,30 +48,38 @@
 </template>
 
 <script setup>
-import { ref } from 'vue';
+import { ref, onMounted } from 'vue';
+import { useRoute } from 'vue-router';
 import AvatarUpload from "./AvatarUpload.vue";
 import InputField from "./InputField.vue";
 import TextAreaField from "./TextAreaField.vue";
 import PasswordField from "./PasswordField.vue";
-import FileUpload from "./FileUpload.vue";
+import CvUpload from "../CvUpload.vue";
 import SaveButton from "./SaveButton.vue";
 
-const cvFile = ref(null);     
-const cvUploadRef = ref(null);
+const route = useRoute();
+const idEstudiante = ref(route.params.id);
 
-const handleFileUpload = (file) => {
-  cvFile.value = file;
-  console.log("Archivo listo para subir:", file.name);
+// Verificar en consola que el id se está obteniendo correctamente
+//console.log('ID del estudiante desde la URL:', idEstudiante.value);
+
+// probar este log
+console.log('PerfilForm - ID desde URL:', route.params.id);
+console.log('PerfilForm - idEstudiante:', idEstudiante.value);
+
+const handleCVSubido = (data) => {
+  console.log('CV subido correctamente:', data);
+  alert('CV subido correctamente');
 };
 
-const eliminarCV = () => {
-  cvFile.value = null;
-  cvUploadRef.value.clear();
-  console.log("Archivo eliminado");
+const handleCVEliminado = () => {
+  console.log('CV eliminado correctamente');
+  alert('CV eliminado correctamente');
 };
 
 const guardar = async () => {
-  
+  console.log('Guardando perfil...');
+  // Aquí va tu lógica de guardado del perfil
 };
 </script>
 
