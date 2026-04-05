@@ -44,6 +44,13 @@
           Mis Cursos
         </router-link>
 
+        <router-link
+          v-if="authState.rol === 'estudiante'"
+          to="/mis-postulaciones"
+          class="hover:text-[#d0b06d] transition-colors">
+          Mis Postulaciones
+        </router-link>
+
       </template>
       <router-link v-if="authState.rol === 'estudiante'" to="/mis-postulaciones"
         class="hover:text-[#d0b06d] transition-colors">

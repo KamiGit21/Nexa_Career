@@ -16,6 +16,7 @@ import ListaPostulantes from '@/views/ListaPostulantes.vue'
 import DetallePostulante from '@/views/DetallePostulante.vue'
 import EditarOferta from '@/views/EditarOferta.vue'
 import MisPostulaciones from '@/views/MisPostulaciones.vue'
+import MisPostulaciones from '@/views/MisPostulaciones.vue'
 
 // Perfiles
 import PerfilEstudiante from '@/views/EditarPerfilEstudiante.vue'
@@ -30,6 +31,11 @@ import CatalogoCursos from '@/views/CatalogoCursos.vue'
 import DetalleCurso from '@/views/DetalleCurso.vue'
 import EmpleadorCursos from '@/views/EmpleadorCursos.vue'
 import EstudianteCursos from '@/views/EstudianteCursos.vue'
+
+//Logs del supervisor
+import ListaEstudiantes from '@/views/ListaEstudiantes.vue'
+import ListaEmpleadores from '@/views/ListaEmpleadores.vue'
+import ListaSupervisores from '@/views/ListaSupervisores.vue'
 
 const routes = [
   { path: '/', redirect: '/home' },
@@ -72,6 +78,8 @@ const routes = [
   { path: '/mis-ofertas/nueva', name: 'NuevaOferta', component: NuevaOferta, meta: { requiereRol: ['empleador'] } },
   { path: '/mis-ofertas/:ofertaId/postulantes', name: 'ListaPostulantes', component: ListaPostulantes, meta: { requiereRol: ['empleador'] } },
   { path: '/postulante/:id', name: 'DetallePostulante', component: DetallePostulante, meta: { requiereRol: ['empleador'] } },
+  { path: '/mis-ofertas/:ofertaId/editar', name: 'EditarOferta', component: EditarOferta, meta: { requiereRol: ['empleador'] } },
+  { path: '/mis-postulaciones', name: 'MisPostulaciones', component: MisPostulaciones, meta: { requiereRol: ['estudiante'] } },
   { path: '/mis-ofertas/:ofertaId/editar', name: 'EditarOferta', component: EditarOferta, meta: { requiereRol: ['empleador'] } }, //cambie esto
   { path: '/mis-postulaciones', name: 'MisPostulaciones', component: MisPostulaciones, meta: { requiereRol: ['estudiante'] } },
   //{ path: '/:pathMatch(.*)*', redirect: '/home' },
@@ -116,7 +124,27 @@ const routes = [
     meta: { requiereRol: ['supervisor'] }
   },
 
-  { path: '/:pathMatch(.*)*', redirect: '/home' }
+  //Logs del supervisor
+  {
+    path: '/supervisor/estudiantes',
+    name: 'ListaEstudiantes',
+    component: ListaEstudiantes,
+    meta: { requiereRol: ['supervisor'] }
+  },
+  {
+    path: '/supervisor/empleadores',
+    name: 'ListaEmpleadores',
+    component: ListaEmpleadores,
+    meta: { requiereRol: ['supervisor'] }
+  },
+  {
+    path: '/supervisor/supervisores',
+    name: 'ListaSupervisores',
+    component: ListaSupervisores,
+    meta: { requiereRol: ['supervisor'] }
+  },
+
+  { path: '/:pathMatch(.*)*', redirect: '/home' },
 ]
 
 const router = createRouter({

@@ -146,3 +146,53 @@ export const cambiarEstadoOferta = async (id, estado, rechazo = null) => {
     return { success: false, message: error.message };
   }
 };
+
+export const listarEstudiantesAdmin = async () => {
+  try {
+    const res = await fetch(`${API_URL}/supervisores/admin/estudiantes`);
+    return await res.json();
+  } catch (error) {
+    console.error('Error en listarEstudiantesAdmin:', error);
+    return { success: false, message: error.message };
+  }
+};
+ 
+export const listarEmpleadoresAdmin = async () => {
+  try {
+    const res = await fetch(`${API_URL}/supervisores/admin/empleadores`);
+    return await res.json();
+  } catch (error) {
+    console.error('Error en listarEmpleadoresAdmin:', error);
+    return { success: false, message: error.message };
+  }
+};
+ 
+export const listarSupervisoresAdmin = async () => {
+  try {
+    const res = await fetch(`${API_URL}/supervisores/admin/supervisores`);
+    return await res.json();
+  } catch (error) {
+    console.error('Error en listarSupervisoresAdmin:', error);
+    return { success: false, message: error.message };
+  }
+};
+ 
+export const obtenerLogsEstudiante = async (id) => {
+  try {
+    const res = await fetch(`${API_URL}/supervisores/admin/logs/estudiante/${id}`);
+    return await res.json();
+  } catch (error) {
+    console.error('Error en obtenerLogsEstudiante:', error);
+    return { success: false, message: error.message };
+  }
+};
+ 
+export const obtenerLogsEmpleador = async (id) => {
+  try {
+    const res = await fetch(`${API_URL}/supervisores/admin/logs/empleador/${id}`);
+    return await res.json();
+  } catch (error) {
+    console.error('Error en obtenerLogsEmpleador:', error);
+    return { success: false, message: error.message };
+  }
+};
