@@ -1,8 +1,6 @@
 <template>
   <div class="w-full">
-    <!-- Sin archivo -->
-    <div 
-      v-if="!cvActual"
+    <div v-if="!cvUrl && !cargando" 
       class="border-2 border-dashed border-[#002349] rounded-[15px] bg-[#FAFAF8] p-8 flex flex-col items-center justify-center gap-4 cursor-pointer hover:border-[#b5943a] transition-colors"
       @click="triggerFileInput"
       @dragover.prevent="isDragging = true"
@@ -14,70 +12,145 @@
         <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
       </svg>
       <p class="text-[#002349] font-semibold text-center">Arrastra tu CV aquí o haz clic para seleccionar</p>
-      <p class="text-xs text-gray-400">PDF o DOC/DOCX · Máx. 5 MB</p>
+      <p class="text-xs text-gray-400">PDF · Máx. 5 MB</p>
     </div>
 
-    <!-- Con archivo -->
-    <div 
-      v-else
-      class="border border-[#002349] rounded-[15px] bg-[#FAFAF8] p-6 flex items-center gap-4"
-    >
+    <div v-else-if="cargando" class="text-center p-8">
+      <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-[#002349]"></div>
+      <p class="mt-2 text-[#002349]">Subiendo CV...</p>
+    </div>
+
+    <div v-else class="border border-[#002349] rounded-[15px] bg-[#FAFAF8] p-6 flex items-center gap-4">
       <div class="text-4xl">📄</div>
       <div class="flex-1 min-w-0">
-        <p class="font-semibold text-[#002349] truncate">{{ cvActual.name }}</p>
-        <p class="text-xs text-green-600 mt-0.5">✓ Archivo cargado correctamente</p>
+        <p class="font-semibold text-[#002349] truncate">{{ nombreCV }}</p>
+        <p class="text-xs text-green-600 mt-0.5">✓ CV cargado correctamente</p>
+        <div class="flex gap-3 mt-2">
+          <a :href="cvUrl" target="_blank" class="text-xs text-blue-600 hover:underline">Ver CV</a>
+          <button @click="eliminar" class="text-xs text-red-600 hover:underline">Eliminar</button>
+        </div>
       </div>
-      <button 
-        @click="removeFile" 
-        class="px-4 py-2 text-sm text-red-600 hover:bg-red-50 rounded transition-colors"
-      >
-        Eliminar
-      </button>
     </div>
 
-    <input 
-      ref="fileInput" 
-      type="file" 
-      accept=".pdf,.doc,.docx" 
-      class="hidden" 
-      @change="handleFileChange" 
-    />
+    <input ref="fileInput" type="file" accept=".pdf" class="hidden" @change="handleFileChange" />
   </div>
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted, computed } from 'vue'
+import { subirCV, obtenerInfoCV, eliminarCV } from '../services/estudianteService.js'
 
-const emit = defineEmits(['update:cv'])
+// ✅ Cambiar el tipo para aceptar String o Number
+const props = defineProps({
+  idEstudiante: {
+    type: [Number, String],  // Acepta ambos tipos
+    required: true
+  }
+})
+
+// Convertir a número para usarlo en las peticiones
+const idEstudianteNum = computed(() => Number(props.idEstudiante))
+
+console.log('CvUpload - ID recibido:', props.idEstudiante)
+console.log('CvUpload - ID convertido a número:', idEstudianteNum.value)
+
+const emit = defineEmits(['update:cv', 'cv-subido', 'cv-eliminado'])
+
 const fileInput = ref(null)
-const cvActual = ref(null)
 const isDragging = ref(false)
+const cargando = ref(false)
+const cvUrl = ref(null)
+const nombreCV = ref('')
+
+const cargarInfoCV = async () => {
+  try {
+    const response = await obtenerInfoCV(idEstudianteNum.value)
+    if (response.success && response.hasCV) {
+      cvUrl.value = `http://localhost:3000/api/estudiantes/${idEstudianteNum.value}/cv/ver`
+      nombreCV.value = response.data.filename
+    } else {
+      cvUrl.value = null
+      nombreCV.value = ''
+    }
+  } catch (error) {
+    console.error('Error al cargar info del CV:', error)
+  }
+}
 
 const triggerFileInput = () => fileInput.value.click()
 
-const handleFileChange = (e) => {
+const handleFileChange = async (e) => {
   const file = e.target.files[0]
-  if (file) processFile(file)
+  if (file) await subirArchivo(file)
   e.target.value = ''
 }
 
-const handleDrop = (e) => {
+const handleDrop = async (e) => {
   isDragging.value = false
   const file = e.dataTransfer.files[0]
-  if (file) processFile(file)
+  if (file) await subirArchivo(file)
 }
 
-const processFile = (file) => {
-  if (file.size > 5 * 1024 * 1024) {
-    alert('El archivo no puede superar los 5 MB')
-    return
+const subirArchivo = async (file) => {
+  console.log('=== SUBIENDO ARCHIVO ===');
+  console.log('ID Estudiante (num):', idEstudianteNum.value);
+  console.log('Archivo:', file.name, file.type, file.size);
+  
+  // Validar tipo de archivo
+  if (file.type !== 'application/pdf') {
+    alert('Formato no permitido. Solo se aceptan archivos PDF');
+    return;
   }
-  cvActual.value = file
-  emit('update:cv', file)
+
+  // Validar tamaño (5 MB)
+  if (file.size > 5 * 1024 * 1024) {
+    alert('El archivo no puede superar los 5 MB');
+    return;
+  }
+
+  cargando.value = true;
+  
+  try {
+    console.log('Llamando a subirCV...');
+    const response = await subirCV(idEstudianteNum.value, file);
+    console.log('Respuesta completa:', response);
+    
+    if (response.success) {
+      await cargarInfoCV();
+      emit('cv-subido', response.data);
+      emit('update:cv', response.data);
+    } else {
+      alert(response.message || 'Error al subir el CV');
+    }
+  } catch (error) {
+    console.error('Error detallado:', error);
+    alert('Error al subir el CV: ' + error.message);
+  } finally {
+    cargando.value = false;
+  }
 }
 
-const removeFile = () => {
-  cvActual.value = null
-  emit('update:cv', null)
+const eliminar = async () => {
+  if (!confirm('¿Estás seguro de que deseas eliminar tu CV?')) return
+  
+  try {
+    const response = await eliminarCV(idEstudianteNum.value)
+    
+    if (response.success) {
+      cvUrl.value = null
+      nombreCV.value = ''
+      emit('cv-eliminado')
+      emit('update:cv', null)
+    } else {
+      alert(response.message || 'Error al eliminar el CV')
+    }
+  } catch (error) {
+    console.error('Error:', error)
+    alert('Error al eliminar el CV')
+  }
 }
+
+onMounted(() => {
+  cargarInfoCV()
+})
 </script>

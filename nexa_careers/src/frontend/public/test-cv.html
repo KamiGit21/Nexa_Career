@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Subir CV - Nexa Careers</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 600px; margin: 50px auto; padding: 20px; }
+        .container { border: 1px solid #ddd; padding: 20px; border-radius: 10px; }
+        input, button { margin: 10px 0; padding: 10px; }
+        button { background: #002349; color: white; border: none; cursor: pointer; }
+        button:hover { background: #b5943a; }
+        .success { color: green; background: #e8f5e9; padding: 10px; border-radius: 5px; }
+        .error { color: red; background: #ffebee; padding: 10px; border-radius: 5px; }
+        pre { background: #f5f5f5; padding: 10px; overflow-x: auto; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>📄 Subir Curriculum Vitae (CV)</h2>
+        <p>Estudiante ID: <strong>1</strong></p>
+        
+        <form id="uploadForm">
+            <input type="file" id="cvFile" accept=".pdf" required />
+            <br />
+            <button type="submit">Subir CV</button>
+        </form>
+        
+        <div id="result"></div>
+    </div>
+
+    <script>
+        const form = document.getElementById('uploadForm');
+        const fileInput = document.getElementById('cvFile');
+        const resultDiv = document.getElementById('result');
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const file = fileInput.files[0];
+            if (!file) {
+                resultDiv.innerHTML = '<div class="error">❌ Por favor selecciona un archivo PDF</div>';
+                return;
+            }
+            
+            if (file.type !== 'application/pdf') {
+                resultDiv.innerHTML = '<div class="error">❌ Solo se permiten archivos PDF</div>';
+                return;
+            }
+            
+            if (file.size > 5 * 1024 * 1024) {
+                resultDiv.innerHTML = '<div class="error">❌ El archivo no puede superar los 5MB</div>';
+                return;
+            }
+            
+            resultDiv.innerHTML = '<div>📤 Subiendo archivo...</div>';
+            
+            const formData = new FormData();
+            formData.append('cv', file);
+            
+            try {
+                const response = await fetch('http://localhost:3003/api/estudiantes/1/cv/upload', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    resultDiv.innerHTML = `
+                        <div class="success">
+                            ✅ CV subido correctamente<br/>
+                            <strong>Archivo:</strong> ${data.data.filename}<br/>
+                            <strong>Tamaño:</strong> ${(data.data.size / 1024).toFixed(2)} KB<br/>
+                            <strong>Fecha:</strong> ${new Date(data.data.uploadedAt).toLocaleString()}
+                        </div>
+                    `;
+                    
+                    resultDiv.innerHTML += `<div style="margin-top: 10px;">
+                        <a href="http://localhost:3003/api/estudiantes/1/cv/ver" target="_blank">📄 Ver CV</a>
+                    </div>`;
+                } else {
+                    resultDiv.innerHTML = `<div class="error">❌ Error ${response.status}: ${data.message || JSON.stringify(data)}</div>`;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="error">❌ Error de conexión: ${error.message}</div>`;
+                console.error('Error:', error);
+            }
+        });
+    </script>
+</body>
+</html>
