@@ -6,18 +6,18 @@
     </div>
 
     <div class="row-2-col">
-      <InputField label="Nombre:" placeholder="Nombre" />
-      <InputField label="Apellido:" placeholder="Apellido" />
+      <InputField v-model="formData.nombre" label="Nombre:" placeholder="Nombre" />
+      <InputField v-model="formData.apellido" label="Apellido:" placeholder="Apellido" />
     </div>
 
-    <InputField label="Correo electrónico institucional (@ucb.edu.bo):" placeholder="usuario@ucb.edu.bo" />
+    <InputField v-model="formData.gmail" label="Correo electrónico institucional (@ucb.edu.bo):" placeholder="usuario@ucb.edu.bo" />
 
     <div class="row-2-col">
-      <InputField label="Teléfono:" placeholder="Teléfono" />
+      <InputField v-model="formData.telefono" label="Teléfono:" placeholder="Teléfono" />
     </div>
 
-    <TextAreaField label="Descripción / Perfil profesional:"
-      placeholder="Cuéntanos sobre ti, tus habilidades y experiencia académica..." maxlength="500" />
+    <TextAreaField v-model="formData.descripcion" label="Descripción / Perfil profesional:"
+      placeholder="Cuéntanos sobre ti, tus habilidades y experiencia académica..." />
 
     <!-- SECCIÓN DE CV -->
     <div class="cv-section">
@@ -36,10 +36,10 @@
       <div class="flex-between">
           <label class="label-main">Contraseña:</label>
       </div>
-      <PasswordField />
+      <PasswordField v-model="formData.contrasena" />
     </div>
 
-    <InputField label="Confirmar Contraseña:" type="password" placeholder="********" />
+    <InputField v-model="formData.confirmarContrasena" label="Confirmar Contraseña:" type="password" placeholder="********" />
 
     <div class="submit-container">
       <SaveButton label="Guardar Cambios" class="btn-submit" />
@@ -48,7 +48,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, reactive, onMounted } from 'vue';
 import { useRoute } from 'vue-router';
 import AvatarUpload from "./AvatarUpload.vue";
 import InputField from "./InputField.vue";
@@ -56,16 +56,46 @@ import TextAreaField from "./TextAreaField.vue";
 import PasswordField from "./PasswordField.vue";
 import CvUpload from "../CvUpload.vue";
 import SaveButton from "./SaveButton.vue";
+import { 
+  actualizarPerfilEstudiante, 
+  cambiarContrasenaEstudiante, 
+  obtenerEstudiantePorId, 
+  obtenerInfoCV
+} from '../../services/estudianteService.js';
 
 const route = useRoute();
-const idEstudiante = ref(route.params.id);
+const idEstudiante = ref(parseInt(route.params.id));
 
-// Verificar en consola que el id se está obteniendo correctamente
-//console.log('ID del estudiante desde la URL:', idEstudiante.value);
+// Datos del formulario
+const formData = reactive({
+  nombre: '',
+  apellido: '',
+  gmail: '',
+  telefono: '',
+  descripcion: '',
+  contrasena: '',
+  confirmarContrasena: ''
+});
 
-// probar este log
-console.log('PerfilForm - ID desde URL:', route.params.id);
-console.log('PerfilForm - idEstudiante:', idEstudiante.value);
+console.log('PerfilForm - ID:', idEstudiante.value);
+
+// Cargar datos actuales del estudiante
+const cargarDatosEstudiante = async () => {
+  try {
+    const response = await obtenerEstudiantePorId(idEstudiante.value);
+    console.log('Datos del estudiante:', response);
+    
+    if (response.success && response.data) {
+      formData.nombre = response.data.nombre || '';
+      formData.apellido = response.data.apellido || '';
+      formData.gmail = response.data.gmail || '';
+      formData.telefono = response.data.telefono || '';
+      formData.descripcion = response.data.descripcion || '';
+    }
+  } catch (error) {
+    console.error('Error al cargar datos:', error);
+  }
+};
 
 const handleCVSubido = (data) => {
   console.log('CV subido correctamente:', data);
@@ -78,9 +108,80 @@ const handleCVEliminado = () => {
 };
 
 const guardar = async () => {
-  console.log('Guardando perfil...');
-  // Aquí va tu lógica de guardado del perfil
+  console.log('=== GUARDANDO PERFIL ===');
+  console.log('Datos del formulario:', formData);
+  
+  // Validar que las contraseñas coincidan si se ingresó una nueva
+  if (formData.contrasena && formData.contrasena !== formData.confirmarContrasena) {
+    alert('Las contraseñas no coinciden');
+    return;
+  }
+  
+  try {
+    // =============================================
+    // OBTENER EL CV ACTUAL COMO URL COMPLETA
+    // =============================================
+    const infoCV = await obtenerInfoCV(idEstudiante.value);
+    console.log('Info CV:', infoCV);
+    
+    // Construir la URL completa del CV si existe
+    const cvActual = infoCV.success && infoCV.hasCV 
+      ? `http://localhost:3000/api/estudiantes/${idEstudiante.value}/cv/ver`
+      : null;
+    
+    console.log('CV Actual (URL):', cvActual);
+    
+    // 1. Actualizar perfil (datos básicos + CV como URL)
+    const perfilData = {
+      telefono: formData.telefono,
+      gmail: formData.gmail,
+      descripcion: formData.descripcion,
+      cv: cvActual  // ← Ahora es una URL válida
+    };
+    
+    console.log('Enviando al backend:', perfilData);
+    const perfilResponse = await actualizarPerfilEstudiante(idEstudiante.value, perfilData);
+    console.log('Respuesta perfil:', perfilResponse);
+    
+    if (!perfilResponse.success) {
+      alert('Error al actualizar perfil: ' + perfilResponse.message);
+      return;
+    }
+    
+    // 2. Cambiar contraseña si se ingresó una nueva
+    if (formData.contrasena) {
+      const passResponse = await cambiarContrasenaEstudiante(idEstudiante.value, {
+        contrasena: formData.contrasena
+      });
+      
+      console.log('Respuesta contraseña:', passResponse);
+      
+      if (!passResponse.success) {
+        alert('Error al cambiar contraseña: ' + passResponse.message);
+        return;
+      }
+      
+      // Limpiar campos de contraseña después de guardar
+      formData.contrasena = '';
+      formData.confirmarContrasena = '';
+    }
+    
+    alert('Perfil actualizado correctamente');
+    console.log('✅ Perfil guardado exitosamente');
+    
+    // Recargar datos actualizados
+    await cargarDatosEstudiante();
+    
+  } catch (error) {
+    console.error('Error al guardar:', error);
+    alert('Error al guardar los cambios: ' + error.message);
+  }
 };
+
+// Cargar datos al montar el componente
+onMounted(() => {
+  cargarDatosEstudiante();
+});
 </script>
 
 <style src="../../assets/styles/perfil-estudiante.css"></style>
