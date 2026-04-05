@@ -16,7 +16,6 @@ import ListaPostulantes from '@/views/ListaPostulantes.vue'
 import DetallePostulante from '@/views/DetallePostulante.vue'
 import EditarOferta from '@/views/EditarOferta.vue'
 import MisPostulaciones from '@/views/MisPostulaciones.vue'
-import MisPostulaciones from '@/views/MisPostulaciones.vue'
 
 // Perfiles
 import PerfilEstudiante from '@/views/EditarPerfilEstudiante.vue'
@@ -80,9 +79,6 @@ const routes = [
   { path: '/postulante/:id', name: 'DetallePostulante', component: DetallePostulante, meta: { requiereRol: ['empleador'] } },
   { path: '/mis-ofertas/:ofertaId/editar', name: 'EditarOferta', component: EditarOferta, meta: { requiereRol: ['empleador'] } },
   { path: '/mis-postulaciones', name: 'MisPostulaciones', component: MisPostulaciones, meta: { requiereRol: ['estudiante'] } },
-  { path: '/mis-ofertas/:ofertaId/editar', name: 'EditarOferta', component: EditarOferta, meta: { requiereRol: ['empleador'] } }, //cambie esto
-  { path: '/mis-postulaciones', name: 'MisPostulaciones', component: MisPostulaciones, meta: { requiereRol: ['estudiante'] } },
-  //{ path: '/:pathMatch(.*)*', redirect: '/home' },
 
   // Cursos - rutas separadas por rol (sin conflictos de nombre)
   { path: '/cursos', name: 'CatalogoCursos', component: CatalogoCursos },
