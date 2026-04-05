@@ -9,9 +9,8 @@ import RegistroSupervisor from '@/views/RegistroSupervisor.vue'
 
 // Ofertas y postulantes
 import CatalogoOfertas from '@/views/CatalogoOfertas.vue'
-import DetalleOferta from '@/views/DetalleOferta.vue'     // ← LÍNEA NUEVA
+import DetalleOferta from '@/views/DetalleOferta.vue'
 import MisOfertas from '@/views/MisOfertas.vue'
-import EmpleadorCursos from '@/views/EmpleadorCursos.vue'  //cursos del empleador
 import NuevaOferta from '@/views/NuevaOferta.vue'
 import ListaPostulantes from '@/views/ListaPostulantes.vue'
 import DetallePostulante from '@/views/DetallePostulante.vue'
@@ -24,42 +23,40 @@ import PerfilEmpleador from '@/views/EditarPerfilEmpleador.vue'
 // Dashboard
 import DashboardSupervisor from '@/views/DashboardSupervisor.vue'
 
-//Cursos
+// Cursos
 import PublicarCurso from '@/views/PublicarCurso.vue'
-import MisCursos from '@/views/MisCursos.vue'
 import CatalogoCursos from '@/views/CatalogoCursos.vue'
 import DetalleCurso from '@/views/DetalleCurso.vue'
+import EmpleadorCursos from '@/views/EmpleadorCursos.vue'
+import EstudianteCursos from '@/views/EstudianteCursos.vue'
 
 const routes = [
   { path: '/', redirect: '/home' },
+
   {
     path: '/home',
     name: 'Home',
     component: HomeView,
     meta: { soloPublico: true }
   },
-
   {
     path: '/login',
     name: 'InicioSesion',
     component: InicioSesion,
     meta: { soloPublico: true }
   },
-
   {
     path: '/registro-estudiante',
     name: 'RegistroEstudiante',
     component: RegistroEstudiante,
     meta: { soloPublico: true }
   },
-
   {
     path: '/registro-empleador',
     name: 'RegistroEmpleador',
     component: RegistroEmpleador,
     meta: { soloPublico: true }
   },
-
   {
     path: '/registro-supervisor',
     name: 'RegistroSupervisor',
@@ -67,51 +64,31 @@ const routes = [
     meta: { requiereRol: ['supervisor'] }
   },
 
-  { path: '/ofertas', 
-    name: 'CatalogoOfertas', 
-    component: CatalogoOfertas 
-  },
-
-
-  { path: '/ofertas/:id', name: 'DetalleOferta', component: DetalleOferta }, // ← LÍNEA NUEVA
-
+  // Ofertas
+  { path: '/ofertas', name: 'CatalogoOfertas', component: CatalogoOfertas },
+  { path: '/ofertas/:id', name: 'DetalleOferta', component: DetalleOferta },
   { path: '/mis-ofertas', name: 'MisOfertas', component: MisOfertas, meta: { requiereRol: ['empleador'] } },
-  { path: '/mis-cursos', name: 'EmpleadorCursos', component: EmpleadorCursos, meta: { requiereRol: ['empleador'] } }, //emplesaor cursos
   { path: '/mis-ofertas/nueva', name: 'NuevaOferta', component: NuevaOferta, meta: { requiereRol: ['empleador'] } },
   { path: '/mis-ofertas/:ofertaId/postulantes', name: 'ListaPostulantes', component: ListaPostulantes, meta: { requiereRol: ['empleador'] } },
   { path: '/postulante/:id', name: 'DetallePostulante', component: DetallePostulante, meta: { requiereRol: ['empleador'] } },
-  { path: '/mis-ofertas/:ofertaId/editar', name: 'EditarOferta', component: EditarOferta, meta: { requiereRol: ['empleador'] } }, //cambie esto
-  //{ path: '/:pathMatch(.*)*', redirect: '/home' },
+  { path: '/mis-ofertas/:ofertaId/editar', name: 'EditarOferta', component: EditarOferta, meta: { requiereRol: ['empleador'] } },
 
-  // Cursos
-{ 
-  path: '/mis-cursos-empleador', 
-  name: 'EmpleadorCursos', 
-  component: EmpleadorCursos, 
-  meta: { requiereRol: ['empleador'] } 
-},
-{ 
-  path: '/mis-cursos', 
-  name: 'EstudianteCursos', 
-  component: () => import('@/views/EstudianteCursos.vue'), 
-  meta: { requiereRol: ['estudiante'] } 
-},
+  // Cursos - rutas separadas por rol (sin conflictos de nombre)
+  { path: '/cursos', name: 'CatalogoCursos', component: CatalogoCursos },
+  { path: '/cursos/:id', name: 'DetalleCurso', component: DetalleCurso },
+  { path: '/publicar-curso', name: 'PublicarCurso', component: PublicarCurso, meta: { requiereRol: ['estudiante', 'empleador'] } },
 
-  { 
-    path: '/mis-cursos', 
-    name: 'MisCursos', 
-    component: MisCursos, 
-    meta: { requiereRol: ['estudiante', 'empleador'] } 
+  {
+    path: '/mis-cursos-empleador',
+    name: 'EmpleadorCursos',
+    component: EmpleadorCursos,
+    meta: { requiereRol: ['empleador'] }
   },
-
-  { path: '/cursos',
-    name: 'CatalogoCursos',
-    component: CatalogoCursos 
-  },
-
-  { path: '/cursos/:id',
-    name: 'DetalleCurso',
-    component: DetalleCurso   
+  {
+    path: '/mis-cursos',
+    name: 'EstudianteCursos',
+    component: EstudianteCursos,
+    meta: { requiereRol: ['estudiante'] }
   },
 
   // Perfiles
@@ -136,9 +113,8 @@ const routes = [
     meta: { requiereRol: ['supervisor'] }
   },
 
-    { path: '/:pathMatch(.*)*', redirect: '/home' }
+  { path: '/:pathMatch(.*)*', redirect: '/home' }
 ]
-
 
 const router = createRouter({
   history: createWebHistory(),
@@ -146,7 +122,7 @@ const router = createRouter({
   scrollBehavior() { return { top: 0 } }
 })
 
-// Navegacion por roles
+// Navegación por roles
 router.beforeEach((to, from, next) => {
   const sesion = JSON.parse(localStorage.getItem('sesion') || '{}')
 
