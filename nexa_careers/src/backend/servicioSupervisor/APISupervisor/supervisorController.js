@@ -244,3 +244,168 @@ export const obtenerEstadisticasDashboard = async (req, res) => {
     res.status(500).json({ success: false, message: 'Error al obtener estadísticas' });
   }
 };
+
+// A. Listar estudiantes con estadísticas
+export const listarEstudiantesAdmin = async (req, res) => {
+  try {
+    const [rows] = await db.query(`
+      SELECT
+        e.id_estudiante,
+        e.nombre,
+        e.apellido,
+        e.gmail,
+        e.telefono,
+        e.activo,
+        e.creado_en,
+        e.descripcion,
+        e.habilidades,
+        e.educacion,
+        e.cv,
+        c.carrera,
+        COUNT(DISTINCT p.id_postulante) AS total_postulaciones,
+        COUNT(DISTINCT cu.id_curso)     AS total_cursos
+      FROM estudiante e
+      LEFT JOIN carrera   c  ON e.id_carrera    = c.id_carrera
+      LEFT JOIN postulante p  ON e.id_estudiante = p.id_estudiante
+      LEFT JOIN curso      cu ON e.id_estudiante = cu.id_estudiante
+      GROUP BY e.id_estudiante
+      ORDER BY e.creado_en DESC
+    `);
+    res.json({ success: true, data: rows });
+  } catch (error) {
+    console.error('Error en listarEstudiantesAdmin:', error);
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+ 
+// B. Listar empleadores con estadísticas
+export const listarEmpleadoresAdmin = async (req, res) => {
+  try {
+    const [rows] = await db.query(`
+      SELECT
+        emp.id_empleador,
+        emp.empresa,
+        emp.descripcion,
+        emp.gmail,
+        emp.telefono,
+        emp.activo,
+        emp.creado_en,
+        COUNT(DISTINCT o.id_oferta)  AS total_ofertas,
+        COUNT(DISTINCT cu.id_curso)  AS total_cursos
+      FROM empleador emp
+      LEFT JOIN oferta o  ON emp.id_empleador = o.id_empleador
+      LEFT JOIN curso  cu ON emp.id_empleador = cu.id_empleador
+      GROUP BY emp.id_empleador
+      ORDER BY emp.creado_en DESC
+    `);
+    res.json({ success: true, data: rows });
+  } catch (error) {
+    console.error('Error en listarEmpleadoresAdmin:', error);
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+ 
+// C. Listar supervisores
+export const listarSupervisoresAdmin = async (req, res) => {
+  try {
+    const [rows] = await db.query(
+      'SELECT id_supervisor, nombre, apellido, gmail, telefono, activo, creado_en FROM supervisor ORDER BY creado_en DESC'
+    );
+    res.json({ success: true, data: rows });
+  } catch (error) {
+    console.error('Error en listarSupervisoresAdmin:', error);
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+ 
+// D. Logs de actividad de un estudiante (derivados de postulante + curso)
+export const obtenerLogsEstudiante = async (req, res) => {
+  const { id } = req.params;
+  try {
+    const [postulaciones] = await db.query(`
+      SELECT
+        'Postulación enviada'  AS accion,
+        o.oferta               AS detalle,
+        'Ofertas'              AS modulo,
+        CASE p.estado
+          WHEN 0 THEN 'Pendiente'
+          WHEN 1 THEN 'Aceptado'
+          WHEN 2 THEN 'Rechazado'
+        END                    AS estado,
+        NULL                   AS fecha
+      FROM postulante p
+      JOIN oferta o ON p.id_oferta = o.id_oferta
+      WHERE p.id_estudiante = ?
+    `, [id]);
+ 
+    const [cursos] = await db.query(`
+      SELECT
+        'Curso publicado' AS accion,
+        curso             AS detalle,
+        'Cursos'          AS modulo,
+        CASE estado
+          WHEN 0 THEN 'Pendiente'
+          WHEN 1 THEN 'Aceptado'
+          WHEN 2 THEN 'Rechazado'
+          WHEN 3 THEN 'Archivado'
+        END               AS estado,
+        fecha_creacion    AS fecha
+      FROM curso
+      WHERE id_estudiante = ?
+    `, [id]);
+ 
+    const logs = [...postulaciones, ...cursos]
+      .sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
+ 
+    res.json({ success: true, data: logs });
+  } catch (error) {
+    console.error('Error en obtenerLogsEstudiante:', error);
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+ 
+// E. Logs de actividad de un empleador (derivados de oferta + curso)
+export const obtenerLogsEmpleador = async (req, res) => {
+  const { id } = req.params;
+  try {
+    const [ofertas] = await db.query(`
+      SELECT
+        'Oferta publicada' AS accion,
+        oferta             AS detalle,
+        'Ofertas'          AS modulo,
+        CASE estado
+          WHEN 0 THEN 'Pendiente'
+          WHEN 1 THEN 'Aceptado'
+          WHEN 2 THEN 'Rechazado'
+          WHEN 3 THEN 'Archivado'
+        END                AS estado,
+        fecha_apertura     AS fecha
+      FROM oferta
+      WHERE id_empleador = ?
+    `, [id]);
+ 
+    const [cursos] = await db.query(`
+      SELECT
+        'Curso publicado' AS accion,
+        curso             AS detalle,
+        'Cursos'          AS modulo,
+        CASE estado
+          WHEN 0 THEN 'Pendiente'
+          WHEN 1 THEN 'Aceptado'
+          WHEN 2 THEN 'Rechazado'
+          WHEN 3 THEN 'Archivado'
+        END               AS estado,
+        fecha_creacion    AS fecha
+      FROM curso
+      WHERE id_empleador = ?
+    `, [id]);
+ 
+    const logs = [...ofertas, ...cursos]
+      .sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
+ 
+    res.json({ success: true, data: logs });
+  } catch (error) {
+    console.error('Error en obtenerLogsEmpleador:', error);
+    res.status(500).json({ success: false, message: error.message });
+  }
+};

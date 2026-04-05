@@ -8,49 +8,58 @@
       <span class="text-2xl font-semibold tracking-tight">Nexa Careers</span>
     </div>
 
-  <!-- Enlaces centrales -->
-<div class="flex-1 flex justify-center gap-10 text-lg">
+    <!-- Enlaces centrales -->
+    <div class="flex-1 flex justify-center gap-10 text-lg">
 
-  <router-link to="/home" class="hover:text-[#d0b06d] transition-colors">
-    Inicio
-  </router-link>
+      <router-link to="/home" class="hover:text-[#d0b06d] transition-colors">
+        Inicio
+      </router-link>
 
-  <!-- Públicos -->
-  <router-link to="/ofertas" class="hover:text-[#d0b06d] transition-colors">
-    Ofertas Laborales
-  </router-link>
+      <!-- Públicos -->
+      <router-link to="/ofertas" class="hover:text-[#d0b06d] transition-colors">
+        Ofertas Laborales
+      </router-link>
 
-  <router-link to="/cursos" class="hover:text-[#d0b06d] transition-colors">
-    Catálogo de Cursos
-  </router-link>
+      <router-link to="/cursos" class="hover:text-[#d0b06d] transition-colors">
+        Catálogo de Cursos
+      </router-link>
 
-  <!-- Con sesión -->
-  <template v-if="authState.rol">
+      <!-- Con sesión -->
+      <template v-if="authState.rol">
 
-    <!-- EMPLEADOR -->
-    <router-link v-if="authState.rol === 'empleador'" to="/mis-ofertas"
-      class="hover:text-[#d0b06d] transition-colors">
-      Mis Ofertas
-    </router-link>
+        <!-- EMPLEADOR -->
+        <router-link
+          v-if="authState.rol === 'empleador'"
+          to="/mis-ofertas"
+          class="hover:text-[#d0b06d] transition-colors">
+          Mis Ofertas 
+        </router-link>
 
-    <router-link v-if="authState.rol === 'empleador'" to="/mis-cursos-empleador">
-      Mis Cursos
-    </router-link>
+        <router-link
+          v-if="authState.rol === 'empleador'"
+          to="/mis-cursos-empleador"
+          class="hover:text-[#d0b06d] transition-colors">
+          Mis Cursos
+        </router-link>
 
-    <router-link v-if="authState.rol === 'empleador'" to="/publicar-curso"
-      class="hover:text-[#d0b06d] transition-colors">
-      Publicar Curso
-    </router-link>
+        <!-- ESTUDIANTE -->
+        <router-link
+          v-if="authState.rol === 'estudiante'"
+          to="/mis-cursos"
+          class="hover:text-[#d0b06d] transition-colors">
+          Mis Cursos
+        </router-link>
 
-    <!-- ESTUDIANTE -->
-    <router-link v-if="authState.rol === 'estudiante'" to="/mis-cursos"
-      class="hover:text-[#d0b06d] transition-colors">
-      Mis Cursos
-    </router-link>
+        <router-link
+          v-if="authState.rol === 'estudiante'"
+          to="/mis-postulaciones"
+          class="hover:text-[#d0b06d] transition-colors">
+          Mis Postulaciones
+        </router-link>
 
-  </template>
+      </template>
 
-</div>
+    </div>
 
     <!-- Zona derecha -->
     <div class="flex items-center gap-6 relative">
@@ -68,14 +77,18 @@
         <!-- Menú desplegable -->
         <div v-if="menuAbierto"
           class="absolute right-0 top-16 w-48 bg-white rounded-2xl shadow-xl py-2 z-50 border border-gray-100 overflow-hidden">
-          <router-link v-if="authState.rol !== 'supervisor'"
+          <router-link
+            v-if="authState.rol !== 'supervisor'"
             :to="authState.rol === 'estudiante' ? `/perfil-estudiante/${authState.id}` : `/perfil-empleador/${authState.id}`"
             @click="menuAbierto = false"
             class="block px-4 py-3 text-gray-700 hover:bg-gray-50 hover:text-[#1b2a4a] transition-colors text-sm font-medium">
             👤 Mi Perfil
           </router-link>
 
-          <router-link v-else to="/dashboard-supervisor" @click="menuAbierto = false"
+          <router-link
+            v-else
+            to="/dashboard-supervisor"
+            @click="menuAbierto = false"
             class="block px-4 py-3 text-gray-700 hover:bg-gray-50 hover:text-[#1b2a4a] transition-colors text-sm font-medium">
             📊 Dashboard
           </router-link>
@@ -89,7 +102,9 @@
       </div>
 
       <!-- Botón cuando NO está logueado -->
-      <router-link v-else to="/login"
+      <router-link
+        v-else
+        to="/login"
         class="px-6 py-2.5 bg-white text-[#1b2a4a] font-semibold rounded-2xl hover:bg-[#d0b06d] hover:text-white transition-all">
         Iniciar Sesión
       </router-link>

@@ -11,19 +11,28 @@
           </p>
         </div>
 
-        <button
+        <router-link
+          to="/publicar-curso"
           class="px-6 py-3 bg-[#1b2a4a] text-white rounded-2xl font-medium hover:bg-[#0f1a2e] transition">
           + Nuevo Curso
-        </button>
+        </router-link>
       </div>
+
       <div v-if="loading" class="text-center py-20 text-gray-500">
         Cargando tus cursos...
       </div>
-      <div v-else-if="cursos.length === 0" class="text-center py-20 text-gray-500">
-        Aún no tienes cursos publicados.
+
+      <div v-else-if="cursos.length === 0" class="text-center py-20 text-gray-400">
+        <p class="text-5xl mb-4">📭</p>
+        <p class="text-lg font-medium">Aún no has publicado ningún curso</p>
+        <p class="text-sm mt-1">Cuando publiques uno aparecerá aquí</p>
+        <router-link to="/publicar-curso"
+          class="inline-block mt-6 px-6 py-3 bg-[#1b2a4a] text-white rounded-2xl font-medium hover:bg-[#0f1a2e] transition-colors">
+          + Publicar Curso
+        </router-link>
       </div>
 
-      <!-- en forma de card -->
+      <!-- Cards de cursos -->
       <div v-else class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
 
         <div
@@ -31,42 +40,31 @@
           :key="curso.id_curso"
           class="bg-white rounded-3xl shadow-sm p-6 hover:shadow-md transition duration-300">
 
-          <!-- titulo -->
-          <h2 class="text-xl font-semibold text-[#1b2a4a] mb-2">
-            {{ curso.titulo }}
-          </h2>
-
-          <!-- descrip -->
-          <p class="text-gray-500 text-sm mb-4 line-clamp-3">
-            {{ curso.descripcion }}
-          </p>
-
-          <!-- sobre el curso -->
-          <div class="text-sm text-gray-600 space-y-1 mb-4">
-            <p><span class="font-medium">Categoría:</span> {{ curso.categoria || 'General' }}</p>
-            <p><span class="font-medium">Fecha:</span> {{ formatearFecha(curso.fecha_creacion) }}</p>
-            <p><span class="font-medium">Duración:</span> {{ curso.duracion || 'No definida' }}</p>
+          <!-- Estado badge -->
+          <div class="flex justify-between items-start mb-3">
+            <h2 class="text-xl font-semibold text-[#1b2a4a] leading-tight">
+              {{ curso.curso }}
+            </h2>
+            <span
+              class="text-xs px-3 py-1 rounded-full font-semibold ml-2 flex-shrink-0"
+              :class="{
+                'bg-yellow-100 text-yellow-700': curso.estado === 0,
+                'bg-green-100 text-green-700': curso.estado === 1,
+                'bg-red-100 text-red-700': curso.estado === 2,
+                'bg-gray-100 text-gray-500': curso.estado === 3
+              }"
+            >
+              {{ ['Pendiente','Aceptado','Rechazado','Archivado'][curso.estado] ?? 'Desconocido' }}
+            </span>
           </div>
 
-          <div class="flex justify-between items-center mt-4">
+          <p class="text-gray-500 text-sm mb-4 line-clamp-3">
+            {{ curso.descripcion || 'Sin descripción' }}
+          </p>
 
-            <span
-              class="text-xs px-3 py-1 rounded-full bg-green-100 text-green-700 font-medium">
-              Activo
-            </span>
-
-            <div class="flex gap-2">
-              <button
-                class="px-3 py-1 bg-yellow-500 text-white rounded-lg text-sm hover:bg-yellow-600">
-                Editar
-              </button>
-
-              <button
-                class="px-3 py-1 bg-red-500 text-white rounded-lg text-sm hover:bg-red-600">
-                Eliminar
-              </button>
-            </div>
-
+          <div class="text-sm text-gray-600 space-y-1 mb-4">
+            <p><span class="font-medium">Contacto:</span> {{ curso.contacto || 'No especificado' }}</p>
+            <p><span class="font-medium">Fecha:</span> {{ formatearFecha(curso.fecha_creacion) }}</p>
           </div>
 
         </div>
@@ -79,8 +77,10 @@
 
 <script setup>
 import { ref, onMounted } from 'vue'
-// import { listarCursosPorEmpleador } from '../services/cursoService.js'
+import { useRouter } from 'vue-router'
+import { listarCursosPorEmpleador } from '../services/cursoService.js'
 
+const router = useRouter()
 const cursos = ref([])
 const loading = ref(true)
 
@@ -91,31 +91,18 @@ const formatearFecha = (fecha) => {
 
 const cargarCursos = async () => {
   loading.value = true
-
   try {
-    const sesion = JSON.parse(localStorage.getItem('sesion'))
-
-    if (!sesion || sesion.rol !== 'empleador') {
-      console.log('No autorizado')
+    const sesion = JSON.parse(localStorage.getItem('sesion') || '{}')
+    if (!sesion.id || sesion.rol !== 'empleador') {
+      router.push('/login')
       return
     }
-
-    const idEmpleador = sesion.id
-
-    // mini ejemplo de vista
-    cursos.value = [
-      {
-        id_curso: 1,
-        titulo: 'Curso de Vue.js',
-        descripcion: 'Aprende Vue 3',
-        categoria: 'Frontend',
-        fecha_creacion: '2025-04-01',
-        duracion: '4 semanas'
-      }
-    ]
-
+    const response = await listarCursosPorEmpleador(sesion.id)
+    if (response.success) {
+      cursos.value = response.data || []
+    }
   } catch (error) {
-    console.error(error)
+    console.error('Error al cargar cursos:', error)
   } finally {
     loading.value = false
   }

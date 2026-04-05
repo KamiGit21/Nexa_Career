@@ -21,26 +21,41 @@ app.use((req, res, next) => {
 // Proxy simple para JSON
 const proxyTo = (targetUrl) => async (req, res) => {
   try {
+<<<<<<< HEAD
     const fullUrl = `${targetUrl}${req.url}`;
     console.log(`🔄 Proxy: ${req.method} ${fullUrl}`);
     
+=======
+    const fullUrl = `${targetUrl}${req.originalUrl}`;
+    console.log(`🔄 Redirigiendo ${req.method} ${req.originalUrl} a: ${fullUrl}`);
+
+>>>>>>> 8e9ebc1c69b198eb0090dcb605a01ad5efd12f1d
     const options = {
       method: req.method,
       headers: {
         'Content-Type': 'application/json',
       },
     };
-    
+
     if (req.method !== 'GET' && req.method !== 'DELETE') {
       options.body = JSON.stringify(req.body);
     }
-    
+
     const response = await fetch(fullUrl, options);
     const data = await response.json();
     res.status(response.status).json(data);
   } catch (error) {
+<<<<<<< HEAD
     console.error('❌ Error:', error.message);
     res.status(500).json({ error: error.message });
+=======
+    console.error(`❌ Error proxy a ${targetUrl}:`, error.message);
+    res.status(500).json({
+      error: 'Error al conectar con el microservicio',
+      message: error.message,
+      target: targetUrl
+    });
+>>>>>>> 8e9ebc1c69b198eb0090dcb605a01ad5efd12f1d
   }
 };
 
@@ -125,7 +140,28 @@ app.delete('/api/estudiantes/:id/cv', proxyTo('http://localhost:3003'));
 app.use('/api/empleadores', proxyTo('http://localhost:3004'));
 
 // Servicio de Supervisores (puerto 3005)
+<<<<<<< HEAD
 app.use('/api/supervisores', proxyTo('http://localhost:3005'));
+=======
+app.post('/api/supervisores/registrar', createProxy('http://localhost:3005'));
+app.get('/api/supervisores', createProxy('http://localhost:3005'));
+
+// Rutas admin
+app.get('/api/supervisores/admin/estudiantes', createProxy('http://localhost:3005'));
+app.get('/api/supervisores/admin/empleadores', createProxy('http://localhost:3005'));
+app.get('/api/supervisores/admin/supervisores', createProxy('http://localhost:3005'));
+app.get('/api/supervisores/admin/logs/estudiante/:id', createProxy('http://localhost:3005'));
+app.get('/api/supervisores/admin/logs/empleador/:id', createProxy('http://localhost:3005'));
+
+// Rutas con parámetro dinámico
+app.get('/api/supervisores/gmail/:gmail', createProxy('http://localhost:3005'));
+app.get('/api/supervisores/:id', createProxy('http://localhost:3005'));
+app.put('/api/supervisores/:id/perfil', createProxy('http://localhost:3005'));
+app.put('/api/supervisores/:id/contrasena', createProxy('http://localhost:3005'));
+app.put('/api/supervisores/:id/estado', createProxy('http://localhost:3005'));
+app.put('/api/supervisores/:id_supervisor/bloquear', createProxy('http://localhost:3005'));
+app.get('/api/supervisores/dashboard/stats', createProxy('http://localhost:3005'));
+>>>>>>> 8e9ebc1c69b198eb0090dcb605a01ad5efd12f1d
 
 // Servicio de Ofertas (puerto 3006)
 app.use('/api/ofertas', proxyTo('http://localhost:3006'));
@@ -144,7 +180,20 @@ app.get('/', (req, res) => {
   res.json({
     message: 'API Gateway Nexa Careers',
     status: 'running',
+<<<<<<< HEAD
     version: '1.0.0'
+=======
+    endpoints: {
+      estudiantes:  'http://localhost:3000/api/estudiantes',
+      carreras:     'http://localhost:3000/api/carreras',
+      empleadores:  'http://localhost:3000/api/empleadores',
+      supervisores: 'http://localhost:3000/api/supervisores',
+      ofertas:      'http://localhost:3000/api/ofertas',
+      ofertantes:   'http://localhost:3000/api/ofertantes',
+      cursos:       'http://localhost:3000/api/cursos',
+      categorias:   'http://localhost:3000/api/categorias'
+    }
+>>>>>>> 8e9ebc1c69b198eb0090dcb605a01ad5efd12f1d
   });
 });
 

@@ -7,15 +7,17 @@
 
     <nav class="flex-1 mt-4">
       <ul class="space-y-1">
-        <li v-for="item in menuItems" :key="item.path" 
-            :class="['px-4 py-3 hover:bg-slate-700 transition-all cursor-pointer flex items-center gap-3', 
+        <li v-for="item in menuItems" :key="item.path"
+            :class="['px-4 py-3 hover:bg-slate-700 transition-all cursor-pointer flex items-center gap-3',
                     $route.path === item.path ? 'bg-yellow-600/20 border-l-4 border-yellow-500' : '']">
           <router-link :to="item.path" class="flex items-center justify-between w-full p-2 rounded-lg">
             <div class="flex items-center gap-3">
               <span>{{ item.icon }}</span>
               <span>{{ item.text }}</span>
             </div>
-            <span v-if="item.count" class="text-xs bg-slate-600 px-2 py-0.5 rounded">{{ item.count }}</span>
+            <span v-if="item.count !== undefined" class="text-xs bg-slate-600 px-2 py-0.5 rounded">
+              {{ item.count }}
+            </span>
           </router-link>
         </li>
       </ul>
@@ -26,7 +28,6 @@
 <script setup>
 import { computed } from 'vue';
 
-
 const props = defineProps({
   stats: {
     type: Object,
@@ -35,13 +36,12 @@ const props = defineProps({
 });
 
 const menuItems = computed(() => [
-  { path: '/dashboard-supervisor', text: 'Panel Principal', icon: '📊' },
-  { path: '/ofertas', text: 'Ofertas Laborales', icon: '🏢' },
-  {path: '/cursos', text: 'Catalogo Cursos', icon: '👥'},
-  { path: '#', text: 'Estudiantes', icon: '🎓', count: props.stats.estudiantes },
-  { path: '#', text: 'Empleadores', icon: '💻', count: props.stats.empleadores },
-  { path: '#', text: 'Supervisores', icon: '👨‍💼' },
-  { path: '/registro-supervisor', text: 'Registrar Supervisor', icon: '📋' },
-  
+  { path: '/dashboard-supervisor',       text: 'Panel Principal',       icon: '📊' },
+  { path: '/ofertas',                    text: 'Ofertas Laborales',      icon: '🏢' },
+  { path: '/cursos',                     text: 'Catálogo Cursos',        icon: '🎓' },
+  { path: '/supervisor/estudiantes',     text: 'Estudiantes',            icon: '👨‍🎓', count: props.stats.estudiantes },
+  { path: '/supervisor/empleadores',     text: 'Empleadores',            icon: '💼', count: props.stats.empleadores },
+  { path: '/supervisor/supervisores',    text: 'Supervisores',           icon: '👨‍💼' },
+  { path: '/registro-supervisor',        text: 'Registrar Supervisor',   icon: '📋' },
 ]);
 </script>

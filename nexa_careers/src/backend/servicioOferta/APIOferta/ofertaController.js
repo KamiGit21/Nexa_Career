@@ -16,7 +16,7 @@ export const obtenerOfertaPorId = async (req, res) => {
   }
 };
 
-// validar campos de oferta
+// Validar campos de oferta
 const isValidDate = (value) => {
   if (!value) return true; // opcional
   const date = new Date(value);
@@ -60,10 +60,9 @@ export const crearOferta = async (req, res) => {
   }
 
   try {
-    const estado = 1; // 0 por defecto al crearse, pero por ahora es 1 
+    const estado = 1; // 0 por defecto al crearse, pero por ahora es 1
     const rechazo = ''; // Blanco por defecto
 
-    // IMPORTANTE: En el SQL usamos 'id_empleador' para coincidir con tu BD
     const [result] = await db.query(
       `INSERT INTO oferta (descripcion, fecha_apertura, estado, rechazo, oferta, id_empleador) 
        VALUES (?, ?, ?, ?, ?, ?)`,
@@ -90,7 +89,7 @@ export const listarOfertas = async (req, res) => {
 // 2.1. GET: Listar ofertas en estado pendiente (estado = 0)
 export const listarOfertasPendientes = async (req, res) => {
   try {
-    const [rows] = await db.query('SELECT * FROM oferta WHERE estado = 0'); // Solo ofertas pendientes
+    const [rows] = await db.query('SELECT * FROM oferta WHERE estado = 0');
     res.status(200).json({ success: true, data: rows });
   } catch (error) {
     console.error('Error al listar ofertas pendientes:', error);
@@ -129,7 +128,6 @@ export const buscarOfertasPorEmpleador = async (req, res) => {
   const { id_empleador } = req.params;
   try {
     const [rows] = await db.query('SELECT * FROM oferta WHERE id_empleador = ?', [id_empleador]);
-    // Siempre devolver 200, incluso si no hay ofertas
     res.status(200).json({ success: true, data: rows || [] });
   } catch (error) {
     console.error('Error al buscar por empleador:', error);
@@ -155,18 +153,16 @@ export const editarOferta = async (req, res) => {
   }
 };
 
-// 7. PUT: Cambiar solo el estado del a oferta 
+// 7. PATCH: Cambiar estado de la oferta (usado por el supervisor)
 export const cambiarEstadoOferta = async (req, res) => {
   const { id } = req.params;
-  const { estado } = req.body; // 0 pendiente, 1 aceptado, 2 rechazado, 3 archivado
+  const { estado, rechazo } = req.body; // rechazo es opcional
 
-  // Validar que el estado sea obligatorio
   if (estado === undefined || estado === null) {
     return res.status(400).json({ success: false, message: 'El estado es obligatorio' });
   }
 
-  // Validar que el estado sea un número valido
-  const estadosValidos = [0, 1, 2, 3]; // 0 pendiente, 1 aceptado, 2 rechazado, 3 archivado
+  const estadosValidos = [0, 1, 2, 3];
   if (!estadosValidos.includes(Number(estado))) {
     return res.status(400).json({
       success: false,
@@ -175,23 +171,19 @@ export const cambiarEstadoOferta = async (req, res) => {
   }
 
   try {
-    const [result] = await db.query('UPDATE oferta SET estado = ? WHERE id_oferta = ?', [estado, id]);
+    const [result] = await db.query(
+      'UPDATE oferta SET estado = ?, rechazo = ? WHERE id_oferta = ?',
+      [Number(estado), rechazo || null, id]
+    );
     if (result.affectedRows === 0) {
       return res.status(404).json({ success: false, message: 'Oferta no encontrada' });
     }
 
-    const estadoTexto = {
-      0: 'Pendiente',
-      1: 'Aprobada',
-      2: 'Rechazada',
-      3: 'Archivada'
-    };
-
+    const estadoTexto = { 0: 'Pendiente', 1: 'Aprobada', 2: 'Rechazada', 3: 'Archivada' };
     res.status(200).json({
       success: true,
-      message: `Estado de la oferta actualizado a ${estadoTexto[estado]}`,
-      estado_nuevo: estado,
-      // fecha_cambio: new Date().toISOString()
+      message: `Estado de la oferta actualizado a ${estadoTexto[Number(estado)]}`,
+      estado_nuevo: Number(estado)
     });
   } catch (error) {
     console.error('Error al cambiar estado:', error);
@@ -199,7 +191,7 @@ export const cambiarEstadoOferta = async (req, res) => {
   }
 };
 
-// 7.1 PUT: Cambiar el estado de una oferta a "Inactiva"/Archivado (estado = 3) 
+// 7.1 PUT: Cambiar el estado de una oferta a Archivado (estado = 3)
 export const cambiarEstadoOfertaAPendiente = async (req, res) => {
   const { id } = req.params;
 
@@ -211,9 +203,8 @@ export const cambiarEstadoOfertaAPendiente = async (req, res) => {
 
     res.status(200).json({
       success: true,
-      message: `Estado de la oferta actualizado a "Inactivo"}`,
-      estado_nuevo: estado,
-      // fecha_cambio: new Date().toISOString()
+      message: 'Estado de la oferta actualizado a Inactivo',
+      estado_nuevo: 3
     });
   } catch (error) {
     console.error('Error al cambiar estado:', error);
@@ -251,4 +242,3 @@ export const obtenerPostulantesPorOferta = async (req, res) => {
     res.status(500).json({ success: false, message: 'Error al obtener postulantes' });
   }
 };
-

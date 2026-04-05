@@ -1,139 +1,164 @@
 <template>
-  <div class="min-h-screen bg-gray-50">
+  <div class="min-h-screen bg-[#f8f5f0]">
+    <div class="max-w-7xl mx-auto px-6 py-10">
 
-    <!-- Breadcrumb -->
-    <header class="bg-slate-800 py-4 px-8">
-      <div class="max-w-7xl mx-auto">
-        <nav class="text-sm text-slate-400 flex items-center gap-2">
-          <router-link to="/ofertas" class="hover:text-white transition">Catálogo de Ofertas</router-link>
-          <span>/</span>
-          <span class="text-white truncate">{{ oferta?.oferta ?? '...' }}</span>
-        </nav>
+      <!-- Loading -->
+      <div v-if="cargando" class="text-center py-20 text-gray-500">
+        Cargando oferta...
       </div>
-    </header>
 
-    <!-- Cargando -->
-    <div v-if="cargando" class="max-w-7xl mx-auto px-8 py-10 flex gap-8">
-      <div class="flex-1 space-y-4">
-        <div class="h-8 bg-slate-200 rounded animate-pulse w-2/3"/>
-        <div class="h-4 bg-slate-200 rounded animate-pulse w-1/3"/>
-        <div class="h-40 bg-slate-200 rounded-2xl animate-pulse mt-6"/>
+      <!-- Error -->
+      <div v-else-if="error" class="text-center py-20 text-red-400">
+        <p class="text-5xl mb-4">⚠️</p>
+        <p class="text-lg font-medium">{{ error }}</p>
+        <router-link to="/ofertas" class="text-sm text-[#2e6da4] hover:underline mt-3 inline-block">
+          ← Volver al catálogo
+        </router-link>
       </div>
-      <div class="w-80 shrink-0 h-64 bg-slate-200 rounded-2xl animate-pulse"/>
-    </div>
 
-    <!-- Error -->
-    <div v-else-if="error" class="max-w-7xl mx-auto px-8 py-20 text-center text-red-500">
-      <p class="text-lg font-medium">{{ error }}</p>
-      <button
-        class="mt-4 px-4 py-2 bg-slate-800 text-white rounded-lg text-sm hover:bg-slate-700 transition"
-        @click="cargarDetalle"
-      >
-        Reintentar
-      </button>
-    </div>
+      <!-- Contenido -->
+      <template v-else-if="oferta">
 
-    <!-- Contenido -->
-    <div v-else-if="oferta" class="max-w-7xl mx-auto px-8 py-10 flex gap-8 items-start">
-
-      <!-- Columna izquierda: detalle -->
-      <article class="flex-1 space-y-8">
-
-        <!-- Título y empresa -->
-        <div class="flex items-center gap-4">
-          <div class="w-16 h-16 rounded-xl bg-slate-100 flex items-center justify-center text-slate-600 font-bold text-2xl">
-            <!-- Logo: agregar cuando el servicio de empleador lo provea -->
-            #{{ oferta.id_empleador }}
-          </div>
-          <div>
-            <!-- Campo 'oferta' = título en la BD -->
-            <h1 class="text-2xl font-bold text-slate-800">{{ oferta.oferta }}</h1>
-            <p class="text-yellow-600 font-medium">Empleador #{{ oferta.id_empleador }}</p>
-          </div>
-        </div>
-
-        <!-- Tags -->
-        <div class="flex flex-wrap gap-2">
-          <span v-if="oferta.fecha_apertura" class="text-sm bg-slate-100 text-slate-600 rounded-md px-3 py-1">
-            📅 Apertura: {{ oferta.fecha_apertura }}
-          </span>
-          <span class="text-sm bg-slate-100 text-slate-600 rounded-md px-3 py-1">
-            Estado: {{ oferta.estado === 0 ? 'Pendiente' : 'Activa' }}
-          </span>
-        </div>
-
-        <!-- Descripción -->
-        <section v-if="oferta.descripcion">
-          <h2 class="text-base font-semibold text-slate-700 mb-2">Descripción del puesto</h2>
-          <!-- eslint-disable-next-line vue/no-v-html -->
-          <div class="text-slate-600 text-sm leading-relaxed" v-html="oferta.descripcion"/>
-        </section>
-
-        <!-- Motivo de rechazo (solo si fue rechazada) -->
-        <section v-if="oferta.rechazo">
-          <h2 class="text-base font-semibold text-red-600 mb-2">Motivo de rechazo</h2>
-          <p class="text-sm text-red-500">{{ oferta.rechazo }}</p>
-        </section>
-
-      </article>
-
-      <!-- Columna derecha: acciones -->
-      <aside class="w-80 shrink-0 sticky top-8">
-        <div class="bg-white rounded-2xl border border-gray-200 p-6 space-y-5">
-
-          <!-- Info rápida -->
-          <dl class="space-y-3 text-sm">
-            <div>
-              <dt class="text-slate-400 text-xs uppercase tracking-wide">ID Oferta</dt>
-              <dd class="text-slate-800 font-medium">#{{ oferta.id_oferta }}</dd>
-            </div>
-            <div>
-              <dt class="text-slate-400 text-xs uppercase tracking-wide">Fecha apertura</dt>
-              <dd class="text-slate-800 font-medium">{{ oferta.fecha_apertura ?? 'No especificada' }}</dd>
-            </div>
-            <div>
-              <dt class="text-slate-400 text-xs uppercase tracking-wide">Estado</dt>
-              <dd class="text-slate-800 font-medium">{{ oferta.estado === 0 ? 'Pendiente' : 'Activa' }}</dd>
-            </div>
-          </dl>
-
-          <!-- Botón de postulación -->
-          <template v-if="sesion.rol === 'estudiante'">
-            <button
-              v-if="!yaPostulado"
-              class="w-full py-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-white font-semibold transition disabled:opacity-50"
-              :disabled="postulando"
-              @click="abrirModal"
-            >
-              {{ postulando ? 'Postulando...' : 'Postular ahora' }}
-            </button>
-            <div
-              v-else
-              class="w-full py-3 rounded-xl bg-green-50 border border-green-200 text-green-700 font-semibold text-center text-sm"
-            >
-              ✓ Ya postulaste a esta oferta
-            </div>
-          </template>
-
-          <!-- Mensaje para usuarios NO logueados -->
-          <template v-else>
-            <button
-              @click="irALogin"
-              class="w-full py-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-white font-semibold transition"
-            >
-              Inicia sesión como estudiante para postular
-            </button>
-          </template>
-
-          <!-- Volver -->
-          <router-link
-            to="/ofertas"
-            class="block text-center text-sm text-slate-400 hover:text-slate-600 transition"
-          >
-            ← Volver al catálogo
+        <!-- Header -->
+        <div class="mb-6">
+          <router-link to="/ofertas" class="text-sm text-[#2e6da4] hover:underline">
+            ← Volver al catálogo de ofertas
           </router-link>
+
+          <div class="mt-4 flex flex-wrap justify-between items-start gap-4">
+            <div class="flex-1 min-w-[260px]">
+              <!-- Estado badge -->
+              <div class="flex items-center gap-2 mb-3 flex-wrap">
+                <span
+                  class="text-xs font-semibold px-3 py-1 rounded-full"
+                  :class="estiloEstado"
+                >
+                  {{ textoEstado }}
+                </span>
+              </div>
+
+              <h1 class="text-3xl font-bold text-[#1b2a4a] leading-tight mb-3">
+                {{ oferta.oferta }}
+              </h1>
+
+              <!-- Empresa -->
+              <div class="flex items-center gap-2 flex-wrap text-sm text-gray-500">
+                <span>Publicado por:</span>
+                <div class="flex items-center gap-1.5">
+                  <div class="w-6 h-6 rounded-full bg-amber-500 flex items-center justify-center text-white text-xs font-bold">
+                    {{ inicialEmpresa }}
+                  </div>
+                  <span class="font-semibold text-gray-700">{{ nombreEmpresa }}</span>
+                  <span class="text-gray-400">· Empleador</span>
+                </div>
+              </div>
+
+              <p class="text-xs text-gray-400 mt-2">
+                Fecha de apertura: {{ formatearFecha(oferta.fecha_apertura) }}
+              </p>
+            </div>
+          </div>
         </div>
-      </aside>
+
+        <!-- Cuerpo -->
+        <div class="flex flex-col lg:flex-row gap-6 items-start">
+
+          <!-- Columna principal -->
+          <div class="flex-1 min-w-0">
+
+            <!-- Descripción -->
+            <div class="bg-white rounded-2xl border border-gray-200 p-6 mb-5">
+              <h2 class="text-lg font-bold text-[#1b2a4a] mb-3">Descripción del puesto</h2>
+              <p class="text-sm text-gray-600 leading-relaxed whitespace-pre-line">
+                {{ oferta.descripcion || 'Sin descripción disponible.' }}
+              </p>
+
+              <!-- Modalidad si existe -->
+              <div v-if="oferta.modalidad" class="mt-5">
+                <h3 class="text-sm font-bold text-[#1b2a4a] mb-2">Modalidad</h3>
+                <span class="text-xs font-semibold px-3 py-1 rounded-full bg-blue-50 text-blue-700">
+                  {{ oferta.modalidad }}
+                </span>
+              </div>
+
+              <!-- Motivo de rechazo -->
+              <div v-if="oferta.rechazo" class="mt-5 p-4 bg-red-50 border border-red-100 rounded-xl">
+                <h3 class="text-sm font-bold text-red-700 mb-1">Motivo de rechazo</h3>
+                <p class="text-sm text-red-600">{{ oferta.rechazo }}</p>
+              </div>
+            </div>
+
+            <!-- Acción principal (postular) -->
+            <div class="bg-white rounded-2xl border border-gray-200 p-6 mb-5">
+              <h2 class="text-lg font-bold text-[#1b2a4a] mb-1">¿Te interesa esta oferta?</h2>
+              <p class="text-xs text-gray-400 mb-4">Postúlate directamente desde la plataforma.</p>
+
+              <!-- Estudiante logueado -->
+              <template v-if="sesion.rol === 'estudiante'">
+                <button
+                  v-if="!yaPostulado"
+                  class="w-full py-3 rounded-xl bg-[#1b2a4a] hover:bg-[#0f1a2e] text-white font-semibold transition disabled:opacity-50"
+                  :disabled="postulando"
+                  @click="abrirModal"
+                >
+                  {{ postulando ? 'Postulando...' : 'Postular ahora' }}
+                </button>
+                <div
+                  v-else
+                  class="w-full py-3 rounded-xl bg-green-50 border border-green-200 text-green-700 font-semibold text-center text-sm"
+                >
+                  ✓ Ya postulaste a esta oferta
+                </div>
+              </template>
+
+              <!-- Sin sesión o rol distinto -->
+              <template v-else>
+                <button
+                  @click="irALogin"
+                  class="w-full py-3 rounded-xl bg-[#1b2a4a] hover:bg-[#0f1a2e] text-white font-semibold transition"
+                >
+                  Inicia sesión como estudiante para postular
+                </button>
+              </template>
+            </div>
+
+          </div>
+
+          <!-- Sidebar -->
+          <div class="w-full lg:w-72 flex-shrink-0">
+            <div class="bg-white rounded-2xl border border-gray-200 p-6">
+              <h2 class="text-lg font-bold text-[#1b2a4a] mb-4">Detalles de la oferta</h2>
+
+              <ul class="flex flex-col gap-3">
+                <li class="flex justify-between items-center text-sm">
+                  <span class="text-gray-400">Estado:</span>
+                  <span class="text-xs font-semibold px-3 py-1 rounded-full" :class="estiloEstado">
+                    {{ textoEstado }}
+                  </span>
+                </li>
+                <li class="flex justify-between items-center text-sm">
+                  <span class="text-gray-400">Empresa:</span>
+                  <span class="font-semibold text-gray-700">{{ nombreEmpresa }}</span>
+                </li>
+                <li class="flex justify-between items-center text-sm">
+                  <span class="text-gray-400">Apertura:</span>
+                  <span class="font-semibold text-gray-700">{{ formatearFechaCorta(oferta.fecha_apertura) }}</span>
+                </li>
+                <li v-if="oferta.fecha_cierre" class="flex justify-between items-center text-sm">
+                  <span class="text-gray-400">Cierre:</span>
+                  <span class="font-semibold text-gray-700">{{ formatearFechaCorta(oferta.fecha_cierre) }}</span>
+                </li>
+                <li v-if="oferta.modalidad" class="flex justify-between items-center text-sm">
+                  <span class="text-gray-400">Modalidad:</span>
+                  <span class="font-semibold text-gray-700">{{ oferta.modalidad }}</span>
+                </li>
+              </ul>
+            </div>
+          </div>
+
+        </div>
+      </template>
+
     </div>
 
     <!-- Modal confirmar postulación -->
@@ -159,7 +184,7 @@
               Cancelar
             </button>
             <button
-              class="flex-1 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-white text-sm font-semibold transition disabled:opacity-50"
+              class="flex-1 py-2.5 rounded-xl bg-[#1b2a4a] hover:bg-[#0f1a2e] text-white text-sm font-semibold transition disabled:opacity-50"
               :disabled="postulando"
               @click="confirmarPostulacion"
             >
@@ -173,67 +198,69 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { obtenerOfertaPorId } from '@/services/ofertaService.js'
+import { obtenerOfertaPorId }             from '@/services/ofertaService.js'
+import { obtenerEmpleadorPorId }          from '@/services/empleadorService.js'
 import { obtenerPostulaciones, postularAOferta } from '@/services/postulacionService.js'
 
-const route = useRoute()
+const route  = useRoute()
 const router = useRouter()
 
-// Sesión del usuario 
 const sesion = JSON.parse(localStorage.getItem('sesion') || '{}')
 
 const oferta           = ref(null)
-const cargando         = ref(false)
+const empresaData      = ref(null)
+const cargando         = ref(true)
 const error            = ref(null)
 const modalVisible     = ref(false)
 const postulando       = ref(false)
 const yaPostulado      = ref(false)
 const errorPostulacion = ref(null)
 
-// Redirige al login si no es estudiante logueado
-const irALogin = () => {
-  router.push('/login')
-}
 
-// Verifica si necesita login antes de abrir el modal
-const abrirModal = () => {
-  if (!sesion.rol || sesion.rol !== 'estudiante') {
-    irALogin()
-    return
+const nombreEmpresa = computed(() =>
+  empresaData.value?.empresa || `Empleador #${oferta.value?.id_empleador}`
+)
+
+const inicialEmpresa = computed(() =>
+  (empresaData.value?.empresa || 'E')[0].toUpperCase()
+)
+
+const textoEstado = computed(() => {
+  const map = { 0: 'Pendiente', 1: 'Activa', 2: 'Rechazada', 3: 'Archivada' }
+  return map[oferta.value?.estado] ?? 'Desconocido'
+})
+
+const estiloEstado = computed(() => {
+  const map = {
+    0: 'bg-yellow-100 text-yellow-700',
+    1: 'bg-green-100 text-green-700',
+    2: 'bg-red-100 text-red-700',
+    3: 'bg-gray-100 text-gray-500',
   }
-  modalVisible.value = true
+  return map[oferta.value?.estado] ?? 'bg-gray-100 text-gray-500'
+})
+
+
+const formatearFecha = (fecha) => {
+  if (!fecha) return 'No especificada'
+  return new Date(fecha).toLocaleDateString('es-ES', {
+    year: 'numeric', month: 'long', day: 'numeric'
+  })
 }
 
-async function cargarDetalle() {
-  cargando.value = true
-  error.value    = null
-  try {
-    const res = await obtenerOfertaPorId(route.params.id)
-    oferta.value = res.data
-  } catch (e) {
-    error.value = 'No se pudo cargar la oferta.'
-    console.error('[DetalleOferta] cargarDetalle:', e)
-  } finally {
-    cargando.value = false
-  }
+const formatearFechaCorta = (fecha) => {
+  if (!fecha) return '—'
+  return new Date(fecha).toISOString().slice(0, 10)
 }
 
-async function verificarPostulacion() {
-  if (!sesion.id || sesion.rol !== 'estudiante') return
-  try {
-    const res = await obtenerPostulaciones(sesion.id)
-    const postulaciones = res.data ?? []
-    yaPostulado.value = postulaciones.some(
-      p => String(p.id_oferta) === String(route.params.id)
-    )
-  } catch (e) {
-    console.error('[DetalleOferta] verificarPostulacion:', e)
-  }
-}
 
-async function confirmarPostulacion() {
+const irALogin    = () => router.push('/login')
+const abrirModal  = () => { modalVisible.value = true }
+const cerrarModal = () => { modalVisible.value = false; errorPostulacion.value = null }
+
+const confirmarPostulacion = async () => {
   postulando.value       = true
   errorPostulacion.value = null
   try {
@@ -242,26 +269,46 @@ async function confirmarPostulacion() {
     cerrarModal()
   } catch (e) {
     errorPostulacion.value = e?.response?.data?.message ?? 'Error al postular. Intenta de nuevo.'
-    console.error('[DetalleOferta] confirmarPostulacion:', e)
   } finally {
     postulando.value = false
   }
 }
 
-function cerrarModal() {
-  modalVisible.value = false
-  errorPostulacion.value = null
-}
+// ── Carga de datos ───────────────────────────────────────────────────────────
 
-onMounted(() => {
-  cargarDetalle()
-  verificarPostulacion()
+onMounted(async () => {
+  try {
+    // 1. Cargar la oferta
+    const res = await obtenerOfertaPorId(route.params.id)
+    if (!res.success) throw new Error('Oferta no encontrada')
+    oferta.value = res.data
+
+    // 2. Cargar datos del empleador en paralelo con verificación de postulación
+    const [empRes] = await Promise.all([
+      obtenerEmpleadorPorId(oferta.value.id_empleador),
+      (async () => {
+        if (sesion.id && sesion.rol === 'estudiante') {
+          const posRes = await obtenerPostulaciones(sesion.id)
+          const lista  = posRes.data ?? []
+          yaPostulado.value = lista.some(
+            p => String(p.id_oferta) === String(route.params.id)
+          )
+        }
+      })()
+    ])
+
+    if (empRes.success) empresaData.value = empRes.data
+
+  } catch (e) {
+    console.error('[DetalleOferta]', e)
+    error.value = 'No se pudo cargar la oferta. Intenta de nuevo.'
+  } finally {
+    cargando.value = false
+  }
 })
 </script>
 
 <style scoped>
-.fade-enter-active,
-.fade-leave-active { transition: opacity 0.2s ease; }
-.fade-enter-from,
-.fade-leave-to     { opacity: 0; }
+.fade-enter-active, .fade-leave-active { transition: opacity 0.2s ease; }
+.fade-enter-from, .fade-leave-to       { opacity: 0; }
 </style>
