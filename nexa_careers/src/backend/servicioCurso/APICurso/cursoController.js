@@ -110,3 +110,45 @@ export const obtenerCursoPorId = async (req, res) => {
     res.status(500).json({ success: false, message: 'Error al obtener el curso' });
   }
 };
+
+// PATCH: Cambiar estado de un curso
+export const cambiarEstadoCurso = async (req, res) => {
+  const { id_curso } = req.params
+  const { estado } = req.body // 1=aceptado, 2=rechazado, 3=archivado
+  try {
+    await db.query('UPDATE curso SET estado = ? WHERE id_curso = ?', [estado, id_curso])
+    res.status(200).json({ success: true, message: 'Estado actualizado' })
+  } catch (error) {
+    res.status(500).json({ success: false, message: 'Error al actualizar estado' })
+  }
+};
+
+export const listarCursosPendientes = async (req, res) => {
+  try {
+    const [rows] = await db.query(`
+      SELECT
+        c.id_curso,
+        c.curso,
+        c.descripcion,
+        c.contacto,
+        c.estado,
+        c.fecha_creacion,
+        c.tipo_ofertante,
+        CASE
+          WHEN c.tipo_ofertante = 0 THEN CONCAT(e.nombre, ' ', e.apellido)
+          WHEN c.tipo_ofertante = 1 THEN emp.empresa
+          ELSE '—'
+        END AS nombre_publicador
+      FROM curso c
+      LEFT JOIN estudiante e   ON c.tipo_ofertante = 0 AND c.id_estudiante = e.id_estudiante
+      LEFT JOIN empleador emp  ON c.tipo_ofertante = 1 AND c.id_empleador  = emp.id_empleador
+      WHERE c.estado = 0
+      ORDER BY c.fecha_creacion DESC
+    `);
+ 
+    return res.json({ success: true, data: rows });
+  } catch (error) {
+    console.error('Error en listarCursosPendientes:', error);
+    return res.status(500).json({ success: false, message: error.message });
+  }
+};

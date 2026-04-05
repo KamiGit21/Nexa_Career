@@ -65,7 +65,6 @@ export const cambiarContrasenaSupervisor = async (id, data) => {
 
 export const obtenerEstadisticasDashboard = async () => {
   try {
-   
     const [estudiantesRes, empleadoresRes, ofertasRes, cursosRes] = await Promise.all([
       fetch(`${API_URL}/estudiantes`),
       fetch(`${API_URL}/empleadores`),
@@ -73,35 +72,77 @@ export const obtenerEstadisticasDashboard = async () => {
       fetch(`${API_URL}/cursos`)
     ]);
 
-    // Convertimos a JSON
     const estudiantesData = await estudiantesRes.json();
     const empleadoresData = await empleadoresRes.json();
-    const ofertasData = await ofertasRes.json();
-    const cursosData = await cursosRes.json();
+    const ofertasData     = await ofertasRes.json();
+    const cursosData      = await cursosRes.json();
 
-    // Contador de registros en cada array
-    const totalEstudiantes = estudiantesData.success && estudiantesData.data ? estudiantesData.data.length : 0;
-    const totalEmpleadores = empleadoresData.success && empleadoresData.data ? empleadoresData.data.length : 0;
-    const totalOfertas = ofertasData.success && ofertasData.data ? ofertasData.data.length : 0;
-    const totalCursos = cursosData.success && cursosData.data ? cursosData.data.length : 0;
-
-    return { 
-      success: true, 
+    return {
+      success: true,
       metricas: {
-        estudiantes: totalEstudiantes,
-        empleadores: totalEmpleadores,
-        ofertas: totalOfertas,
-        cursos: totalCursos
+        estudiantes: estudiantesData.success && estudiantesData.data ? estudiantesData.data.length : 0,
+        empleadores: empleadoresData.success && empleadoresData.data ? empleadoresData.data.length : 0,
+        ofertas:     ofertasData.success     && ofertasData.data     ? ofertasData.data.length     : 0,
+        cursos:      cursosData.success      && cursosData.data      ? cursosData.data.length      : 0,
       },
-      // Devolvemos un array vacío por ahora para la tabla, o puedes simular datos
-      recientes: [] 
+      recientes: []
     };
   } catch (error) {
     console.error('Error al obtener estadísticas:', error);
-    return { 
-      success: false, 
-      metricas: {estudiantes:0, empleadores: 0, ofertas: 0, cursos: 0 },
+    return {
+      success: false,
+      metricas: { estudiantes: 0, empleadores: 0, ofertas: 0, cursos: 0 },
       recientes: []
     };
+  }
+};
+
+// ── Moderación ───────────────────────────────────────────────────────────────
+
+export const listarCursosPendientes = async () => {
+  try {
+    const res = await fetch(`${API_URL}/cursos/pendientes`);
+    return await res.json();
+  } catch (error) {
+    console.error('Error en listarCursosPendientes:', error);
+    return { success: false, message: error.message };
+  }
+};
+
+export const cambiarEstadoCurso = async (id, estado, rechazo = null) => {
+  try {
+    const res = await fetch(`${API_URL}/cursos/${id}/estado`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ estado, rechazo })
+    });
+    return await res.json();
+  } catch (error) {
+    console.error('Error en cambiarEstadoCurso:', error);
+    return { success: false, message: error.message };
+  }
+};
+
+export const listarOfertasPendientes = async () => {
+  try {
+    const res = await fetch(`${API_URL}/ofertas/pendientes`);
+    return await res.json();
+  } catch (error) {
+    console.error('Error en listarOfertasPendientes:', error);
+    return { success: false, message: error.message };
+  }
+};
+
+export const cambiarEstadoOferta = async (id, estado, rechazo = null) => {
+  try {
+    const res = await fetch(`${API_URL}/ofertas/${id}/estado`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ estado, rechazo })
+    });
+    return await res.json();
+  } catch (error) {
+    console.error('Error en cambiarEstadoOferta:', error);
+    return { success: false, message: error.message };
   }
 };
