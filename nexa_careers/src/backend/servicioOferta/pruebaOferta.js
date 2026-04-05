@@ -71,8 +71,14 @@ async function ejecutarPruebas() {
     });
     console.log('✅ Resultado:', putPendienteResponse.data);
 
-    // 9 PUT: Cambiar estado a inactivo/archivado
-    console.log(`➡️ 9. Ejecutando PUT: Cambiando estado de la oferta ID ${nuevoId} a 3 (Inactiva/Archivada)`);
+    //9 GET: Verificar oferta por su id
+    console.log(`➡️ 9. Ejecutando GET: Solicitando la oferta ID ${nuevoId}...`);
+    const getByIdResponse = await axios.get(`${API_URL}/${nuevoId}`);
+    console.log('✅ Resultado:', getByIdResponse.data.data);
+    console.log('--------------------------------------------------\n');
+
+    // 10 PUT: Cambiar estado a inactivo/archivado
+    console.log(`➡️ 10. Ejecutando PUT: Cambiando estado de la oferta ID ${nuevoId} a 3 (Inactiva/Archivada)`);
     const putArchivarResponse = await axios.put(`${API_URL}/${nuevoId}/archivar`);
     console.log('✅ Resultado:', putArchivarResponse.data);
     console.log('--------------------------------------------------\n');

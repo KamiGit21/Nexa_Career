@@ -1,4 +1,3 @@
-// src/backend/servicioOfertante/APIOfertante/ofertanteController.js
 import db from '../../api-gateway/db.js';
 
 // 1. POST: Crear postulación (estado = 0 por defecto)

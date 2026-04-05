@@ -16,6 +16,11 @@ export async function obtenerOfertaPorId(id) {
   return data
 }
 
+export async function obtenerTitulo(id) {
+const { data } = await api.get(`/api/ofertas/${id}`)
+  return data.data.oferta // Retorna solo el título de la oferta
+}
+
 export async function buscarOfertasPorTitulo(titulo) {
   const { data } = await api.get(`/api/ofertas/titulo/${encodeURIComponent(titulo)}`)
   return data

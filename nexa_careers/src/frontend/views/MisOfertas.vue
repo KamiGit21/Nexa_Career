@@ -91,6 +91,7 @@
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { listarOfertasPorEmpleador } from '../services/ofertaService.js'
+import { obtenerNumeroPostulacionesPorOferta } from '../services/postulacionService.js'
 
 const router = useRouter()
 const ofertas = ref([])

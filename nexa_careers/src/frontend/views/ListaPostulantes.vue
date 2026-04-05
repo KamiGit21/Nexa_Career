@@ -5,7 +5,7 @@
       <div class="flex items-center gap-2 text-sm text-gray-500 mb-6">
         <router-link to="/mis-ofertas" class="hover:text-[#1b2a4a]">Mis Ofertas</router-link>
         <span>›</span>
-        <span class="text-[#1b2a4a] font-medium">{{ oferta.titulo || 'Cargando...' }}</span>
+        <span class="text-[#1b2a4a] font-medium">{{ resOferta || 'Cargando...' }}</span>
       </div>
 
       <div v-if="loading" class="text-center py-20 text-gray-500">Cargando postulantes...</div>
@@ -43,6 +43,7 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import {obtenerTitulo} from '../services/ofertaService.js'
 
 const route = useRoute()
 const router = useRouter()
@@ -75,6 +76,7 @@ const cargarDatos = async () => {
     // const resPostulantes = await fetch(`/api/ofertante?id_oferta=${ofertaId}`)
     // postulantes.value = await resPostulantes.json()
 
+    const resOferta = await obtenerTitulo(ofertaId)
     oferta.value = { titulo: 'Cargando...' }
     postulantes.value = []
   } catch (e) {

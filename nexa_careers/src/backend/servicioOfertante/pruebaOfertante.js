@@ -6,20 +6,20 @@ const API_URL = 'http://localhost:3000/api/ofertantes';
 async function ejecutarPruebas() {
   try {
     console.log('⏳ Iniciando pruebas del microservicio de Ofertantes (Postulaciones)...\n');
-
+    
     // 1. POST: Crear postulación
     console.log('➡️ 1. Ejecutando POST: El estudiante 1 se postula a la oferta 1...');
     const postResponse = await axios.post(`${API_URL}/postular`, { 
-      id_oferta: 1,
+      id_oferta: 2,
       id_estudiante: 1
     });
-    const nuevoId = postResponse.data.id_ofertante;
+    const nuevoId = postResponse.data.id_postulante;
     console.log('✅ Resultado:', postResponse.data);
     console.log('--------------------------------------------------\n');
-
+    
     // 2. GET: Buscar por ID de postulación
-    console.log(`➡️ 2. Ejecutando GET: Solicitando la postulación ID ${nuevoId}...`);
-    const getResponse = await axios.get(`${API_URL}/${nuevoId}`);
+    console.log(`➡️ 2. Ejecutando GET: Solicitando la postulación ID 1...`);
+    const getResponse = await axios.get(`${API_URL}/1`);
     console.log('✅ Resultado:', getResponse.data.data);
     console.log('--------------------------------------------------\n');
 
