@@ -11,5 +11,6 @@ router.get('/listarDisponibles', cursoController.listarCursosDisponibles);
 // Rutas con parámetros 
 router.get('/estudiante/:id_estudiante', cursoController.listarCursosPorEstudiante);
 router.get('/empleador/:id_empleador', cursoController.listarCursosPorEmpleador);
+router.get('/:id_curso', cursoController.obtenerCursoPorId);
 
 export default router;

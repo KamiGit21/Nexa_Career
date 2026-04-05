@@ -37,6 +37,7 @@ const props = defineProps({
 const menuItems = computed(() => [
   { path: '/dashboard-supervisor', text: 'Panel Principal', icon: '📊' },
   { path: '/ofertas', text: 'Ofertas Laborales', icon: '🏢' },
+  {path: '/cursos', text: 'Catalogo Cursos', icon: '👥'},
   { path: '#', text: 'Estudiantes', icon: '🎓', count: props.stats.estudiantes },
   { path: '#', text: 'Empleadores', icon: '💻', count: props.stats.empleadores },
   { path: '#', text: 'Supervisores', icon: '👨‍💼' },

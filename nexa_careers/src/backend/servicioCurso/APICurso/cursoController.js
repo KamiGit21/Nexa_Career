@@ -92,3 +92,21 @@ export const listarCursosPorEmpleador = async (req, res) => {
     res.status(500).json({ success: false, message: 'Error al listar cursos del empleador' });
   }
 };
+
+// 7. GET: Obtener un curso por su ID
+export const obtenerCursoPorId = async (req, res) => {
+  const { id_curso } = req.params;
+  try {
+    const [rows] = await db.query(
+      'SELECT * FROM curso WHERE id_curso = ?', 
+      [id_curso]
+    );
+    if (rows.length === 0) {
+      return res.status(404).json({ success: false, message: 'Curso no encontrado' });
+    }
+    res.status(200).json({ success: true, data: rows[0] });
+  } catch (error) {
+    console.error('Error al obtener curso por ID:', error);
+    res.status(500).json({ success: false, message: 'Error al obtener el curso' });
+  }
+};
