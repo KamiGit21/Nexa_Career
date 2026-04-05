@@ -218,7 +218,6 @@ const postulando       = ref(false)
 const yaPostulado      = ref(false)
 const errorPostulacion = ref(null)
 
-// ── Computed ────────────────────────────────────────────────────────────────
 
 const nombreEmpresa = computed(() =>
   empresaData.value?.empresa || `Empleador #${oferta.value?.id_empleador}`
@@ -243,7 +242,6 @@ const estiloEstado = computed(() => {
   return map[oferta.value?.estado] ?? 'bg-gray-100 text-gray-500'
 })
 
-// ── Helpers ─────────────────────────────────────────────────────────────────
 
 const formatearFecha = (fecha) => {
   if (!fecha) return 'No especificada'
@@ -257,7 +255,6 @@ const formatearFechaCorta = (fecha) => {
   return new Date(fecha).toISOString().slice(0, 10)
 }
 
-// ── Acciones ─────────────────────────────────────────────────────────────────
 
 const irALogin    = () => router.push('/login')
 const abrirModal  = () => { modalVisible.value = true }
