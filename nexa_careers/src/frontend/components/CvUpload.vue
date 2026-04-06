@@ -64,10 +64,13 @@ const nombreCV = ref('')
 
 const cargarInfoCV = async () => {
   try {
-    const response = await obtenerInfoCV(idEstudianteNum.value)
+    const response = await obtenerInfoCV(props.idEstudiante)
+    console.log('Respuesta info CV:', response)
+    
     if (response.success && response.hasCV) {
-      cvUrl.value = `http://localhost:3000/api/estudiantes/${idEstudianteNum.value}/cv/ver`
-      nombreCV.value = response.data.filename
+      cvUrl.value = `http://localhost:3000/api/estudiantes/${props.idEstudiante}/cv/ver`
+      // Mostrar un mensaje genérico ya que no tenemos el nombre del archivo
+      nombreCV.value = 'Currículum Vitae (PDF)'
     } else {
       cvUrl.value = null
       nombreCV.value = ''

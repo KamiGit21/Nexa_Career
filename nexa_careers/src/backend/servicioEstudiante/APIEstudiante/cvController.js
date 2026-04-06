@@ -11,7 +11,6 @@ const uploadDir = path.join(__dirname, '../uploads/cv');
 export const subirCV = async (req, res) => {
   const id_estudiante = req.params.id;
   
-  // Verificar que se haya subido un archivo
   if (!req.file) {
     return res.status(400).json({ 
       success: false, 
@@ -20,14 +19,12 @@ export const subirCV = async (req, res) => {
   }
 
   try {
-    // Obtener el CV actual del estudiante
     const [estudiante] = await db.query(
       'SELECT cv FROM estudiante WHERE id_estudiante = ?',
       [id_estudiante]
     );
     
     if (estudiante.length === 0) {
-      // Si el estudiante no existe, eliminar el archivo subido
       fs.unlinkSync(req.file.path);
       return res.status(404).json({ 
         success: false, 
@@ -35,15 +32,7 @@ export const subirCV = async (req, res) => {
       });
     }
 
-    // Si ya tenía un CV, eliminar el archivo anterior
-    if (estudiante[0].cv) {
-      const oldFilePath = path.join(uploadDir, path.basename(estudiante[0].cv));
-      if (fs.existsSync(oldFilePath)) {
-        fs.unlinkSync(oldFilePath);
-      }
-    }
-
-    // Guardar la ruta del nuevo CV en la BD (guardamos solo el nombre del archivo)
+    // Guardar SOLO el nombre del archivo (no la URL)
     const cvPath = req.file.filename;
     
     await db.query(
@@ -62,7 +51,6 @@ export const subirCV = async (req, res) => {
     });
   } catch (error) {
     console.error('Error al subir CV:', error);
-    // Eliminar el archivo si hubo error
     if (req.file && fs.existsSync(req.file.path)) {
       fs.unlinkSync(req.file.path);
     }
@@ -191,9 +179,9 @@ export const obtenerInfoCV = async (req, res) => {
       });
     }
 
-    const cvFilename = estudiante[0].cv;
+    const cvValor = estudiante[0].cv;
     
-    if (!cvFilename) {
+    if (!cvValor) {
       return res.status(200).json({
         success: true,
         hasCV: false,
@@ -201,9 +189,12 @@ export const obtenerInfoCV = async (req, res) => {
       });
     }
 
-    const filePath = path.join(uploadDir, cvFilename);
+    // Buscar el archivo físico en la carpeta uploads
+    const files = fs.readdirSync(uploadDir);
+    // Buscar un archivo que empiece con cv_{id_estudiante}_
+    const cvFile = files.find(f => f.startsWith(`cv_${id_estudiante}_`));
     
-    if (!fs.existsSync(filePath)) {
+    if (!cvFile) {
       return res.status(200).json({
         success: true,
         hasCV: false,
@@ -212,13 +203,14 @@ export const obtenerInfoCV = async (req, res) => {
       });
     }
 
+    const filePath = path.join(uploadDir, cvFile);
     const stats = fs.statSync(filePath);
     
     res.status(200).json({
       success: true,
       hasCV: true,
       data: {
-        filename: cvFilename,
+        filename: cvFile,
         size: stats.size,
         sizeMB: (stats.size / (1024 * 1024)).toFixed(2),
         uploadedAt: stats.birthtime,

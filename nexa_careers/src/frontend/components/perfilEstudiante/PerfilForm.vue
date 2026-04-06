@@ -91,6 +91,7 @@ const cargarDatosEstudiante = async () => {
       formData.gmail = response.data.gmail || '';
       formData.telefono = response.data.telefono || '';
       formData.descripcion = response.data.descripcion || '';
+      // No cargamos cv aquí porque lo maneja CvUpload
     }
   } catch (error) {
     console.error('Error al cargar datos:', error);
@@ -119,24 +120,24 @@ const guardar = async () => {
   
   try {
     // =============================================
-    // OBTENER EL CV ACTUAL COMO URL COMPLETA
+    // OBTENER EL CV ACTUAL (NOMBRE DEL ARCHIVO, NO LA URL)
     // =============================================
     const infoCV = await obtenerInfoCV(idEstudiante.value);
     console.log('Info CV:', infoCV);
     
-    // Construir la URL completa del CV si existe
+    // Guardar el filename, NO la URL
     const cvActual = infoCV.success && infoCV.hasCV 
-      ? `http://localhost:3000/api/estudiantes/${idEstudiante.value}/cv/ver`
+      ? infoCV.data.filename   // Esto es el nombre del archivo: "cv_1_xxx.pdf"
       : null;
     
-    console.log('CV Actual (URL):', cvActual);
+    console.log('CV Actual (filename):', cvActual);
     
-    // 1. Actualizar perfil (datos básicos + CV como URL)
+    // 1. Actualizar perfil (datos básicos + CV como nombre de archivo)
     const perfilData = {
       telefono: formData.telefono,
       gmail: formData.gmail,
       descripcion: formData.descripcion,
-      cv: cvActual  // ← Ahora es una URL válida
+      cv: cvActual  // ← Ahora envía el nombre del archivo, NO la URL
     };
     
     console.log('Enviando al backend:', perfilData);

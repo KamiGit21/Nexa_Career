@@ -63,7 +63,15 @@ const validateEstudiante = (data, { isNew = false } = {}) => {
   }
 
   if (telefono && !isValidPhone(telefono)) errors.push('El teléfono debe contener solo dígitos y entre 7 y 15 caracteres');
-  if (cv && !isValidUrl(cv)) errors.push('El campo cv debe ser una URL válida');
+  //if (cv && !isValidUrl(cv)) errors.push('El campo cv debe ser una URL válida');
+  //cambio por esta:
+  if (cv && typeof cv === 'string' && cv.length > 0) {
+  // Si parece una URL (empieza con http), validar como URL
+  if (cv.startsWith('http') && !isValidUrl(cv)) {
+    errors.push('El campo cv debe ser una URL válida');
+  }
+  // Si no empieza con http asumimos que es un nombre de archivo (válido)
+}
   if (contrasena && String(contrasena).length < 8) errors.push('La contraseña debe tener al menos 8 caracteres');
   if (contrasena && String(contrasena).length > 60) errors.push('La contraseña no puede exceder 60 caracteres');
   if (descripcion && String(descripcion).length > 500) errors.push('La descripción no puede exceder 500 caracteres');
