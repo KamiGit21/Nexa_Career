@@ -31,7 +31,7 @@ import { computed } from 'vue';
 const props = defineProps({
   stats: {
     type: Object,
-    default: () => ({ empleadores: 0, estudiantes: 0 })
+    default: () => ({ empleadores: undefined, estudiantes: undefined })
   }
 });
 
