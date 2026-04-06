@@ -135,7 +135,17 @@ const cargarOfertas = async () => {
     console.log('Respuesta del backend:', response)
 
     if (response.success) {
-      ofertas.value = response.data || []
+     
+      const ofertasBase = response.data || []
+      
+      const ofertasConConteo = await Promise.all(
+        ofertasBase.map(async (oferta) => {
+          const conteo = await obtenerNumeroPostulacionesPorOferta(oferta.id_oferta)
+          return { ...oferta, postulantes_count: conteo }
+        })
+      )
+      
+      ofertas.value = ofertasConConteo
     } else {
       console.error('Error en respuesta:', response.message)
     }
