@@ -142,6 +142,9 @@ app.use('/api/ofertas', proxyTo('http://localhost:3006'));
 
 // Servicio de Ofertantes (puerto 3007)
 app.use('/api/ofertantes', proxyTo('http://localhost:3007'));
+//  nueva ruta para prueba---------------del punto 6 de ofertanteController.js
+app.get('/api/ofertantes/oferta/:id_oferta/con-cv', proxyTo('http://localhost:3007'));
+
 
 // Servicio de Cursos (puerto 3008)
 app.use('/api/cursos', proxyTo('http://localhost:3008'));

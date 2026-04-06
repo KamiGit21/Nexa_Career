@@ -126,3 +126,77 @@ export const cambiarEstadoOfertante = async (req, res) => {
   }
 };
 
+// 6. GET: Obtener cv de postulantes de una oferta con su respectiva info------------------------------------------------jij
+export const obtenerPostulantesConCV = async (req, res) => {
+  const { id_oferta } = req.params;
+
+  if (!id_oferta) {
+    return res.status(400).json({ 
+      success: false, 
+      message: 'El id_oferta es obligatorio' 
+    });
+  }
+
+  try {
+    // Consulta simple sin join primero para probar
+    const query = `
+      SELECT 
+        p.id_postulante,
+        p.id_estudiante,
+        p.id_oferta,
+        p.estado
+      FROM postulante p
+      WHERE p.id_oferta = ?
+    `;
+
+    const [rows] = await db.query(query, [id_oferta]);
+    console.log('Postulantes encontrados:', rows);
+
+    if (rows.length === 0) {
+      return res.status(200).json({
+        success: true,
+        data: [],
+        message: 'No hay postulantes para esta oferta'
+      });
+    }
+
+    // Para cada postulante, obtener datos del estudiante
+    const result = [];
+    for (const postulante of rows) {
+      const [estudianteRows] = await db.query(
+        'SELECT id_estudiante, nombre, apellido, gmail, telefono, cv FROM estudiante WHERE id_estudiante = ?',
+        [postulante.id_estudiante]
+      );
+      
+      if (estudianteRows.length > 0) {
+        const estudiante = estudianteRows[0];
+        result.push({
+          id_postulante: postulante.id_postulante,
+          id_estudiante: postulante.id_estudiante,
+          id_oferta: postulante.id_oferta,
+          estado_postulacion: postulante.estado,
+          nombre: estudiante.nombre,
+          apellido: estudiante.apellido,
+          nombre_completo: `${estudiante.nombre || ''} ${estudiante.apellido || ''}`.trim(),
+          gmail: estudiante.gmail,
+          telefono: estudiante.telefono,
+          hasCV: !!(estudiante.cv),
+          cvUrl: estudiante.cv ? `/api/estudiantes/${postulante.id_estudiante}/cv/ver` : null
+        });
+      }
+    }
+
+    res.status(200).json({ 
+      success: true, 
+      data: result,
+      total: result.length
+    });
+  } catch (error) {
+    console.error('Error al obtener postulantes con CV:', error);
+    res.status(500).json({ 
+      success: false, 
+      message: 'Error al obtener los postulantes de la oferta',
+      error: error.message
+    });
+  }
+};
