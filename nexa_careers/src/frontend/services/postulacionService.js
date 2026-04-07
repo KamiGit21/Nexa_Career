@@ -34,17 +34,23 @@ export async function obtenerPostulantesPorOferta(idOferta) {
   return data;
 }
 
-
+// Sacar el numero de postulaciones por oferta
 export async function obtenerNumeroPostulacionesPorOferta(idOferta) {
   try {
     const { data } = await api.get(`/api/ofertantes/oferta/${idOferta}`);
     return data.data ? data.data.length : 0; 
   } catch (error) {
-    // Si el backend devuelve 404 (No hay postulantes), simplemente retornamos 0
+    // Si el backend devuelve 404 (No hay postulantes), retornamos 0
     if (error.response && error.response.status === 404) {
       return 0;
     }
     console.error(`Error obteniendo cantidad de postulaciones para oferta ${idOferta}:`, error);
     return 0;
   }
+}
+
+// Cambiar estado de la postulación 
+export async function cambiarEstadoPostulacion(idPostulante, estado) {
+  const { data } = await api.put(`/api/ofertantes/${idPostulante}/estado`, { estado });
+  return data;
 }
