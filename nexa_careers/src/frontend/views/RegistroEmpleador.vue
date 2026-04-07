@@ -27,7 +27,7 @@
           </div>
 
           <div>
-            <label class="text-sm font-medium text-gray-600">Correo institucional (@ucb.edu.bo)</label>
+            <label class="text-sm font-medium text-gray-600">Correo institucional de tu empresa</label>
             <input v-model="form.correo" type="email" class="mt-2 w-full px-5 py-4 bg-gray-50 border border-gray-200 rounded-2xl focus:border-[#b5943a]" required />
             <p v-if="errorCorreo" class="text-xs text-red-500 mt-1">{{ errorCorreo }}</p>
           </div>
@@ -157,13 +157,6 @@ const validarFormulario = () => {
   errorCorreo.value = ''
   errorConfirmar.value = ''
 
-  // Validar dominio UCB
-  const dominioPermitido = 'ucb.edu.bo'
-  const partes = form.value.correo.split('@')
-  if (partes.length !== 2 || partes[1].toLowerCase() !== dominioPermitido) {
-    errorCorreo.value = `El correo debe terminar en @${dominioPermitido}`
-    valido = false
-  }
 
   // Validar que las contraseñas coincidan
   if (form.value.contrasena !== form.value.confirmar) {
