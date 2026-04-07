@@ -23,6 +23,8 @@ import { ref, computed, onMounted } from 'vue';
 import MisPostulacionesHeader from './MisPostulacionesHeader.vue';
 import MisPostulacionesFiltros from './MisPostulacionesFiltros.vue';
 import PostulacionGrid from './PostulacionGrid.vue';
+import { obtenerPostulaciones } from '../../services/postulacionService.js';
+import { authState } from '../../auth.js';
 
 // Estado
 const allPostulaciones = ref([]);
@@ -34,19 +36,44 @@ const currentFilter = ref('');
 
 const fetchPostulaciones = async () => {
   isLoading.value = true;
-  await new Promise(resolve => setTimeout(resolve, 1000));
-
-  const mockData = [
-    //Daniii, aca puedes hacer la integracion
-    //te puse ejemplos jsjsj
-    { id: 1, jobTitle: 'Frontend Developer', companyName: 'TechLab BO', location: 'Híbrido', descriptionSnippet: 'Vue.js y React para dashboards de alto rendimiento. Experiencia con APIs REST y GraphQL requerida.', daysAgo: 10, status: 'Pendiente' },
-    { id: 2, jobTitle: 'Backend Engineer', companyName: 'Nexus Soft', location: 'Remoto', descriptionSnippet: 'Node.js, Python, microservicios y AWS. Buscamos alguien con pasión por la escalabilidad.', daysAgo: 5, status: 'Seleccionado' },
-    { id: 3, jobTitle: 'UI/UX Designer', companyName: 'Creative Solutions', location: 'Presencial (La Paz)', descriptionSnippet: 'Figma, Adobe XD, investigación de usuarios y prototipado rápido para aplicaciones móviles.', daysAgo: 2, status: 'No seleccionado' },
-  ];
-
-  allPostulaciones.value = mockData;
+  try {
+    const response = await obtenerPostulaciones(authState.id);
+    if (response.success) {
+      allPostulaciones.value = response.data.map(item => ({
+        id: item.id_postulante,
+        jobTitle: item.titulo_oferta,
+        companyName: item.nombre_empleador,
+        location: item.modalidad,
+        descriptionSnippet: item.descripcion.length > 100 ? item.descripcion.substring(0, 100) + '...' : item.descripcion,
+        daysAgo: calculateDaysAgo(item.fecha_apertura),
+        status: mapStatus(item.estado_postulacion)
+      }));
+    } else {
+      allPostulaciones.value = [];
+    }
+  } catch (error) {
+    console.error('Error fetching postulaciones:', error);
+    allPostulaciones.value = [];
+  }
   applyFilters();
   isLoading.value = false;
+};
+
+const calculateDaysAgo = (dateString) => {
+  const date = new Date(dateString);
+  const now = new Date();
+  const diffTime = Math.abs(now - date);
+  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+  return diffDays;
+};
+
+const mapStatus = (estado) => {
+  switch (estado) {
+    case 0: return 'Pendiente';
+    case 1: return 'Seleccionado';
+    case 2: return 'No seleccionado';
+    default: return 'Desconocido';
+  }
 };
 
 const applyFilters = () => {

@@ -83,7 +83,7 @@ export const obtenerPostulacionesEstudiante = async (req, res) => {
         o.estado as estado_oferta,
         o.id_empleador,
         emp.empresa,
-        emp.nombre as nombre_empleador,
+        emp.empresa as nombre_empleador,
         emp.gmail as email_empleador
       FROM postulante p
       INNER JOIN oferta o ON p.id_oferta = o.id_oferta
