@@ -168,3 +168,41 @@ input, textarea {
   opacity: 0;
   transform: translateY(-10px);
 }
+
+.avatar-circle {
+    width: 100px;
+    height: 100px;
+    background: linear-gradient(135deg, #1b2a4a 0%, #2c4170 100%);
+    color: #d0b06d; /* Dorado */
+    border-radius: 30px; /* Bordes redondeados estilo "squircle" como tus inputs */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2.5rem;
+    font-weight: 800;
+    border: 4px solid #ffffff;
+    box-shadow: 0 8px 20px rgba(27, 42, 74, 0.15);
+    margin-bottom: 0.5rem;
+    transition: transform 0.3s ease;
+}
+
+.avatar-circle:hover {
+    transform: scale(1.05);
+}
+
+.btn-text-gold {
+    background: none;
+    border: none;
+    color: #d0b06d;
+    font-weight: 700;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.btn-text-gold:hover {
+    color: #1b2a4a;
+    letter-spacing: 1.5px;
+}
