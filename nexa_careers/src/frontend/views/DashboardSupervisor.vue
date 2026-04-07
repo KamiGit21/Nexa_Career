@@ -149,7 +149,7 @@ const quickActions = computed(() => [
     iconName: imgEmpleadores,
     title: 'Lista de<br>Empleadores',
     description: `${estadisticas.value.empleadores} empleadores registrados`,
-    buttonText: 'Revisar ahora',
+    buttonText: 'Ver lista',
     route: '/empleadores',
     borderColor: '#1B2A4A'
   },
@@ -163,7 +163,7 @@ const quickActions = computed(() => [
   },
   {
     iconName: imgOfertas,
-    title: 'Gestionar<br>Ofertas',
+    title: 'Ver Ofertas <br>Disponibles',
     description: `${estadisticas.value.ofertas} ofertas en revisión`,
     buttonText: 'Ver ofertas',
     route: '/ofertas',
@@ -171,9 +171,9 @@ const quickActions = computed(() => [
   },
   {
     iconName: imgCursos,
-    title: 'Lista de<br>Cursos',
+    title: 'Ver Cursos<br>Disponibles',
     description: `${estadisticas.value.cursos} cursos creados`,
-    buttonText: 'Ver lista',
+    buttonText: 'Ver cursos',
     route: '/cursos',
     borderColor: '#534AB7'
   }

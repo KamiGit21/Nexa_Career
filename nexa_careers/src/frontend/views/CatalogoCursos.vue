@@ -50,34 +50,34 @@ const busqueda        = ref('')
 const categoriaActiva = ref('Todos')
 const orden           = ref('reciente')
 
+// Sugerencia: Mover esto a un archivo de constantes si se usa en PublicarCurso.vue
 const CATEGORIAS = ['Todos', 'Tecnología', 'Finanzas', 'Diseño', 'Marketing', 'Redes']
 
 const cursosFiltrados = computed(() => {
-  let lista = [...cursos.value]
+  // 1. Filtramos primero (es más eficiente filtrar y luego ordenar una lista pequeña)
+  let lista = cursos.value.filter(c => {
+    const cumpleCategoria = categoriaActiva.value === 'Todos' || 
+                            c.categoria?.toLowerCase() === categoriaActiva.value.toLowerCase();
+    
+    const q = busqueda.value.toLowerCase().trim();
+    const cumpleBusqueda = !q || 
+                           c.curso?.toLowerCase().includes(q) || 
+                           c.categoria?.toLowerCase().includes(q);
+    
+    return cumpleCategoria && cumpleBusqueda;
+  });
 
-  if (categoriaActiva.value !== 'Todos') {
-    lista = lista.filter(c =>
-      c.categoria?.toLowerCase() === categoriaActiva.value.toLowerCase()
-    )
-  }
-
-  if (busqueda.value.trim()) {
-    const q = busqueda.value.toLowerCase()
-    lista = lista.filter(c =>
-      c.curso?.toLowerCase().includes(q) ||
-      c.categoria?.toLowerCase().includes(q)
-    )
-  }
-
-  if (orden.value === 'reciente') {
-    lista.sort((a, b) => new Date(b.fecha_creacion) - new Date(a.fecha_creacion))
-  } else if (orden.value === 'antiguo') {
-    lista.sort((a, b) => new Date(a.fecha_creacion) - new Date(b.fecha_creacion))
-  } else if (orden.value === 'titulo') {
-    lista.sort((a, b) => a.curso?.localeCompare(b.curso))
-  }
-
-  return lista
+  // 2. Ordenamos la lista resultante
+  return lista.sort((a, b) => {
+    if (orden.value === 'reciente') {
+      return new Date(b.fecha_creacion || 0) - new Date(a.fecha_creacion || 0);
+    } else if (orden.value === 'antiguo') {
+      return new Date(a.fecha_creacion || 0) - new Date(b.fecha_creacion || 0);
+    } else if (orden.value === 'titulo') {
+      return (a.curso || '').localeCompare(b.curso || '');
+    }
+    return 0;
+  });
 })
 
 const irDetalle = (id) => router.push(`/cursos/${id}`)
@@ -85,7 +85,9 @@ const irDetalle = (id) => router.push(`/cursos/${id}`)
 onMounted(async () => {
   try {
     const response = await listarCursosPublicos()
-    if (response.success) cursos.value = response.data
+    if (response.success) {
+      cursos.value = response.data || []
+    }
   } catch (error) {
     console.error('Error al cargar catálogo:', error)
   } finally {

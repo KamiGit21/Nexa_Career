@@ -15,7 +15,7 @@
           <td class="p-4">
             <div class="flex items-center gap-3">
               <div class="w-9 h-9 rounded-full bg-violet-100 text-violet-700 flex items-center justify-center font-bold text-xs flex-shrink-0">
-                {{ `${(s.nombre||'')[0]}${(s.apellido||'')[0]}`.toUpperCase() }}
+                {{ obtenerIniciales(s.nombre, s.apellido) }}
               </div>
               <div>
                 <p class="font-semibold text-slate-700">{{ s.nombre }} {{ s.apellido }}</p>
@@ -25,20 +25,42 @@
           </td>
           <td class="p-4 text-xs text-gray-600">{{ s.gmail }}</td>
           <td class="p-4 text-center text-gray-600">{{ s.telefono || '—' }}</td>
-          <td class="p-4 text-center"><UsuarioEstadoBadge :activo="s.activo" /></td>
+          <td class="p-4 text-center">
+            <UsuarioEstadoBadge :activo="s.activo !== undefined ? s.activo : true" />
+          </td>
           <td class="p-4 text-center text-xs text-gray-400">{{ formatearFecha(s.creado_en) }}</td>
         </tr>
       </tbody>
     </table>
-    <div v-if="supervisores.length === 0" class="text-center py-12 text-gray-400">No se encontraron supervisores.</div>
+    <div v-if="supervisores.length === 0" class="text-center py-12 text-gray-400">
+      No se encontraron supervisores.
+    </div>
   </div>
 </template>
 
 <script setup>
 import UsuarioEstadoBadge from '../adminUsuarios/UsuarioEstadoBadge.vue'
-defineProps({ supervisores: { type: Array, required: true } })
+
+defineProps({ 
+  supervisores: { type: Array, required: true } 
+})
+
+//Funcion para obtener iniciales
+const obtenerIniciales = (nombre, apellido) => {
+  const n = (nombre || '').trim().charAt(0);
+  const a = (apellido || '').trim().charAt(0);
+  return (n + a).toUpperCase() || '??';
+}
+
 const formatearFecha = (f) => {
   if (!f) return '—'
-  return new Date(f).toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' })
+  const fecha = new Date(f)
+  
+  if (isNaN(fecha.getTime())) return '—'
+  return fecha.toLocaleDateString('es-ES', { 
+    day: '2-digit', 
+    month: 'short', 
+    year: 'numeric' 
+  })
 }
 </script>

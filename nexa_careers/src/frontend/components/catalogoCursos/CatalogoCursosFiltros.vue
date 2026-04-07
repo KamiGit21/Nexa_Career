@@ -2,12 +2,11 @@
   <div class="flex flex-wrap gap-3 mb-8 items-center">
     <!-- Búsqueda -->
     <div class="relative flex-1 min-w-[200px]">
-      <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">🔍</span>
       <input
         :value="busqueda"
         @input="$emit('update:busqueda', $event.target.value)"
         type="text"
-        placeholder="Buscar por nombre..."
+        placeholder="🔍 Buscar por nombre..."
         class="w-full pl-9 pr-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-[#1b2a4a] transition-colors"
       />
     </div>

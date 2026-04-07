@@ -21,7 +21,7 @@
 
       <div v-else class="bg-white rounded-3xl shadow-sm overflow-hidden">
         <!-- Tabla header -->
-        <div class="grid grid-cols-12 bg-[#1b2a4a] text-white text-sm py-5 px-8 font-medium">
+        <div class="grid grid-cols-13 bg-[#1b2a4a] text-white text-sm py-5 px-8 font-medium">
           <div class="col-span-5">Oferta</div>
           <div class="col-span-2">Categoría</div>
           <div class="col-span-2">Apertura</div>

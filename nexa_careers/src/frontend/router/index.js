@@ -71,8 +71,19 @@ const routes = [
   },
 
   // Ofertas
-  { path: '/ofertas', name: 'CatalogoOfertas', component: CatalogoOfertas },
-  { path: '/ofertas/:id', name: 'DetalleOferta', component: DetalleOferta },
+  {
+    path: '/ofertas',
+    name: 'CatalogoOfertas',
+    component: CatalogoOfertas
+  },
+
+  {
+    path: '/ofertas/:id',
+    name: 'DetalleOferta',
+    component: DetalleOferta
+  },
+
+  
   { path: '/mis-ofertas', name: 'MisOfertas', component: MisOfertas, meta: { requiereRol: ['empleador'] } },
   { path: '/mis-ofertas/nueva', name: 'NuevaOferta', component: NuevaOferta, meta: { requiereRol: ['empleador'] } },
   { path: '/mis-ofertas/:ofertaId/postulantes', name: 'ListaPostulantes', component: ListaPostulantes, meta: { requiereRol: ['empleador'] } },
