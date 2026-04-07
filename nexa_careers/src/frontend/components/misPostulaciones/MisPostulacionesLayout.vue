@@ -23,9 +23,11 @@ import { ref, computed, onMounted } from 'vue';
 import MisPostulacionesHeader from './MisPostulacionesHeader.vue';
 import MisPostulacionesFiltros from './MisPostulacionesFiltros.vue';
 import PostulacionGrid from './PostulacionGrid.vue';
+
 import { obtenerPostulaciones } from '../../services/postulacionService.js';
-// 1. NUEVO: Importamos el servicio para obtener los detalles de la oferta
 import { obtenerOfertaPorId } from '../../services/ofertaService.js';
+// 1. IMPORTAMOS EL SERVICIO DEL EMPLEADOR
+import { obtenerEmpleadorPorId } from '../../services/empleadorService.js';
 import { authState } from '../../auth.js';
 
 // Estado
@@ -42,30 +44,42 @@ const fetchPostulaciones = async () => {
     
     if (response.success && response.data) {
       
-      // 2. NUEVO: Cruzamos los datos de la postulación con los de la oferta
       const postulacionesCompletas = await Promise.all(
         response.data.map(async (postulacion) => {
-          let ofertaData = {};
+          let ofertaRow = {};
+          let companyName = 'Empresa no disponible';
           
           try {
-            // Buscamos la oferta usando su ID
-            ofertaData = await obtenerOfertaPorId(postulacion.id_oferta);
+            // 1. Buscamos la oferta usando su ID
+            const resOferta = await obtenerOfertaPorId(postulacion.id_oferta);
+            if (resOferta && resOferta.success) {
+              ofertaRow = resOferta.data;
+            }
+
+            // 2. Atrapamos el ID del empleador (cubriendo errores ortográficos en la BD)
+            const empleadorId = ofertaRow.id_empleador || ofertaRow.id_emepleador;
+
+            // 3. Buscamos el nombre de la empresa usando EL SERVICIO
+            if (empleadorId) {
+              const resEmp = await obtenerEmpleadorPorId(empleadorId);
+              if (resEmp && resEmp.success && resEmp.data) {
+                // Cubrimos ambas posibilidades de cómo se llame tu columna
+                companyName = resEmp.data.empresa || resEmp.data.nombre || 'Empresa sin nombre';
+              }
+            }
           } catch (e) {
             console.error(`Error obteniendo detalles de la oferta ${postulacion.id_oferta}:`, e);
           }
 
-          // Salvavidas por si la descripción viene vacía de la base de datos
-          const desc = ofertaData.descripcion || '';
+          const desc = ofertaRow.descripcion ? String(ofertaRow.descripcion) : 'Sin descripción detallada.';
 
           return {
-            // Corrección: Tu BD usa id_ofertante, no id_postulante
             id: postulacion.id_ofertante || postulacion.id, 
-            jobTitle: ofertaData.titulo || 'Oferta Desconocida',
-            companyName: ofertaData.empleador?.nombre || 'Empresa no disponible',
-            location: ofertaData.modalidad || 'No especificada',
+            jobTitle: ofertaRow.oferta || 'Oferta Desconocida', 
+            companyName: companyName, // AQUÍ SE ASIGNA EL NOMBRE REAL
+            location: ofertaRow.modalidad || 'No especificada', 
             descriptionSnippet: desc.length > 100 ? desc.substring(0, 100) + '...' : desc,
-            daysAgo: ofertaData.fecha_apertura ? calculateDaysAgo(ofertaData.fecha_apertura) : 0,
-            // Corrección: Tu BD devuelve 'estado', no 'estado_postulacion'
+            daysAgo: ofertaRow.fecha_apertura ? calculateDaysAgo(ofertaRow.fecha_apertura) : 0,
             status: mapStatus(postulacion.estado) 
           };
         })
@@ -95,8 +109,8 @@ const calculateDaysAgo = (dateString) => {
 const mapStatus = (estado) => {
   switch (estado) {
     case 0: return 'Pendiente';
-    case 1: return 'Seleccionado'; // Aceptado
-    case 2: return 'No seleccionado'; // Rechazado
+    case 1: return 'Seleccionado'; 
+    case 2: return 'No seleccionado'; 
     default: return 'Desconocido';
   }
 };
