@@ -15,16 +15,8 @@
             <input v-model="form.empresa" type="text" class="mt-2 w-full px-5 py-4 bg-gray-50 border border-gray-200 rounded-2xl focus:border-[#b5943a]" required />
           </div>
 
-          <div class="grid grid-cols-2 gap-5">
-            <div>
-              <label class="text-sm font-medium text-gray-600">Nombre del Representante</label>
-              <input v-model="form.nombre" type="text" class="mt-2 w-full px-5 py-4 bg-gray-50 border border-gray-200 rounded-2xl focus:border-[#b5943a]" required />
-            </div>
-            <div>
-              <label class="text-sm font-medium text-gray-600">Apellido</label>
-              <input v-model="form.apellido" type="text" class="mt-2 w-full px-5 py-4 bg-gray-50 border border-gray-200 rounded-2xl focus:border-[#b5943a]" required />
-            </div>
-          </div>
+          
+          
 
           <div>
             <label class="text-sm font-medium text-gray-600">Correo institucional de tu empresa</label>
@@ -103,8 +95,6 @@ const errorConfirmar = ref('')
 
 const form = ref({
   empresa: '',
-  nombre: '',
-  apellido: '',
   correo: '',
   telefono: '',
   contrasena: '',
