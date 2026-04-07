@@ -1,38 +1,41 @@
 <template>
   <div class="w-full">
-    <div v-if="!cvUrl && !cargando" 
-      class="border-2 border-dashed border-[#002349] rounded-[15px] bg-[#FAFAF8] p-8 flex flex-col items-center justify-center gap-4 cursor-pointer hover:border-[#b5943a] transition-colors"
-      @click="triggerFileInput"
-      @dragover.prevent="isDragging = true"
-      @dragleave.prevent="isDragging = false"
-      @drop.prevent="handleDrop"
-      :class="{ 'border-[#b5943a] bg-[#fff8ec]': isDragging }"
-    >
-      <svg class="w-12 h-12 text-[#002349]" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
-      </svg>
-      <p class="text-[#002349] font-semibold text-center">Arrastra tu CV aquí o haz clic para seleccionar</p>
-      <p class="text-xs text-gray-400">PDF · Máx. 5 MB</p>
+    <div v-if="!cvUrl && !cargando" class="cv-premium-dropzone" @click="triggerFileInput"
+      @dragover.prevent="isDragging = true" @dragleave.prevent="isDragging = false" @drop.prevent="handleDrop"
+      :class="{ 'drop-zone--active': isDragging }">
+      <div class="icon-cv">📂</div>
+      <p class="drop-text-main">Arrastra tu CV aquí o haz clic para seleccionar</p>
+      <p class="drop-text-sub">Solo archivos PDF (Máx. 5 MB)</p>
+      <div class="btn-select-gold">Seleccionar Archivo</div>
     </div>
 
-    <div v-else-if="cargando" class="text-center p-8">
-      <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-[#002349]"></div>
-      <p class="mt-2 text-[#002349]">Subiendo CV...</p>
+    <div v-else-if="cargando" class="cv-premium-loading">
+      <div class="spinner-gold"></div>
+      <p>Subiendo tu currículum...</p>
     </div>
 
-    <div v-else class="border border-[#002349] rounded-[15px] bg-[#FAFAF8] p-6 flex items-center gap-4">
-      <div class="text-4xl">📄</div>
-      <div class="flex-1 min-w-0">
-        <p class="font-semibold text-[#002349] truncate">{{ nombreCV }}</p>
-        <p class="text-xs text-green-600 mt-0.5">✓ CV cargado correctamente</p>
-        <div class="flex gap-3 mt-2">
-          <a :href="cvUrl" target="_blank" class="text-xs text-blue-600 hover:underline">Ver CV</a>
-          <button @click="eliminar" class="text-xs text-red-600 hover:underline">Eliminar</button>
+    <div v-else class="cv-premium-success">
+      <div class="flex items-center gap-4 w-full">
+        <div class="text-4xl">📄</div>
+        <div class="flex-1 min-w-0">
+          <p class="cv-name-display truncate">{{ nombreCV }}</p>
+          <p class="text-[10px] text-green-600 font-bold uppercase">✓ CV cargado correctamente</p>
         </div>
       </div>
     </div>
 
-    <input ref="fileInput" type="file" accept=".pdf" class="hidden" @change="handleFileChange" />
+  <input ref="fileInput" type="file" accept=".pdf" class="hidden" @change="handleFileChange" />
+
+  <transition name="fade">
+    <div v-if="mensajeFeedback.texto"
+      :class="['feedback-msg', mensajeFeedback.tipo === 'success' ? 'msg-success' : 'msg-error']">
+      <span class="text-lg">{{ mensajeFeedback.tipo === 'success' ? '✅' : '❌' }}</span>
+      <p>{{ mensajeFeedback.texto }}</p>
+    </div>
+  </transition>
+
+  <input ref="fileInput" type="file" accept=".pdf" class="hidden" @change="handleFileChange" />
+
   </div>
 </template>
 
@@ -61,22 +64,24 @@ const isDragging = ref(false)
 const cargando = ref(false)
 const cvUrl = ref(null)
 const nombreCV = ref('')
+const mensajeFeedback = ref({ texto: '', tipo: '' });
 
 const cargarInfoCV = async () => {
   try {
     const response = await obtenerInfoCV(props.idEstudiante)
-    console.log('Respuesta info CV:', response)
-    
     if (response.success && response.hasCV) {
       cvUrl.value = `http://localhost:3000/api/estudiantes/${props.idEstudiante}/cv/ver`
-      // Mostrar un mensaje genérico ya que no tenemos el nombre del archivo
-      nombreCV.value = 'Currículum Vitae (PDF)'
+
+      // SOLO si el nombre está vacío (primera carga), ponemos el genérico
+      if (!nombreCV.value) {
+        nombreCV.value = response.data?.filename || 'Currículum Vitae (PDF)';
+      }
     } else {
-      cvUrl.value = null
-      nombreCV.value = ''
+      cvUrl.value = null;
+      nombreCV.value = '';
     }
   } catch (error) {
-    console.error('Error al cargar info del CV:', error)
+    console.error('Error al cargar info del CV:', error);
   }
 }
 
@@ -95,39 +100,35 @@ const handleDrop = async (e) => {
 }
 
 const subirArchivo = async (file) => {
-  console.log('=== SUBIENDO ARCHIVO ===');
-  console.log('ID Estudiante (num):', idEstudianteNum.value);
-  console.log('Archivo:', file.name, file.type, file.size);
-  
-  // Validar tipo de archivo
+  mensajeFeedback.value = { texto: '', tipo: '' };
+
   if (file.type !== 'application/pdf') {
-    alert('Formato no permitido. Solo se aceptan archivos PDF');
+    mensajeFeedback.value = { texto: 'Rechazado: El archivo debe ser PDF.', tipo: 'error' };
     return;
   }
-
-  // Validar tamaño (5 MB)
   if (file.size > 5 * 1024 * 1024) {
-    alert('El archivo no puede superar los 5 MB');
+    mensajeFeedback.value = { texto: 'Rechazado: El archivo supera los 5 MB.', tipo: 'error' };
     return;
   }
 
   cargando.value = true;
-  
+  const nombreRealDeMiCompu = file.name;
+
   try {
-    console.log('Llamando a subirCV...');
     const response = await subirCV(idEstudianteNum.value, file);
-    console.log('Respuesta completa:', response);
-    
+
     if (response.success) {
-      await cargarInfoCV();
+      nombreCV.value = nombreRealDeMiCompu;
+
+      mensajeFeedback.value = { texto: '¡CV subido con éxito!', tipo: 'success' };
+      cvUrl.value = `http://localhost:3000/api/estudiantes/${props.idEstudiante}/cv/ver`;
+
       emit('cv-subido', response.data);
-      emit('update:cv', response.data);
     } else {
-      alert(response.message || 'Error al subir el CV');
+      mensajeFeedback.value = { texto: response.message || 'Error al subir', tipo: 'error' };
     }
   } catch (error) {
-    console.error('Error detallado:', error);
-    alert('Error al subir el CV: ' + error.message);
+    mensajeFeedback.value = { texto: 'Error de conexión', tipo: 'error' };
   } finally {
     cargando.value = false;
   }
@@ -135,10 +136,10 @@ const subirArchivo = async (file) => {
 
 const eliminar = async () => {
   if (!confirm('¿Estás seguro de que deseas eliminar tu CV?')) return
-  
+
   try {
     const response = await eliminarCV(idEstudianteNum.value)
-    
+
     if (response.success) {
       cvUrl.value = null
       nombreCV.value = ''

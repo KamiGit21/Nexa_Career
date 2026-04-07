@@ -3,7 +3,7 @@
     <main class="perfil-content">
       <div class="perfil-card">
         <header class="perfil-header">
-          <h1>Editar Perfil de Estudiante</h1>
+          <h2>Editar Perfil de Estudiante</h2>
         </header>
 
         <section class="perfil-body">

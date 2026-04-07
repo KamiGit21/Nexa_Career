@@ -205,7 +205,7 @@ const guardar = async () => {
 
 h2 {
   text-align: center;
-  color: #1b2a4a;
+  color: #D1B16D;
   font-size: 28px;
   font-weight: 800;
   margin-bottom: 30px;
