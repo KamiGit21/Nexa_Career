@@ -24,6 +24,8 @@ import MisPostulacionesHeader from './MisPostulacionesHeader.vue';
 import MisPostulacionesFiltros from './MisPostulacionesFiltros.vue';
 import PostulacionGrid from './PostulacionGrid.vue';
 import { obtenerPostulaciones } from '../../services/postulacionService.js';
+// 1. NUEVO: Importamos el servicio para obtener los detalles de la oferta
+import { obtenerOfertaPorId } from '../../services/ofertaService.js';
 import { authState } from '../../auth.js';
 
 // Estado
@@ -33,21 +35,43 @@ const isLoading = ref(true);
 const currentSearch = ref('');
 const currentFilter = ref('');
 
-
 const fetchPostulaciones = async () => {
   isLoading.value = true;
   try {
     const response = await obtenerPostulaciones(authState.id);
-    if (response.success) {
-      allPostulaciones.value = response.data.map(item => ({
-        id: item.id_postulante,
-        jobTitle: item.titulo_oferta,
-        companyName: item.nombre_empleador,
-        location: item.modalidad,
-        descriptionSnippet: item.descripcion.length > 100 ? item.descripcion.substring(0, 100) + '...' : item.descripcion,
-        daysAgo: calculateDaysAgo(item.fecha_apertura),
-        status: mapStatus(item.estado_postulacion)
-      }));
+    
+    if (response.success && response.data) {
+      
+      // 2. NUEVO: Cruzamos los datos de la postulación con los de la oferta
+      const postulacionesCompletas = await Promise.all(
+        response.data.map(async (postulacion) => {
+          let ofertaData = {};
+          
+          try {
+            // Buscamos la oferta usando su ID
+            ofertaData = await obtenerOfertaPorId(postulacion.id_oferta);
+          } catch (e) {
+            console.error(`Error obteniendo detalles de la oferta ${postulacion.id_oferta}:`, e);
+          }
+
+          // Salvavidas por si la descripción viene vacía de la base de datos
+          const desc = ofertaData.descripcion || '';
+
+          return {
+            // Corrección: Tu BD usa id_ofertante, no id_postulante
+            id: postulacion.id_ofertante || postulacion.id, 
+            jobTitle: ofertaData.titulo || 'Oferta Desconocida',
+            companyName: ofertaData.empleador?.nombre || 'Empresa no disponible',
+            location: ofertaData.modalidad || 'No especificada',
+            descriptionSnippet: desc.length > 100 ? desc.substring(0, 100) + '...' : desc,
+            daysAgo: ofertaData.fecha_apertura ? calculateDaysAgo(ofertaData.fecha_apertura) : 0,
+            // Corrección: Tu BD devuelve 'estado', no 'estado_postulacion'
+            status: mapStatus(postulacion.estado) 
+          };
+        })
+      );
+      
+      allPostulaciones.value = postulacionesCompletas;
     } else {
       allPostulaciones.value = [];
     }
@@ -55,6 +79,7 @@ const fetchPostulaciones = async () => {
     console.error('Error fetching postulaciones:', error);
     allPostulaciones.value = [];
   }
+  
   applyFilters();
   isLoading.value = false;
 };
@@ -70,8 +95,8 @@ const calculateDaysAgo = (dateString) => {
 const mapStatus = (estado) => {
   switch (estado) {
     case 0: return 'Pendiente';
-    case 1: return 'Seleccionado';
-    case 2: return 'No seleccionado';
+    case 1: return 'Seleccionado'; // Aceptado
+    case 2: return 'No seleccionado'; // Rechazado
     default: return 'Desconocido';
   }
 };
