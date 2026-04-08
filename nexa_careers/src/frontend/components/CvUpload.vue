@@ -20,21 +20,32 @@
         <div class="flex-1 min-w-0">
           <p class="cv-name-display truncate">{{ nombreCV }}</p>
           <p class="text-[10px] text-green-600 font-bold uppercase">✓ CV cargado correctamente</p>
+
+          <div class="flex gap-4 mt-2">
+            <a :href="cvUrl" target="_blank" class="cv-action-link view">Ver documento</a>
+            <button type="button" @click="eliminar" class="cv-action-link delete">Eliminar y cambiar</button>
+          </div>
         </div>
       </div>
     </div>
 
-  <input ref="fileInput" type="file" accept=".pdf" class="hidden" @change="handleFileChange" />
+    <input ref="fileInput" type="file" accept=".pdf" class="hidden" @change="handleFileChange" />
 
-  <transition name="fade">
-    <div v-if="mensajeFeedback.texto"
-      :class="['feedback-msg', mensajeFeedback.tipo === 'success' ? 'msg-success' : 'msg-error']">
-      <span class="text-lg">{{ mensajeFeedback.tipo === 'success' ? '✅' : '❌' }}</span>
-      <p>{{ mensajeFeedback.texto }}</p>
-    </div>
-  </transition>
+    <transition name="fade">
+      <div v-if="mensajeFeedback.texto" :class="[
+        'feedback-msg',
+        { 'msg-success': mensajeFeedback.tipo === 'success' },
+        { 'msg-error': mensajeFeedback.tipo === 'error' },
+        { 'msg-deleted': mensajeFeedback.tipo === 'deleted' }
+      ]">
+        <span class="text-lg">
+          {{ mensajeFeedback.tipo === 'success' ? '✅' : '🗑️' }}
+        </span>
+        <p>{{ mensajeFeedback.texto }}</p>
+      </div>
+    </transition>
 
-  <input ref="fileInput" type="file" accept=".pdf" class="hidden" @change="handleFileChange" />
+    <input ref="fileInput" type="file" accept=".pdf" class="hidden" @change="handleFileChange" />
 
   </div>
 </template>
@@ -135,6 +146,8 @@ const subirArchivo = async (file) => {
 }
 
 const eliminar = async () => {
+  mensajeFeedback.value = { texto: '', tipo: '' };
+
   if (!confirm('¿Estás seguro de que deseas eliminar tu CV?')) return
 
   try {
@@ -143,14 +156,33 @@ const eliminar = async () => {
     if (response.success) {
       cvUrl.value = null
       nombreCV.value = ''
+
+      mensajeFeedback.value = {
+        texto: '¡CV eliminado correctamente!',
+        tipo: 'deleted'
+      };
+
       emit('cv-eliminado')
       emit('update:cv', null)
+
+      setTimeout(() => {
+        if (mensajeFeedback.value.texto === '¡CV eliminado correctamente!') {
+          mensajeFeedback.value = { texto: '', tipo: '' };
+        }
+      }, 3000);
+
     } else {
-      alert(response.message || 'Error al eliminar el CV')
+      mensajeFeedback.value = {
+        texto: response.message || 'Error al eliminar el CV',
+        tipo: 'error'
+      };
     }
   } catch (error) {
     console.error('Error:', error)
-    alert('Error al eliminar el CV')
+    mensajeFeedback.value = {
+      texto: 'Error de conexión al intentar eliminar',
+      tipo: 'error'
+    };
   }
 }
 

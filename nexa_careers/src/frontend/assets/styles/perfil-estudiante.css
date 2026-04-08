@@ -353,3 +353,46 @@ h2 {
   margin-bottom: 30px;
   letter-spacing: -0.5px;
 }
+
+.cv-action-link {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    text-decoration: none;
+    transition: opacity 0.2s;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+}
+
+.cv-action-link.view { color: #d0b06d; }
+.cv-action-link.delete { color: #ef4444; }
+
+.cv-action-link:hover {
+    opacity: 0.7;
+    text-decoration: underline;
+}
+
+.cv-name-display {
+    color: #1b2a4a;
+    font-weight: 700;
+    font-size: 14px;
+    margin: 0;
+}
+
+.msg-deleted {
+    background-color: #fef2f2;
+    color: #991b1b;
+    border: 1px solid #fecaca;
+}
+
+.msg-deleted span {
+    animation: shake 0.5s ease-in-out;
+}
+
+@keyframes shake {
+    0%, 100% { transform: rotate(0deg); }
+    25% { transform: rotate(-10deg); }
+    75% { transform: rotate(10deg); }
+}

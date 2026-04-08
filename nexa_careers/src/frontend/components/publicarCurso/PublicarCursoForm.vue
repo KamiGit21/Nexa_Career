@@ -7,7 +7,8 @@
 
     <NombreCursoInput v-model="form.curso" />
     <DescripcionCurso v-model="form.descripcion" />
-    <CategoriaCursoSelect v-model="form.categoria" />
+    <!-- ojito que hay que descomentar esto para el 3 sprint-->
+    <!-- <CategoriaCursoSelect v-model="form.categoria" /> -->
     <ContactoCurso v-model="form.contacto" />
 
     <p
