@@ -41,6 +41,8 @@ const fetchPostulaciones = async () => {
   isLoading.value = true;
   try {
     const response = await obtenerPostulaciones(authState.id);
+
+    console.log("DATOS CRUDOS DEL SERVER:", response.data);
     
     if (response.success && response.data) {
       
@@ -74,13 +76,14 @@ const fetchPostulaciones = async () => {
           const desc = ofertaRow.descripcion ? String(ofertaRow.descripcion) : 'Sin descripción detallada.';
 
           return {
-            id: postulacion.id_ofertante || postulacion.id, 
+            id: postulacion.id_postulante || postulacion.id, 
             jobTitle: ofertaRow.oferta || 'Oferta Desconocida', 
             companyName: companyName, // AQUÍ SE ASIGNA EL NOMBRE REAL
             location: ofertaRow.modalidad || 'No especificada', 
             descriptionSnippet: desc.length > 100 ? desc.substring(0, 100) + '...' : desc,
             daysAgo: ofertaRow.fecha_apertura ? calculateDaysAgo(ofertaRow.fecha_apertura) : 0,
-            status: mapStatus(postulacion.estado) 
+            status: mapStatus(postulacion.estado_postulacion)
+
           };
         })
       );

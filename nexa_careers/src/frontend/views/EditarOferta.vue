@@ -25,6 +25,17 @@
         </div>
 
         <div class="mb-5">
+          <label class="block text-gray-700 font-medium mb-2">Modalidad *</label>
+          <select v-model="form.modalidad" required
+            class="w-full px-4 py-3 border rounded-xl focus:border-[#1b2a4a] outline-none bg-white">
+            <option value="" disabled>Selecciona una modalidad</option>
+            <option value="Presencial">Presencial</option>
+            <option value="Virtual">Virtual</option>
+            <option value="Híbrido">Híbrido</option>
+          </select>
+        </div>
+
+        <div class="mb-5">
           <label class="block text-gray-700 font-medium mb-2">Fecha de apertura (opcional)</label>
           <input v-model="form.fecha_apertura" type="date" :min="fechaHoyParaInput"
             class="w-full px-4 py-3 border rounded-xl focus:border-[#1b2a4a] outline-none">
@@ -74,6 +85,7 @@ const saving = ref(false)
 const form = ref({
   oferta: '',
   descripcion: '',
+  modalidad: '',
   fecha_apertura: '',
   estado: 0,
   rechazo: ''
@@ -106,6 +118,7 @@ onMounted(async () => {
       form.value = {
         oferta: oferta.oferta,
         descripcion: oferta.descripcion || '',
+        modalidad: oferta.modalidad || '',
         fecha_apertura: oferta.fecha_apertura ? oferta.fecha_apertura.split('T')[0] : '',
         estado: oferta.estado,
         rechazo: oferta.rechazo || ''
@@ -142,6 +155,7 @@ const actualizarOferta = async () => {
     const payload = {
       oferta: form.value.oferta,
       descripcion: form.value.descripcion,
+      modalidad: form.value.modalidad,
       fecha_apertura: form.value.fecha_apertura || null,
       rechazo: form.value.estado === 2 ? form.value.rechazo : ''
     }

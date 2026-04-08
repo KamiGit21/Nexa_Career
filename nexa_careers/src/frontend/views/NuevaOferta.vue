@@ -18,6 +18,17 @@
         </div>
 
         <div class="mb-5">
+          <label class="block text-gray-700 font-medium mb-2">Modalidad *</label>
+          <select v-model="form.modalidad" required
+            class="w-full px-4 py-3 border rounded-xl focus:border-[#1b2a4a] outline-none bg-white">
+            <option value="" disabled>Selecciona una modalidad</option>
+            <option value="Presencial">Presencial</option>
+            <option value="Virtual">Virtual</option>
+            <option value="Híbrido">Híbrido</option>
+          </select>
+        </div>
+
+        <div class="mb-5">
           <label class="block text-gray-700 font-medium mb-2">Fecha de apertura (opcional)</label>
           <input v-model="form.fecha_apertura" type="date" :min="fechaHoyParaInput"
             class="w-full px-4 py-3 border rounded-xl focus:border-[#1b2a4a] outline-none">
@@ -49,7 +60,8 @@ const loading = ref(false)
 const form = ref({
   oferta: '',
   descripcion: '',
-  fecha_apertura: ''
+  fecha_apertura: '',
+  modalidad: ''
 })
 
 const fechaHoyParaInput = computed(() => {
@@ -87,7 +99,8 @@ const crearOferta = async () => {
       oferta: form.value.oferta,
       descripcion: form.value.descripcion,
       id_empleador: sesion.id,
-      fecha_apertura: form.value.fecha_apertura || null
+      fecha_apertura: form.value.fecha_apertura || null,
+      modalidad: form.value.modalidad || 'Presencial'
     }
 
     console.log('Enviando al backend:', payload)

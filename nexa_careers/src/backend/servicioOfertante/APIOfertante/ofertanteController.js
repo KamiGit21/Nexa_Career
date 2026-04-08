@@ -52,7 +52,7 @@ export const buscarPorEstudiante = async (req, res) => {
   const { id_estudiante } = req.params;
   try {
     const [rows] = await db.query('SELECT * FROM postulante WHERE id_estudiante = ?', [id_estudiante]);
-    if (rows.length === 0) return res.status(404).json({ success: false, message: 'Este estudiante no tiene postulaciones' });
+    if (rows.length === 0) return res.status(200).json({ success: true, data: [], message: 'Sin postulaciones' });
     res.status(200).json({ success: true, data: rows });
   } catch (error) {
     console.error('Error al buscar por estudiante:', error);

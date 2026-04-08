@@ -10,7 +10,7 @@ const api = axios.create({
  * Respuesta: { success: true, data: Postulacion[] }
  */
 export async function obtenerPostulaciones(idEstudiante) {
-  const { data } = await api.get(`/api/ofertantes/estudiante/${idEstudiante}`);
+  const { data } = await api.get(`/api/ofertantes/estudiante/${idEstudiante}/postulaciones`);
   return data
 }
 

@@ -52,7 +52,7 @@ const validateOferta = (data) => {
 
 // 1. POST: Crear oferta (estado = 0 y rechazo = '' por defecto)
 export const crearOferta = async (req, res) => {
-  const { descripcion, fecha_apertura, oferta, id_empleador } = req.body;
+  const { descripcion, fecha_apertura, oferta, id_empleador, modalidad } = req.body;
 
   const validation = validateOferta({ descripcion, fecha_apertura, oferta, id_empleador });
   if (!validation.valid) {
@@ -64,9 +64,9 @@ export const crearOferta = async (req, res) => {
     const rechazo = ''; // Blanco por defecto
 
     const [result] = await db.query(
-      `INSERT INTO oferta (descripcion, fecha_apertura, estado, rechazo, oferta, id_empleador) 
-       VALUES (?, ?, ?, ?, ?, ?)`,
-      [descripcion, fecha_apertura, estado, rechazo, oferta, id_empleador]
+      `INSERT INTO oferta (descripcion, fecha_apertura, estado, rechazo, oferta, id_empleador, modalidad) 
+       VALUES (?, ?, ?, ?, ?, ?, ?)`,
+      [descripcion, fecha_apertura, estado, rechazo, oferta, id_empleador, modalidad || 'Presencial']
     );
     res.status(201).json({ success: true, id_oferta: result.insertId, message: 'Oferta creada correctamente' });
   } catch (error) {
@@ -138,12 +138,12 @@ export const buscarOfertasPorEmpleador = async (req, res) => {
 // 6. PUT: Editar detalles de la oferta (TODO menos el estado)
 export const editarOferta = async (req, res) => {
   const { id } = req.params;
-  const { descripcion, fecha_apertura, rechazo, oferta } = req.body;
+  const { descripcion, fecha_apertura, rechazo, oferta, modalidad } = req.body;
 
   try {
     const [result] = await db.query(
-      `UPDATE oferta SET descripcion = ?, fecha_apertura = ?, rechazo = ?, oferta = ? WHERE id_oferta = ?`,
-      [descripcion, fecha_apertura, rechazo, oferta, id]
+      `UPDATE oferta SET descripcion = ?, fecha_apertura = ?, rechazo = ?, oferta = ?, modalidad = ? WHERE id_oferta = ?`,
+      [descripcion, fecha_apertura, rechazo, oferta, modalidad, id]
     );
     if (result.affectedRows === 0) return res.status(404).json({ success: false, message: 'Oferta no encontrada para editar' });
     res.status(200).json({ success: true, message: 'Oferta actualizada correctamente' });

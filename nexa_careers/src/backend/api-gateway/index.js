@@ -29,9 +29,13 @@ const proxyTo = (targetUrl) => async (req, res) => {
         'Content-Type': 'application/json',
       },
     };
+
+    delete options.headers.host;
     
     if (req.method !== 'GET' && req.method !== 'DELETE') {
       options.body = JSON.stringify(req.body);
+    }if (req.method !== 'GET' && req.method !== 'DELETE') {
+      options.body = req.body ? JSON.stringify(req.body) : null;
     }
     
     const response = await fetch(fullUrl, options);
