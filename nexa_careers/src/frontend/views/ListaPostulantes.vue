@@ -131,16 +131,18 @@ const cargarDatos = async () => {
           const randIndex = Math.floor(Math.random() * bgColors.length)
 
           return {
-            // CORRECCIÓN: De vuelta a 'id_ofertante' que es el nombre real en tu base de datos
             id: postulacion.id_postulante || postulacion.id_postulacion || postulacion.id,
-            
             id_estudiante: postulacion.id_estudiante,
             nombre: nombreCompleto,
             correo: estudiante.gmail || 'Sin correo',
             telefono: estudiante.telefono || 'Sin teléfono',
             fechaPostulacion: 'Reciente', 
             estado: postulacion.estado,
-            cv: estudiante.cv || null, 
+            // aquiiii deberia aprecer el cv
+            //cv: `http://localhost:3000/api/estudiantes/${postulacion.id_estudiante}/cv/ver`,
+            cv: estudiante.cv ? `http://localhost:3000/api/estudiantes/${postulacion.id_estudiante}/cv/ver` : null,
+            //o una url relativa
+            //cv: estudiante.cv ? `/api/estudiantes/${postulacion.id_estudiante}/cv/ver` : null,
             iniciales: iniciales.toUpperCase(),
             inicialesBg: bgColors[randIndex],
             inicialesColor: textColors[randIndex]

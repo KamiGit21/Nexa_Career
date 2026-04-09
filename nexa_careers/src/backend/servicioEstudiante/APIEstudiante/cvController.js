@@ -61,7 +61,7 @@ export const subirCV = async (req, res) => {
   }
 };
 
-// 2. Obtener/visualizar CV
+// 2. ver cv principal correccion ------------------------------
 export const obtenerCV = async (req, res) => {
   const id_estudiante = req.params.id;
 
@@ -78,16 +78,19 @@ export const obtenerCV = async (req, res) => {
       });
     }
 
-    const cvFilename = estudiante[0].cv;
+    // aquiiii - busca el archivo físico en la carpeta uploads 
+    const files = fs.readdirSync(uploadDir);
+    // busca un archivo que empiece con cv_{id_estudiante}_
+    const cvFile = files.find(f => f.startsWith(`cv_${id_estudiante}_`));
     
-    if (!cvFilename) {
+    if (!cvFile) {
       return res.status(404).json({ 
         success: false, 
         message: 'El estudiante no tiene un CV cargado' 
       });
     }
 
-    const filePath = path.join(uploadDir, cvFilename);
+    const filePath = path.join(uploadDir, cvFile);
     
     if (!fs.existsSync(filePath)) {
       return res.status(404).json({ 
@@ -96,7 +99,7 @@ export const obtenerCV = async (req, res) => {
       });
     }
 
-    // Enviar el archivo como PDF
+    // envia como un odf
     res.setHeader('Content-Type', 'application/pdf');
     res.setHeader('Content-Disposition', `inline; filename="cv_${id_estudiante}.pdf"`);
     
