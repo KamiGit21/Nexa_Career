@@ -11,6 +11,7 @@
       v-else
       :empleadores="empleadoresFiltrados"
       @ver="abrirDetalle"
+      @bloquear="abrirModalBloqueo"
     />
 
     <DetalleEmpleadorModal
@@ -18,6 +19,15 @@
       :logs="logs"
       :cargando-logs="cargandoLogs"
       @cerrar="seleccionado = null"
+    />
+
+    <ConfirmarBloqueoModal
+      :visible="modalVisible"
+      :tipo-usuario="'Empleador'"
+      :nombre-usuario="usuarioABloquear?.empresa"
+      :id-usuario="usuarioABloquear?.id_empleador"
+      @cerrar="modalVisible = false"
+      @confirmar="confirmarBloqueo"
     />
   </div>
 </template>
@@ -27,7 +37,8 @@ import { ref, computed, onMounted } from 'vue'
 import EmpleadoresHeader      from '../components/listaEmpleadores/EmpleadoresHeader.vue'
 import EmpleadoresTabla       from '../components/listaEmpleadores/EmpleadoresTabla.vue'
 import DetalleEmpleadorModal  from '../components/listaEmpleadores/DetalleEmpleadorModal.vue'
-import { listarEmpleadoresAdmin, obtenerLogsEmpleador } from '../services/supervisorService.js'
+import ConfirmarBloqueoModal  from '../components/modals/ConfirmarBloqueoModal.vue'
+import { listarEmpleadoresAdmin, obtenerLogsEmpleador, bloquearUsuario } from '../services/supervisorService.js'
 
 const empleadores  = ref([])
 const loading      = ref(true)
@@ -35,6 +46,10 @@ const busqueda     = ref('')
 const seleccionado = ref(null)
 const logs         = ref([])
 const cargandoLogs = ref(false)
+
+// Bloqueo
+const modalVisible = ref(false)
+const usuarioABloquear = ref(null)
 
 const empleadoresFiltrados = computed(() => {
   if (!busqueda.value.trim()) return empleadores.value
@@ -57,12 +72,34 @@ const abrirDetalle = async (emp) => {
   }
 }
 
-onMounted(async () => {
+const abrirModalBloqueo = (usuario) => {
+  usuarioABloquear.value = usuario
+  modalVisible.value = true
+}
+
+const confirmarBloqueo = async ({ id, motivo }) => {
+  const res = await bloquearUsuario('empleador', id, motivo)
+  if (res.success) {
+    alert('Empleador bloqueado correctamente')
+    await cargarEmpleadores()
+  } else {
+    alert('Error al bloquear: ' + res.message)
+  }
+  modalVisible.value = false
+  usuarioABloquear.value = null
+}
+
+const cargarEmpleadores = async () => {
+  loading.value = true
   try {
     const res = await listarEmpleadoresAdmin()
     if (res.success) empleadores.value = res.data
   } finally {
     loading.value = false
   }
+}
+
+onMounted(() => {
+  cargarEmpleadores()
 })
 </script>

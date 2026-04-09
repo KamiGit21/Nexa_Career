@@ -196,3 +196,24 @@ export const obtenerLogsEmpleador = async (id) => {
     return { success: false, message: error.message };
   }
 };
+
+
+// para blouear al usuairo --------------------------------------------
+
+export const bloquearUsuario = async (tipo, id, motivo = '') => {
+  try {
+    const endpoint = tipo === 'estudiante' 
+      ? `${API_URL}/supervisores/estudiante/${id}/bloquear`
+      : `${API_URL}/supervisores/empleador/${id}/bloquear`;
+    
+    const res = await fetch(endpoint, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ motivo })
+    });
+    return await res.json();
+  } catch (error) {
+    console.error(`Error en bloquearUsuario (${tipo}):`, error);
+    return { success: false, message: error.message };
+  }
+};

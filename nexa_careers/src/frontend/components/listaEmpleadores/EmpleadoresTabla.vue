@@ -31,9 +31,21 @@
           <td class="p-4 text-center"><UsuarioEstadoBadge :activo="emp.activo" /></td>
           <td class="p-4 text-center text-xs text-gray-400">{{ formatearFecha(emp.creado_en) }}</td>
           <td class="p-4 text-center">
-            <button @click="$emit('ver', emp)" class="px-3 py-1.5 bg-[#1b2a4a] text-white rounded-lg text-xs hover:bg-[#0f1a2e] transition">
-              Ver detalle
-            </button>
+            <div class="flex justify-center gap-2">
+              <button @click="$emit('ver', emp)" class="px-3 py-1.5 bg-[#1b2a4a] text-white rounded-lg text-xs hover:bg-[#0f1a2e] transition">
+                Ver detalle
+              </button>
+              <button
+                v-if="emp.activo === 1"
+                @click="$emit('bloquear', emp)"
+                class="px-3 py-1.5 bg-red-600 text-white rounded-lg text-xs hover:bg-red-700 transition"
+              >
+                Bloquear
+              </button>
+              <span v-else class="px-3 py-1.5 bg-gray-300 text-gray-500 rounded-lg text-xs">
+                Bloqueado
+              </span>
+            </div>
           </td>
         </tr>
       </tbody>
@@ -45,7 +57,7 @@
 <script setup>
 import UsuarioEstadoBadge from '../adminUsuarios/UsuarioEstadoBadge.vue'
 defineProps({ empleadores: { type: Array, required: true } })
-defineEmits(['ver'])
+defineEmits(['ver', 'bloquear'])
 const formatearFecha = (f) => {
   if (!f) return '—'
   return new Date(f).toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' })

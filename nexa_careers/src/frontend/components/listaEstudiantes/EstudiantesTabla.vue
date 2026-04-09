@@ -39,12 +39,24 @@
           </td>
           <td class="p-4 text-center text-xs text-gray-400">{{ formatearFecha(e.creado_en) }}</td>
           <td class="p-4 text-center">
-            <button
-              @click="$emit('ver', e)"
-              class="px-3 py-1.5 bg-[#1b2a4a] text-white rounded-lg text-xs hover:bg-[#0f1a2e] transition"
-            >
-              Ver detalle
-            </button>
+            <div class="flex justify-center gap-2">
+              <button
+                @click="$emit('ver', e)"
+                class="px-3 py-1.5 bg-[#1b2a4a] text-white rounded-lg text-xs hover:bg-[#0f1a2e] transition"
+              >
+                Ver detalle
+              </button>
+              <button
+                v-if="e.activo === 1"
+                @click="$emit('bloquear', e)"
+                class="px-3 py-1.5 bg-red-600 text-white rounded-lg text-xs hover:bg-red-700 transition"
+              >
+                Bloquear
+              </button>
+              <span v-else class="px-3 py-1.5 bg-gray-300 text-gray-500 rounded-lg text-xs">
+                Bloqueado
+              </span>
+            </div>
           </td>
         </tr>
       </tbody>
@@ -61,7 +73,7 @@ import UsuarioEstadoBadge from '../adminUsuarios/UsuarioEstadoBadge.vue'
 defineProps({
   estudiantes: { type: Array, required: true }
 })
-defineEmits(['ver'])
+defineEmits(['ver', 'bloquear'])
 
 const iniciales = (n = '', a = '') => `${n[0] || ''}${a[0] || ''}`.toUpperCase()
 
