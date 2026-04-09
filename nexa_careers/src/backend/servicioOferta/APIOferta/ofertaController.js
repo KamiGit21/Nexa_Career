@@ -270,7 +270,7 @@ export const obtenerOfertasPaginacion = async (req, res) => {
   }
 }
 
-//10. Obtener ofertas por paginacion 
+//10. Obtener ofertas por paginacion por estado
 export const obtenerOfertasPaginacionPorEstado = async (req, res) => {
   const pagina = parseInt(req.params.pagina) || 1;
   const limite = 15; 

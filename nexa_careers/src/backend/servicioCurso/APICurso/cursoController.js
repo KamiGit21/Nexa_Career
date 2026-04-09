@@ -122,7 +122,7 @@ export const cambiarEstadoCurso = async (req, res) => {
     res.status(500).json({ success: false, message: 'Error al actualizar estado' })
   }
 };
-
+// Sacar cursos pendientes (estado = 0)
 export const listarCursosPendientes = async (req, res) => {
   try {
     const [rows] = await db.query(`
@@ -152,3 +152,109 @@ export const listarCursosPendientes = async (req, res) => {
     return res.status(500).json({ success: false, message: error.message });
   }
 };
+
+// Obtener curso por paginación
+export const obtenerCursosPaginacion = async (req, res) => {
+  const pagina = parseInt(req.params.pagina) || 1;
+  const limite = 15; 
+  const offset = (pagina - 1) * limite;
+
+  try {
+    const [countResult] = await db.query('SELECT COUNT(*) as total FROM curso');
+    const totalOfertas = countResult[0].total;
+    const totalPaginas = Math.ceil(totalOfertas / limite);
+
+    const [rows] = await db.query(
+      'SELECT * FROM curso LIMIT ? OFFSET ?',
+      [limite, offset]
+    );
+    res.status(200).json({ 
+      success: true, 
+      data: rows,
+    });
+
+  } catch (error) {
+    console.error('Error al obtener cursos paginados:', error);
+    res.status(500).json({ success: false, message: 'Error interno al paginar los cursos'});
+  }
+}
+
+// Obtener curso por paginación por estado
+export const obtenerCursosPaginacionPorEstado = async (req, res) => {
+  const pagina = parseInt(req.params.pagina) || 1;
+  const limite = 15; 
+  const offset = (pagina - 1) * limite;
+  const estado = req.params.estado;
+
+  try {
+    const [countResult] = await db.query('SELECT COUNT(*) as total FROM curso');
+    const totalOfertas = countResult[0].total;
+    const totalPaginas = Math.ceil(totalOfertas / limite);
+
+    const [rows] = await db.query(
+      'SELECT * FROM curso WHERE estado = ? LIMIT ? OFFSET ?',
+      [estado, limite, offset]
+    );
+    res.status(200).json({ 
+      success: true, 
+      data: rows,
+    });
+
+  } catch (error) {
+    console.error('Error al obtener cursos paginados:', error);
+    res.status(500).json({ success: false, message: 'Error interno al paginar los cursos'});
+  }
+}
+
+// Obtener curso por paginación filtrado por fecha_creacion
+export const obtenerCursosPaginacionPorFecha = async (req, res) => {
+  const pagina = parseInt(req.params.pagina) || 1;
+  const limite = 15; 
+  const offset = (pagina - 1) * limite;
+
+  try {
+    const [countResult] = await db.query('SELECT COUNT(*) as total FROM curso');
+    const totalOfertas = countResult[0].total;
+    const totalPaginas = Math.ceil(totalOfertas / limite);
+
+    const [rows] = await db.query(
+      'SELECT * FROM curso ORDER BY fecha_creacion DESC LIMIT ? OFFSET ?',
+      [limite, offset]
+    );
+    res.status(200).json({ 
+      success: true, 
+      data: rows,
+    });
+
+  } catch (error) {
+    console.error('Error al obtener cursos paginados:', error);
+    res.status(500).json({ success: false, message: 'Error interno al paginar los cursos'});
+  }
+}
+
+// Obtener curso por paginación filtrado por fecha_creacion y estado
+export const obtenerCursosPaginacionPorEstadoYFecha = async (req, res) => {
+  const pagina = parseInt(req.params.pagina) || 1;
+  const limite = 15; 
+  const offset = (pagina - 1) * limite;
+  const estado = req.params.estado;
+
+  try {
+    const [countResult] = await db.query('SELECT COUNT(*) as total FROM curso');
+    const totalOfertas = countResult[0].total;
+    const totalPaginas = Math.ceil(totalOfertas / limite);
+
+    const [rows] = await db.query(
+      'SELECT * FROM curso WHERE estado = ? ORDER BY fecha_creacion DESC LIMIT ? OFFSET ?',
+      [estado, limite, offset]
+    );
+    res.status(200).json({ 
+      success: true, 
+      data: rows,
+    });
+
+  } catch (error) {
+    console.error('Error al obtener cursos paginados:', error);
+    res.status(500).json({ success: false, message: 'Error interno al paginar los cursos'});
+  }
+}

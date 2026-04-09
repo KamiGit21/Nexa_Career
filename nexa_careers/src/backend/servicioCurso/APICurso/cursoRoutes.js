@@ -18,4 +18,9 @@ router.get('/', cursoController.listarCursos);
 router.patch('/:id_curso/estado', cursoController.cambiarEstadoCurso);
 router.get('/:id_curso', cursoController.obtenerCursoPorId);
 
+router.get('/pagina/:pagina', cursoController.obtenerCursosPaginacion);
+router.get('/pagina/:pagina/estado/:estado', cursoController.obtenerCursosPaginacionPorEstado);
+router.get('/pagina/:pagina/fecha', cursoController.obtenerCursosPaginacionPorFecha);
+router.get('/pagina/:pagina/fecha/estado/:estado', cursoController.obtenerCursosPaginacionPorEstadoYFecha);
+
 export default router;

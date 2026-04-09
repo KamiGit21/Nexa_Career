@@ -6,6 +6,7 @@ async function ejecutarPruebas() {
     try {
         console.log('⏳ Iniciando pruebas del microservicio de Cursos...\n');
 
+        /*
         // 1. POST: Registrar curso de estudiante
         console.log('➡️ 1. Ejecutando POST: Registrando nuevo curso de estudiante...');
         const postResponse = await axios.post(`${API_URL}registrarPorEstudiante`, {
@@ -53,6 +54,32 @@ async function ejecutarPruebas() {
         const getResponsePorEmpleador = await axios.get(`${API_URL}empleador/1`);
         console.table(getResponsePorEmpleador.data.data);
         console.log('--------------------------------------------------\n');
+        */
+
+        // 7. GET: Listar cursos paginacion
+        console.log('➡️ 7. Ejecutando GET: Solicitando cursos por paginacion...');
+        const getResponsePaginacion = await axios.get(`${API_URL}pagina/1`);
+        console.table(getResponsePaginacion.data.data);
+        console.log('--------------------------------------------------\n');
+
+        // 8. GET: Listar cursos paginacion por estado
+        console.log('➡️ 8. Ejecutando GET: Solicitando cursos por paginacion y estado 0');
+        const getResponsePaginacionEstado = await axios.get(`${API_URL}pagina/1/estado/0`);
+        console.table(getResponsePaginacionEstado.data.data);
+        console.log('--------------------------------------------------\n');
+
+        // 9. GET: Listar cursos paginacion por fecha
+        console.log('➡️ 9. Ejecutando GET: Solicitando cursos por paginacion y fecha');
+        const getResponsePaginacionFecha = await axios.get(`${API_URL}pagina/1/fecha`);
+        console.table(getResponsePaginacionFecha.data.data);
+        console.log('--------------------------------------------------\n');
+
+        // 10. GET: Listar cursos paginacion por fecha y estado
+        console.log('➡️ 10. Ejecutando GET: Solicitando cursos por paginacion, fecha y estado 0');
+        const getResponsePaginacionFechaEstado = await axios.get(`${API_URL}pagina/1/fecha/estado/0`);
+        console.table(getResponsePaginacionFechaEstado.data.data);
+        console.log('--------------------------------------------------\n');
+
         
         console.log('Pruebas completadas exitosamente.');
         
