@@ -269,3 +269,83 @@ export const obtenerOfertasPaginacion = async (req, res) => {
     res.status(500).json({ success: false, message: 'Error interno al paginar las ofertas' });
   }
 }
+
+//10. Obtener ofertas por paginacion 
+export const obtenerOfertasPaginacionPorEstado = async (req, res) => {
+  const pagina = parseInt(req.params.pagina) || 1;
+  const limite = 15; 
+  const offset = (pagina - 1) * limite;
+  const estado = req.params.estado; 
+
+  try {
+    const [countResult] = await db.query('SELECT COUNT(*) as total FROM oferta');
+    const totalOfertas = countResult[0].total;
+    const totalPaginas = Math.ceil(totalOfertas / limite);
+
+    const [rows] = await db.query(
+      'SELECT * FROM oferta WHERE estado = ? LIMIT ? OFFSET ?',
+      [estado, limite, offset]
+    );
+    res.status(200).json({ 
+      success: true, 
+      data: rows,
+    });
+
+  } catch (error) {
+    console.error('Error al obtener ofertas paginadas:', error);
+    res.status(500).json({ success: false, message: 'Error interno al paginar las ofertas' });
+  }
+}
+
+//11. Obtener ofertas por paginacion ordenado por fecha de apertura 
+export const obtenerOfertasPaginacionPorFecha = async (req, res) => {
+  const pagina = parseInt(req.params.pagina) || 1;
+  const limite = 15; 
+  const offset = (pagina - 1) * limite; 
+
+  try {
+    const [countResult] = await db.query('SELECT COUNT(*) as total FROM oferta');
+    const totalOfertas = countResult[0].total;
+    const totalPaginas = Math.ceil(totalOfertas / limite);
+
+    const [rows] = await db.query(
+      'SELECT * FROM oferta ORDER BY fecha_apertura ASC LIMIT ? OFFSET ?',
+      [limite, offset]
+    );
+    res.status(200).json({ 
+      success: true, 
+      data: rows,
+    });
+
+  } catch (error) {
+    console.error('Error al obtener ofertas paginadas:', error);
+    res.status(500).json({ success: false, message: 'Error interno al paginar las ofertas' });
+  }
+}
+
+//12. Obtener ofertas por paginacion ordenado por fecha de apertura y con estado 
+export const obtenerOfertasPaginacionPorEstadoYFecha = async (req, res) => {
+  const pagina = parseInt(req.params.pagina) || 1;
+  const limite = 15; 
+  const offset = (pagina - 1) * limite; 
+  const estado = req.params.estado;
+
+  try {
+    const [countResult] = await db.query('SELECT COUNT(*) as total FROM oferta');
+    const totalOfertas = countResult[0].total;
+    const totalPaginas = Math.ceil(totalOfertas / limite);
+
+    const [rows] = await db.query(
+      'SELECT * FROM oferta WHERE estado = ? ORDER BY fecha_apertura ASC LIMIT ? OFFSET ? ',
+      [estado, limite, offset]
+    );
+    res.status(200).json({ 
+      success: true, 
+      data: rows,
+    });
+
+  } catch (error) {
+    console.error('Error al obtener ofertas paginadas:', error);
+    res.status(500).json({ success: false, message: 'Error interno al paginar las ofertas' });
+  }
+}

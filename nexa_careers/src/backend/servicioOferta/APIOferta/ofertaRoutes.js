@@ -20,6 +20,9 @@ router.patch('/:id/estado', ofertaController.cambiarEstadoOferta);
 router.put('/:id/archivar', ofertaController.cambiarEstadoOfertaAPendiente); // estado = 3 (inactivo), para dar de baja una oferta
 
 router.get('/pagina/:pagina', ofertaController.obtenerOfertasPaginacion);
+router.get('/pagina/:pagina/estado/:estado', ofertaController.obtenerOfertasPaginacionPorEstado);
+router.get('/pagina/:pagina/apertura/', ofertaController.obtenerOfertasPaginacionPorFecha);
+router.get('/pagina/:pagina/apertura/estado/:estado/', ofertaController.obtenerOfertasPaginacionPorEstadoYFecha);
 
 
 export default router;

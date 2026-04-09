@@ -89,11 +89,33 @@ async function ejecutarPruebas() {
     console.table(getPaginaResponse.data.data);
     console.log('--------------------------------------------------\n');
 
-    console.log('\n Todas las pruebas de ofertas finalizaron con éxito.');
+  // 12. GET: Pagina 1 y estado 1 
+    console.log('➡️ 12. Ejecutando GET: Solicitando pagina de ofertas 1 y oferta en 1...');
+    const getPaginaEstadoResponse = await axios.get(`${API_URL}/pagina/1/estado/1`);
+    console.table(getPaginaEstadoResponse.data.data);
+    console.log('--------------------------------------------------\n');
+
+  // 13. GET: Pagina 1 ordenado por fecha
+   console.log('➡️ 13. Ejecutando GET: Solicitando pagina de ofertas 1 ordenadas por fecha...');
+   const getPaginaFechaResponse = await axios.get(`${API_URL}/pagina/1/apertura`);
+   console.table(getPaginaFechaResponse.data.data);
+   console.log('--------------------------------------------------\n');
+
+  // 14. GET: Pagina 1 con estado 1 ordenado por fecha
+  console.log('➡️ 14. Ejecutando GET: Solicitando pagina de ofertas 1 con estado 1ordenadas por fecha...');
+  const getPaginaFechaEstadoResponse = await axios.get(`${API_URL}/pagina/1/apertura/estado/1`);
+  console.table(getPaginaFechaEstadoResponse.data.data);
+  console.log('--------------------------------------------------\n');
+
+  console.log('\n Todas las pruebas de ofertas finalizaron con éxito.');
+
+  
 
   } catch (error) {
     console.error('❌ Error durante las pruebas:', error.response ? error.response.data : error.message);
   }
+
+  
 }
 
 ejecutarPruebas();
