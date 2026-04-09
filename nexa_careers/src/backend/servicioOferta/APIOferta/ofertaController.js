@@ -212,13 +212,14 @@ export const cambiarEstadoOfertaAPendiente = async (req, res) => {
   }
 };
 
-// 8. GET: Obtener postulantes de una oferta con tabla postulante
+// 8. GET: Obtener postulantes de una oferta con tabla postulante 
+//ESTO NO DEBERIA ESTAR AQUI Atm:Santi
 export const obtenerPostulantesPorOferta = async (req, res) => {
   const { id } = req.params;
   try {
     const query = `
       SELECT 
-        p.id_postulante,
+       p.id_postulante,
         p.id_estudiante,
         p.id_oferta,
         p.estado as estado_postulacion,
@@ -242,3 +243,29 @@ export const obtenerPostulantesPorOferta = async (req, res) => {
     res.status(500).json({ success: false, message: 'Error al obtener postulantes' });
   }
 };
+
+//9. Obtener ofertas por paginacion 
+export const obtenerOfertasPaginacion = async (req, res) => {
+  const pagina = parseInt(req.params.pagina) || 1;
+  const limite = 15; 
+  const offset = (pagina - 1) * limite;
+
+  try {
+    const [countResult] = await db.query('SELECT COUNT(*) as total FROM oferta');
+    const totalOfertas = countResult[0].total;
+    const totalPaginas = Math.ceil(totalOfertas / limite);
+
+    const [rows] = await db.query(
+      'SELECT * FROM oferta LIMIT ? OFFSET ?',
+      [limite, offset]
+    );
+    res.status(200).json({ 
+      success: true, 
+      data: rows,
+    });
+
+  } catch (error) {
+    console.error('Error al obtener ofertas paginadas:', error);
+    res.status(500).json({ success: false, message: 'Error interno al paginar las ofertas' });
+  }
+}

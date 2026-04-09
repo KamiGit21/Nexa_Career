@@ -6,7 +6,7 @@ const API_URL = 'http://localhost:3000/api/ofertas';
 async function ejecutarPruebas() {
   try {
     console.log('⏳ Iniciando pruebas del microservicio de Ofertas...\n');
-
+    /*
     // 1. POST: Crear oferta
     console.log('➡️ 1. Ejecutando POST: Creando nueva oferta...');
     const postResponse = await axios.post(`${API_URL}/crear`, {
@@ -81,6 +81,12 @@ async function ejecutarPruebas() {
     console.log(`➡️ 10. Ejecutando PUT: Cambiando estado de la oferta ID ${nuevoId} a 3 (Inactiva/Archivada)`);
     const putArchivarResponse = await axios.put(`${API_URL}/${nuevoId}/archivar`);
     console.log('✅ Resultado:', putArchivarResponse.data);
+    console.log('--------------------------------------------------\n');
+    */
+    // 11. GET: Pagina 1
+    console.log('➡️ 11. Ejecutando GET: Solicitando pagina de ofertas 1...');
+    const getPaginaResponse = await axios.get(`${API_URL}/pagina/1`);
+    console.table(getPaginaResponse.data.data);
     console.log('--------------------------------------------------\n');
 
     console.log('\n Todas las pruebas de ofertas finalizaron con éxito.');
