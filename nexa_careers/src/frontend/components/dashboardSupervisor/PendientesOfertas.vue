@@ -30,6 +30,8 @@
 import { ref, onMounted } from 'vue'
 import ModerarItemCard from './ModerarItemCard.vue'
 import { listarOfertasPendientes, cambiarEstadoOferta } from '../../services/supervisorService.js'
+// IMPORTACIÓN NUEVA: Traemos la función del servicio de empleadores
+import { obtenerEmpleadorPorId } from '../../services/empleadorService.js'
 
 const pendientes = ref([])
 const loading    = ref(true)
@@ -41,16 +43,45 @@ const mapearOferta = (oferta) => ({
   descripcion: oferta.descripcion,
   fecha:       oferta.fecha_apertura,
   tipo:        'Empleador',
-  publicador:  oferta.empresa || '—'
+  // AHORA USA EL NOMBRE DE LA EMPRESA, O CAE EN EL ID COMO RESPALDO
+  publicador:  oferta.nombre_empresa || oferta.id_empleador || '—'
 })
 
 const cargar = async () => {
   loading.value = true
   try {
     const res = await listarOfertasPendientes()
-    if (res.success) pendientes.value = res.data
+    if (res.success && res.data) {
+      
+      // LÓGICA NUEVA: Cruzamos la data para buscar el nombre del empleador
+      const ofertasConEmpleador = await Promise.all(
+        res.data.map(async (oferta) => {
+          let nombreEmpresa = 'Empresa Desconocida'
+          
+          if (oferta.id_empleador) {
+            try {
+              const empRes = await obtenerEmpleadorPorId(oferta.id_empleador)
+              if (empRes.success && empRes.data) {
+                // Buscamos la columna "empresa" según tu base de datos
+                nombreEmpresa = empRes.data.empresa || empRes.data.nombre || 'Sin nombre registrado'
+              }
+            } catch (err) {
+              console.error(`Error al obtener empleador ${oferta.id_empleador}:`, err)
+            }
+          }
+          
+          // Retornamos la oferta original sumándole el nuevo campo "nombre_empresa"
+          return { ...oferta, nombre_empresa: nombreEmpresa }
+        })
+      )
+      
+      pendientes.value = ofertasConEmpleador
+    } else {
+      pendientes.value = []
+    }
   } catch (e) {
     console.error('Error al cargar ofertas pendientes:', e)
+    pendientes.value = []
   } finally {
     loading.value = false
   }
