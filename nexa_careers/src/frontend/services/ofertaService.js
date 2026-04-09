@@ -41,6 +41,13 @@ export async function cambiarEstadoOferta(id, estado, rechazo = '') {
   return data
 }
 
+// Para dar de baja una oferta (estado = 3, archivada)
+// Llama al endpoint existente PUT /api/ofertas/:id/archivar
+export async function darDeBajaOferta(id) {
+  const { data } = await api.put(`/api/ofertas/${id}/archivar`)
+  return data
+}
+
 export async function listarOfertasPorEmpleador(idEmpleador) {
   const { data } = await api.get(`/api/ofertas/empleador/${idEmpleador}`)
   return data

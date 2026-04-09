@@ -1,6 +1,6 @@
 <template>
   <div class="min-h-screen bg-[#f8f5f0]">
-    
+
     <header class="bg-[#1b2a4a] text-white py-16 px-8 text-center">
       <h1 class="text-4xl font-extrabold mb-4">Encuentra tu próximo desafío profesional</h1>
       <p class="text-[#d0b06d] max-w-2xl mx-auto mb-8">
@@ -10,18 +10,11 @@
       <div class="max-w-2xl mx-auto bg-white p-2 rounded-xl shadow-2xl flex gap-2">
         <div class="flex-1 flex items-center px-4 gap-2">
           <span class="text-gray-400">🔍</span>
-          <input
-            v-model="busqueda"
-            type="text"
-            placeholder="Buscar por título..."
-            class="w-full py-3 text-slate-800 outline-none text-sm rounded-lg"
-            @keyup.enter="cargarOfertas"
-          >
+          <input v-model="busqueda" type="text" placeholder="Buscar por título..."
+            class="w-full py-3 text-slate-800 outline-none text-sm rounded-lg" @keyup.enter="cargarOfertas">
         </div>
-        <button
-          @click="cargarOfertas"
-          class="bg-[#1b2a4a] text-white px-8 py-3 rounded-lg font-bold hover:bg-[#0f1a2e] transition-colors"
-        >
+        <button @click="cargarOfertas"
+          class="bg-[#1b2a4a] text-white px-8 py-3 rounded-lg font-bold hover:bg-[#0f1a2e] transition-colors">
           Buscar
         </button>
       </div>
@@ -42,17 +35,15 @@
       </div>
 
       <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        <div
-          v-for="oferta in ofertasFiltradas"
-          :key="oferta.id_oferta"
+        <div v-for="oferta in ofertasFiltradas" :key="oferta.id_oferta"
           class="bg-white rounded-2xl border border-gray-200 p-6 hover:shadow-xl hover:-translate-y-1 transition-all cursor-pointer"
-          @click="verDetalle(oferta.id_oferta)"
-        >
+          @click="verDetalle(oferta.id_oferta)">
           <div class="flex justify-between items-start mb-4">
             <div class="w-12 h-12 bg-[#1b2a4a]/10 rounded-lg flex items-center justify-center text-2xl">
-              
+
             </div>
-            <span v-if="esNueva(oferta.fecha_apertura)" class="bg-green-100 text-green-700 text-[10px] font-bold px-2 py-1 rounded-full">
+            <span v-if="esNueva(oferta.fecha_apertura)"
+              class="bg-green-100 text-green-700 text-[10px] font-bold px-2 py-1 rounded-full">
               Nueva
             </span>
           </div>
@@ -90,11 +81,14 @@ const error = ref(null)
 const ofertas = ref([])
 const busqueda = ref('')
 
+// Mostrar solo ofertas disponibles(aprobadas) en el catalogo (estado = 1).
 const ofertasFiltradas = computed(() => {
-  if (!busqueda.value) return ofertas.value
-  return ofertas.value.filter(o => 
-    o.oferta.toLowerCase().includes(busqueda.value.toLowerCase())
-  )
+  return ofertas.value.filter(o => {
+    const estaActiva = o.estado === 1
+    const coincideBusqueda = !busqueda.value ||
+      o.oferta.toLowerCase().includes(busqueda.value.toLowerCase())
+    return estaActiva && coincideBusqueda
+  })
 })
 
 const formatearFecha = (fecha) => {
@@ -122,7 +116,7 @@ const cargarOfertas = async () => {
   try {
     const response = await listarOfertas()
     console.log('Ofertas cargadas:', response)
-    
+
     if (response.success) {
       // Mostrar solo ofertas activas (estado = 1) o pendientes (estado = 0)
       // Según tu backend: 0 = pendiente, 1 = aprobada

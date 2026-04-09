@@ -34,13 +34,22 @@
           <div class="col-span-4">
             <p class="font-semibold text-[#1b2a4a]">{{ oferta.oferta }}</p>
             <p class="text-sm text-gray-500 line-clamp-2">{{ oferta.descripcion }}</p>
+            <!-- Mostrar el estado para que el empleador sepa el estado actual -->
+            <span class="mt-1 inline-block text-[10px] font-bold px-2 py-0.5 rounded-full" :class="{
+              'bg-yellow-100 text-yellow-700': oferta.estado === 0,
+              'bg-green-100  text-green-700': oferta.estado === 1,
+              'bg-red-100    text-red-700': oferta.estado === 2,
+              'bg-gray-100   text-gray-500': oferta.estado === 3,
+            }">
+              {{ ['Pendiente', 'Activa', 'Rechazada', 'Dada de baja'][oferta.estado] ?? 'Desconocido' }}
+            </span>
           </div>
           <div class="col-span-2">{{ oferta.categoria || 'General' }}</div>
           <div class="col-span-2">{{ formatearFecha(oferta.fecha_apertura) }}</div>
           <div class="col-span-1 text-center font-medium">{{ oferta.postulantes_count || 0 }}</div>
 
-          <div class="col-span-3 text-center flex gap-3 justify-center"> <button
-              @click="verPostulantes(oferta.id_oferta)"
+          <div class="col-span-3 text-center flex gap-3 justify-center">
+            <button @click="verPostulantes(oferta.id_oferta)"
               class="px-4 py-2 bg-green-600 text-white rounded-xl text-xs font-medium hover:bg-green-700 transition-colors">
               Postulantes
             </button>
@@ -48,14 +57,19 @@
               class="px-4 py-2 bg-yellow-500 text-white rounded-xl text-xs font-medium hover:bg-yellow-600 transition-colors">
               Editar
             </button>
-            <button @click="prepararBaja(oferta)"
-              class="px-4 py-2 bg-red-600 text-white rounded-xl text-xs font-medium hover:bg-red-700 transition-colors">
-              Dar de Baja
+            <!-- Deshabilitar boton si la oferta ya fue dada de baja (estado = 3) -->
+            <button @click="prepararBaja(oferta)" :disabled="oferta.estado === 3"
+              class="px-4 py-2 rounded-xl text-xs font-medium transition-colors" :class="oferta.estado === 3
+                ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                : 'bg-red-600 text-white hover:bg-red-700'">
+              {{ oferta.estado === 3 ? 'Dada de baja' : 'Dar de Baja' }}
             </button>
           </div>
         </div>
       </div>
     </div>
+
+    <!-- Modal de confirmacion de baja -->
     <Transition name="fade">
       <div v-if="showModal"
         class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm px-4">
@@ -68,16 +82,24 @@
             <p class="text-gray-500 mb-8">
               Estás a punto de dar de baja la oferta: <br>
               <span class="font-bold text-slate-800">"{{ ofertaSeleccionada?.oferta }}"</span>.
+              <br>
+              <span class="text-sm text-gray-400 mt-2 block">
+                La oferta pasará a estado <strong>Inactiva</strong> y dejará de ser visible para los estudiantes.
+              </span>
+            </p>
+
+            <p v-if="errorBaja" class="text-sm text-red-500 mb-4 bg-red-50 px-4 py-2 rounded-xl">
+              {{ errorBaja }}
             </p>
 
             <div class="flex gap-4">
-              <button @click="showModal = false"
-                class="flex-1 px-4 py-3 bg-gray-100 text-gray-700 rounded-xl font-semibold hover:bg-gray-200 transition-colors">
+              <button @click="showModal = false; errorBaja = ''" :disabled="procesandoBaja"
+                class="flex-1 px-4 py-3 bg-gray-100 text-gray-700 rounded-xl font-semibold hover:bg-gray-200 transition-colors disabled:opacity-50">
                 Cancelar
               </button>
-              <button @click="confirmarBaja"
-                class="flex-1 px-4 py-3 bg-red-600 text-white rounded-xl font-semibold hover:bg-red-700 transition-colors">
-                Sí, Dar de Baja
+              <button @click="confirmarBaja" :disabled="procesandoBaja"
+                class="flex-1 px-4 py-3 bg-red-600 text-white rounded-xl font-semibold hover:bg-red-700 transition-colors disabled:opacity-50">
+                {{ procesandoBaja ? 'Procesando...' : 'Sí, Dar de Baja' }}
               </button>
             </div>
           </div>
@@ -90,7 +112,7 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { listarOfertasPorEmpleador } from '../services/ofertaService.js'
+import { listarOfertasPorEmpleador, darDeBajaOferta } from '../services/ofertaService.js'
 import { obtenerNumeroPostulacionesPorOferta } from '../services/postulacionService.js'
 
 const router = useRouter()
@@ -99,24 +121,44 @@ const loading = ref(true)
 
 const showModal = ref(false)
 const ofertaSeleccionada = ref(null)
+const procesandoBaja = ref(false)
+const errorBaja = ref('')
 
 const prepararBaja = (oferta) => {
   ofertaSeleccionada.value = oferta
+  errorBaja.value = ''
   showModal.value = true
 }
 
+// Conectar con el endpoint PUT /api/ofertas/:id/archivar
 const confirmarBaja = async () => {
-  console.log('Iniciando proceso de baja para ID:', ofertaSeleccionada.value.id_oferta)
+  procesandoBaja.value = true
+  errorBaja.value = ''
 
-  //Funcion de eliminar logica
+  try {
+    const response = await darDeBajaOferta(ofertaSeleccionada.value.id_oferta)
 
-  showModal.value = false
+    if (response.success) {
+      // Actualizar el estado para mostrar el cambio sin recargar toda la lista
+      const idx = ofertas.value.findIndex(o => o.id_oferta === ofertaSeleccionada.value.id_oferta)
+      if (idx !== -1) {
+        ofertas.value[idx].estado = 3
+      }
+      showModal.value = false
+    } else {
+      errorBaja.value = response.message || 'No se pudo dar de baja la oferta. Intenta de nuevo.'
+    }
+  } catch (e) {
+    console.error('Error al dar de baja la oferta:', e)
+    errorBaja.value = 'Error de conexión con el servidor.'
+  } finally {
+    procesandoBaja.value = false
+  }
 }
 
 const formatearFecha = (fecha) => {
   if (!fecha) return 'No especificada'
-  const date = new Date(fecha)
-  return date.toLocaleDateString('es-ES')
+  return new Date(fecha).toLocaleDateString('es-ES')
 }
 
 const cargarOfertas = async () => {
@@ -135,16 +177,16 @@ const cargarOfertas = async () => {
     console.log('Respuesta del backend:', response)
 
     if (response.success) {
-     
+
       const ofertasBase = response.data || []
-      
+
       const ofertasConConteo = await Promise.all(
         ofertasBase.map(async (oferta) => {
           const conteo = await obtenerNumeroPostulacionesPorOferta(oferta.id_oferta)
           return { ...oferta, postulantes_count: conteo }
         })
       )
-      
+
       ofertas.value = ofertasConConteo
     } else {
       console.error('Error en respuesta:', response.message)
