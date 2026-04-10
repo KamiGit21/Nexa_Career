@@ -74,16 +74,16 @@ export const obtenerEstadisticasDashboard = async () => {
 
     const estudiantesData = await estudiantesRes.json();
     const empleadoresData = await empleadoresRes.json();
-    const ofertasData     = await ofertasRes.json();
-    const cursosData      = await cursosRes.json();
+    const ofertasData = await ofertasRes.json();
+    const cursosData = await cursosRes.json();
 
     return {
       success: true,
       metricas: {
         estudiantes: estudiantesData.success && estudiantesData.data ? estudiantesData.data.length : 0,
         empleadores: empleadoresData.success && empleadoresData.data ? empleadoresData.data.length : 0,
-        ofertas:     ofertasData.success     && ofertasData.data     ? ofertasData.data.length     : 0,
-        cursos:      cursosData.success      && cursosData.data      ? cursosData.data.length      : 0,
+        ofertas: ofertasData.success && ofertasData.data ? ofertasData.data.length : 0,
+        cursos: cursosData.success && cursosData.data ? cursosData.data.length : 0,
       },
       recientes: []
     };
@@ -156,7 +156,7 @@ export const listarEstudiantesAdmin = async () => {
     return { success: false, message: error.message };
   }
 };
- 
+
 export const listarEmpleadoresAdmin = async () => {
   try {
     const res = await fetch(`${API_URL}/supervisores/admin/empleadores`);
@@ -166,7 +166,7 @@ export const listarEmpleadoresAdmin = async () => {
     return { success: false, message: error.message };
   }
 };
- 
+
 export const listarSupervisoresAdmin = async () => {
   try {
     const res = await fetch(`${API_URL}/supervisores/admin/supervisores`);
@@ -176,7 +176,7 @@ export const listarSupervisoresAdmin = async () => {
     return { success: false, message: error.message };
   }
 };
- 
+
 export const obtenerLogsEstudiante = async (id) => {
   try {
     const res = await fetch(`${API_URL}/supervisores/admin/logs/estudiante/${id}`);
@@ -186,7 +186,7 @@ export const obtenerLogsEstudiante = async (id) => {
     return { success: false, message: error.message };
   }
 };
- 
+
 export const obtenerLogsEmpleador = async (id) => {
   try {
     const res = await fetch(`${API_URL}/supervisores/admin/logs/empleador/${id}`);
@@ -198,18 +198,21 @@ export const obtenerLogsEmpleador = async (id) => {
 };
 
 
-// para blouear al usuairo --------------------------------------------
+// Bloquear una cuenta de usuario (estudiante y/o empleador)
 
 export const bloquearUsuario = async (tipo, id, motivo = '') => {
   try {
-    const endpoint = tipo === 'estudiante' 
-      ? `${API_URL}/supervisores/estudiante/${id}/bloquear`
-      : `${API_URL}/supervisores/empleador/${id}/bloquear`;
-    
-    const res = await fetch(endpoint, {
+    const sesion = JSON.parse(localStorage.getItem('sesion') || '{}');
+    const idSupervisor = sesion.id;
+
+    if (!idSupervisor) {
+      return { success: false, message: 'No se encontró la sesión del supervisor.' };
+    }
+
+    const res = await fetch(`${API_URL}/supervisores/${idSupervisor}/bloquear`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ motivo })
+      body: JSON.stringify({ tipo_usuario: tipo, id_usuario: id })
     });
     return await res.json();
   } catch (error) {
