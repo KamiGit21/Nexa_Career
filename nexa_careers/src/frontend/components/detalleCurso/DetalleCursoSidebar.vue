@@ -9,8 +9,12 @@
         <CursoEstadoBadge :estado="curso.estado" />
       </li>
       <li class="flex justify-between items-center text-sm">
-        <span class="text-gray-400">Ofertante:</span>
+        <span class="text-gray-400">Tipo ofertante:</span>
         <span class="font-semibold text-gray-700 capitalize">{{ curso.tipo_publicador }}</span>
+      </li>
+      <li class="flex justify-between items-start text-sm gap-2">
+        <span class="text-gray-400 flex-shrink-0">Ofertante:</span>
+        <span class="font-semibold text-gray-700 text-right">{{ curso.nombre_publicador || '—' }}</span>
       </li>
       <li class="flex justify-between items-center text-sm">
         <span class="text-gray-400">Creación:</span>
