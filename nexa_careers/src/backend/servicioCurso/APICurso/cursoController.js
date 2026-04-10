@@ -6,11 +6,10 @@ export const registrarCursoEstudiante = async (req, res) => {
   const { curso, descripcion, id_estudiante, contacto } = req.body;
 
   try {
-    const estado = 0; // 0 por defecto al crearse
-    const tipoOfertante = 0; // 0 para estudiante, 1 para empleador
-    const fechaSQL = new Date().toISOString().slice(0, 10); // Fecha actual en formato YYYY-MM-DD
+    const estado = 0;
+    const tipoOfertante = 0;
+    const fechaSQL = new Date().toISOString().slice(0, 10);
 
-    // IMPORTANTE: En el SQL usamos 'id_empleador' para coincidir con tu BD
     const [result] = await db.query(
       `INSERT INTO curso (curso, descripcion, id_estudiante, contacto, estado, tipo_ofertante, fecha_creacion) 
        VALUES (?, ?, ?, ?, ?, ?, ?)`,
@@ -28,11 +27,10 @@ export const registrarCursoEmpleador = async (req, res) => {
   const { curso, descripcion, id_empleador, contacto } = req.body;
 
   try {
-    const estado = 0; // 0 por defecto al crearse
-    const tipoOfertante = 1; // 1 para empleador, 0 para estudiante
-    const fechaSQL = new Date().toISOString().slice(0, 10); // Fecha actual en formato YYYY-MM-DD
+    const estado = 0;
+    const tipoOfertante = 1;
+    const fechaSQL = new Date().toISOString().slice(0, 10);
 
-    // IMPORTANTE: En el SQL usamos 'id_empleador' para coincidir con tu BD
     const [result] = await db.query(
       `INSERT INTO curso (curso, descripcion, id_empleador, contacto, estado, tipo_ofertante, fecha_creacion) 
        VALUES (?, ?, ?, ?, ?, ?, ?)`,
@@ -45,10 +43,26 @@ export const registrarCursoEmpleador = async (req, res) => {
   }
 };
 
-// 3. GET: Listar todas los cursos
+// 3. GET: Listar todas los cursos — con nombre del publicador para el catálogo
 export const listarCursos = async (req, res) => {
   try {
-    const [rows] = await db.query('SELECT * FROM curso');
+    const [rows] = await db.query(`
+      SELECT
+        c.*,
+        CASE
+          WHEN c.tipo_ofertante = 0 THEN CONCAT(e.nombre, ' ', e.apellido)
+          WHEN c.tipo_ofertante = 1 THEN emp.empresa
+          ELSE '—'
+        END AS nombre_publicador,
+        CASE
+          WHEN c.tipo_ofertante = 0 THEN 'estudiante'
+          WHEN c.tipo_ofertante = 1 THEN 'empleador'
+          ELSE 'desconocido'
+        END AS tipo_publicador
+      FROM curso c
+      LEFT JOIN estudiante e   ON c.tipo_ofertante = 0 AND c.id_estudiante = e.id_estudiante
+      LEFT JOIN empleador emp  ON c.tipo_ofertante = 1 AND c.id_empleador  = emp.id_empleador
+    `);
     res.status(200).json({ success: true, data: rows });
   } catch (error) {
     console.error('Error al listar cursos:', error);
@@ -56,10 +70,27 @@ export const listarCursos = async (req, res) => {
   }
 };
 
-// 4. GET: Listar solo los cursos disponibles para el estudiante (estado = 1)
+// 4. GET: Listar solo los cursos disponibles (estado = 1) — con nombre del publicador
 export const listarCursosDisponibles = async (req, res) => {
   try {
-    const [rows] = await db.query('SELECT * FROM curso WHERE estado = 1'); // Solo cursos con estado 1 (aceptados/disponibles)
+    const [rows] = await db.query(`
+      SELECT
+        c.*,
+        CASE
+          WHEN c.tipo_ofertante = 0 THEN CONCAT(e.nombre, ' ', e.apellido)
+          WHEN c.tipo_ofertante = 1 THEN emp.empresa
+          ELSE '—'
+        END AS nombre_publicador,
+        CASE
+          WHEN c.tipo_ofertante = 0 THEN 'estudiante'
+          WHEN c.tipo_ofertante = 1 THEN 'empleador'
+          ELSE 'desconocido'
+        END AS tipo_publicador
+      FROM curso c
+      LEFT JOIN estudiante e   ON c.tipo_ofertante = 0 AND c.id_estudiante = e.id_estudiante
+      LEFT JOIN empleador emp  ON c.tipo_ofertante = 1 AND c.id_empleador  = emp.id_empleador
+      WHERE c.estado = 1
+    `);
     res.status(200).json({ success: true, data: rows });
   } catch (error) {
     console.error('Error al listar cursos disponibles:', error);
@@ -67,12 +98,14 @@ export const listarCursosDisponibles = async (req, res) => {
   }
 };
 
-// 5. GET: Listar cursos publicados por un estudiante específico (tipo_ofertante = 0, para estudiante)
+// 5. GET: Listar cursos publicados por un estudiante específico
 export const listarCursosPorEstudiante = async (req, res) => {
   const { id_estudiante } = req.params;
   try {
-    const [rows] = await db.query('SELECT * FROM curso WHERE tipo_ofertante = 0 AND id_estudiante = ?', [id_estudiante]);
-    // Siempre devolver 200, incluso si no hay cursos
+    const [rows] = await db.query(
+      'SELECT * FROM curso WHERE tipo_ofertante = 0 AND id_estudiante = ?',
+      [id_estudiante]
+    );
     res.status(200).json({ success: true, data: rows || [] });
   } catch (error) {
     console.error('Error al listar cursos del estudiante:', error);
@@ -80,12 +113,14 @@ export const listarCursosPorEstudiante = async (req, res) => {
   }
 };
 
-// 6. GET: Listar cursos publicados por un empleador específico (tipo_ofertante = 1, para empleador)
+// 6. GET: Listar cursos publicados por un empleador específico
 export const listarCursosPorEmpleador = async (req, res) => {
   const { id_empleador } = req.params;
   try {
-    const [rows] = await db.query('SELECT * FROM curso WHERE tipo_ofertante = 1 AND id_empleador = ?', [id_empleador]);
-    // Siempre devolver 200, incluso si no hay cursos
+    const [rows] = await db.query(
+      'SELECT * FROM curso WHERE tipo_ofertante = 1 AND id_empleador = ?',
+      [id_empleador]
+    );
     res.status(200).json({ success: true, data: rows || [] });
   } catch (error) {
     console.error('Error al listar cursos del empleador:', error);
@@ -93,12 +128,27 @@ export const listarCursosPorEmpleador = async (req, res) => {
   }
 };
 
-// 7. GET: Obtener un curso por su ID
+// 7. GET: Obtener un curso por su ID — con datos completos del publicador
 export const obtenerCursoPorId = async (req, res) => {
   const { id_curso } = req.params;
   try {
     const [rows] = await db.query(
-      'SELECT * FROM curso WHERE id_curso = ?', 
+      `SELECT
+        c.*,
+        CASE
+          WHEN c.tipo_ofertante = 0 THEN CONCAT(e.nombre, ' ', e.apellido)
+          WHEN c.tipo_ofertante = 1 THEN emp.empresa
+          ELSE '—'
+        END AS nombre_publicador,
+        CASE
+          WHEN c.tipo_ofertante = 0 THEN 'estudiante'
+          WHEN c.tipo_ofertante = 1 THEN 'empleador'
+          ELSE 'desconocido'
+        END AS tipo_publicador
+      FROM curso c
+      LEFT JOIN estudiante e   ON c.tipo_ofertante = 0 AND c.id_estudiante = e.id_estudiante
+      LEFT JOIN empleador emp  ON c.tipo_ofertante = 1 AND c.id_empleador  = emp.id_empleador
+      WHERE c.id_curso = ?`,
       [id_curso]
     );
     if (rows.length === 0) {
@@ -113,16 +163,17 @@ export const obtenerCursoPorId = async (req, res) => {
 
 // PATCH: Cambiar estado de un curso
 export const cambiarEstadoCurso = async (req, res) => {
-  const { id_curso } = req.params
-  const { estado } = req.body // 1=aceptado, 2=rechazado, 3=archivado
+  const { id_curso } = req.params;
+  const { estado } = req.body; // 1=aceptado, 2=rechazado, 3=archivado
   try {
-    await db.query('UPDATE curso SET estado = ? WHERE id_curso = ?', [estado, id_curso])
-    res.status(200).json({ success: true, message: 'Estado actualizado' })
+    await db.query('UPDATE curso SET estado = ? WHERE id_curso = ?', [estado, id_curso]);
+    res.status(200).json({ success: true, message: 'Estado actualizado' });
   } catch (error) {
-    res.status(500).json({ success: false, message: 'Error al actualizar estado' })
+    res.status(500).json({ success: false, message: 'Error al actualizar estado' });
   }
 };
-// Sacar cursos pendientes (estado = 0)
+
+// GET: Cursos pendientes (estado = 0) con nombre del publicador
 export const listarCursosPendientes = async (req, res) => {
   try {
     const [rows] = await db.query(`
@@ -145,7 +196,6 @@ export const listarCursosPendientes = async (req, res) => {
       WHERE c.estado = 0
       ORDER BY c.fecha_creacion DESC
     `);
- 
     return res.json({ success: true, data: rows });
   } catch (error) {
     console.error('Error en listarCursosPendientes:', error);
@@ -156,7 +206,7 @@ export const listarCursosPendientes = async (req, res) => {
 // Obtener curso por paginación
 export const obtenerCursosPaginacion = async (req, res) => {
   const pagina = parseInt(req.params.pagina) || 1;
-  const limite = 15; 
+  const limite = 15;
   const offset = (pagina - 1) * limite;
 
   try {
@@ -168,21 +218,17 @@ export const obtenerCursosPaginacion = async (req, res) => {
       'SELECT * FROM curso LIMIT ? OFFSET ?',
       [limite, offset]
     );
-    res.status(200).json({ 
-      success: true, 
-      data: rows,
-    });
-
+    res.status(200).json({ success: true, data: rows });
   } catch (error) {
     console.error('Error al obtener cursos paginados:', error);
-    res.status(500).json({ success: false, message: 'Error interno al paginar los cursos'});
+    res.status(500).json({ success: false, message: 'Error interno al paginar los cursos' });
   }
-}
+};
 
 // Obtener curso por paginación por estado
 export const obtenerCursosPaginacionPorEstado = async (req, res) => {
   const pagina = parseInt(req.params.pagina) || 1;
-  const limite = 15; 
+  const limite = 15;
   const offset = (pagina - 1) * limite;
   const estado = req.params.estado;
 
@@ -195,21 +241,17 @@ export const obtenerCursosPaginacionPorEstado = async (req, res) => {
       'SELECT * FROM curso WHERE estado = ? LIMIT ? OFFSET ?',
       [estado, limite, offset]
     );
-    res.status(200).json({ 
-      success: true, 
-      data: rows,
-    });
-
+    res.status(200).json({ success: true, data: rows });
   } catch (error) {
     console.error('Error al obtener cursos paginados:', error);
-    res.status(500).json({ success: false, message: 'Error interno al paginar los cursos'});
+    res.status(500).json({ success: false, message: 'Error interno al paginar los cursos' });
   }
-}
+};
 
 // Obtener curso por paginación filtrado por fecha_creacion
 export const obtenerCursosPaginacionPorFecha = async (req, res) => {
   const pagina = parseInt(req.params.pagina) || 1;
-  const limite = 15; 
+  const limite = 15;
   const offset = (pagina - 1) * limite;
 
   try {
@@ -221,21 +263,17 @@ export const obtenerCursosPaginacionPorFecha = async (req, res) => {
       'SELECT * FROM curso ORDER BY fecha_creacion DESC LIMIT ? OFFSET ?',
       [limite, offset]
     );
-    res.status(200).json({ 
-      success: true, 
-      data: rows,
-    });
-
+    res.status(200).json({ success: true, data: rows });
   } catch (error) {
     console.error('Error al obtener cursos paginados:', error);
-    res.status(500).json({ success: false, message: 'Error interno al paginar los cursos'});
+    res.status(500).json({ success: false, message: 'Error interno al paginar los cursos' });
   }
-}
+};
 
 // Obtener curso por paginación filtrado por fecha_creacion y estado
 export const obtenerCursosPaginacionPorEstadoYFecha = async (req, res) => {
   const pagina = parseInt(req.params.pagina) || 1;
-  const limite = 15; 
+  const limite = 15;
   const offset = (pagina - 1) * limite;
   const estado = req.params.estado;
 
@@ -248,13 +286,9 @@ export const obtenerCursosPaginacionPorEstadoYFecha = async (req, res) => {
       'SELECT * FROM curso WHERE estado = ? ORDER BY fecha_creacion DESC LIMIT ? OFFSET ?',
       [estado, limite, offset]
     );
-    res.status(200).json({ 
-      success: true, 
-      data: rows,
-    });
-
+    res.status(200).json({ success: true, data: rows });
   } catch (error) {
     console.error('Error al obtener cursos paginados:', error);
-    res.status(500).json({ success: false, message: 'Error interno al paginar los cursos'});
+    res.status(500).json({ success: false, message: 'Error interno al paginar los cursos' });
   }
-}
+};
