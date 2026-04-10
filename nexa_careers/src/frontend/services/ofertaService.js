@@ -51,8 +51,8 @@ export async function listarOfertasPorEmpleador(idEmpleador) {
   return data
 }
 
-export async function listarOfertasPaginadasPorEstado(pagina = 1, estado = 1) {
-  const { data } = await api.get(`/api/ofertas/pagina/${pagina}/apertura/estado/${estado}`)
+export async function listarOfertasPaginadasPorEstado(pagina, estado) {
+  const { data } = await api.get(`/api/ofertas/pagina/${pagina}/estado/${estado}`)
   return data
 }
 
@@ -60,6 +60,18 @@ export async function contarOfertasPorEstado(estado = 1) {
   const { data } = await api.get('/api/ofertas')
   return (data.data || []).filter(o => o.estado === estado).length
 }
+
+export async function obtenerOfertasPaginacionOrdenada(pagina) {
+  const { data } = await api.get(`/api/ofertas/pagina/${pagina}/apertura/`)
+  return data
+}
+
+export async function obtenerOfertasPaginacionPorEstadoYFecha(pagina, estado) {
+  const { data } = await api.get(`/api/ofertas/pagina/${pagina}/apertura/estado/${estado}/`)
+  return data
+}
+
+
 
 export default {
   listarOfertas,
@@ -73,4 +85,6 @@ export default {
   listarOfertasPorEmpleador,
   listarOfertasPaginadasPorEstado,
   contarOfertasPorEstado,
+  obtenerOfertasPaginacionOrdenada,
+  obtenerOfertasPaginacionPorEstadoYFecha
 }
