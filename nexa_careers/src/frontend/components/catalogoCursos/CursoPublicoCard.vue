@@ -27,7 +27,7 @@
           {{ iniciales(curso.nombre_publicador) }}
         </div>
         <div class="flex flex-col">
-          <span class="text-xs font-semibold text-gray-700 leading-tight">{{ curso.nombre_publicador }}</span>
+          <span class="text-xs font-semibold text-gray-700 leading-tight">{{ curso.nombre_publicador || '—' }}</span>
           <span class="text-xs text-gray-400 leading-tight capitalize">{{ curso.tipo_publicador }}</span>
         </div>
       </div>
@@ -73,8 +73,10 @@ const colorAvatar = computed(() => {
   return COLORES_AVATAR[idx]
 })
 
-const iniciales = (nombre = '') =>
-  nombre.split(' ').map(p => p[0]).join('').slice(0, 2).toUpperCase()
+// Fix: (nombre || '') cubre tanto null como undefined; filter(Boolean) evita
+// que palabras vacías generen p[0] = undefined al hacer split en espacios múltiples.
+const iniciales = (nombre) =>
+  (nombre || '').split(' ').map(p => p[0]).filter(Boolean).join('').slice(0, 2).toUpperCase() || '?'
 
 const formatearFecha = (fecha) => {
   if (!fecha) return ''

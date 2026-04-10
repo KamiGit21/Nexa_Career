@@ -17,7 +17,7 @@
       </div>
 
       <!-- Contenido -->
-      <template v-else-if="curso">
+      <div v-else-if="curso">
 
         <DetalleCursoHeader :curso="curso" />
 
@@ -36,7 +36,7 @@
 
         </div>
 
-      </template>
+      </div>
 
     </div>
   </div>
@@ -51,8 +51,8 @@ import DetalleCursoInfo     from '../components/detalleCurso/DetalleCursoInfo.vu
 import DetalleCursoContacto from '../components/detalleCurso/DetalleCursoContacto.vue'
 import DetalleCursoSidebar  from '../components/detalleCurso/DetalleCursoSidebar.vue'
 
-const route  = useRoute()
-const curso  = ref(null)
+const route   = useRoute()
+const curso   = ref(null)
 const loading = ref(true)
 const error   = ref(null)
 
