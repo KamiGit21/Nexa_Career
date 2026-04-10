@@ -131,7 +131,7 @@ watch(busqueda, () => {
 
 const ofertasTotalesFiltradas = computed(() =>
   ofertas.value.filter(o => {
-    const estaActiva       = o.estado === 0 || o.estado === 1
+    const estaActiva       = o.estado === 1
     const coincideBusqueda = !busqueda.value ||
       o.oferta.toLowerCase().includes(busqueda.value.toLowerCase())
     return estaActiva && coincideBusqueda
