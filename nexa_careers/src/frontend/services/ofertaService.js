@@ -17,8 +17,8 @@ export async function obtenerOfertaPorId(id) {
 }
 
 export async function obtenerTitulo(id) {
-const { data } = await api.get(`/api/ofertas/${id}`)
-  return data.data.oferta // Retorna solo el título de la oferta
+  const { data } = await api.get(`/api/ofertas/${id}`)
+  return data.data.oferta
 }
 
 export async function buscarOfertasPorTitulo(titulo) {
@@ -41,8 +41,6 @@ export async function cambiarEstadoOferta(id, estado, rechazo = '') {
   return data
 }
 
-// Para dar de baja una oferta (estado = 3, archivada)
-// Llama al endpoint existente PUT /api/ofertas/:id/archivar
 export async function darDeBajaOferta(id) {
   const { data } = await api.put(`/api/ofertas/${id}/archivar`)
   return data
@@ -53,13 +51,26 @@ export async function listarOfertasPorEmpleador(idEmpleador) {
   return data
 }
 
-//export default para que las importaciones con default funcionennnn
+export async function listarOfertasPaginadasPorEstado(pagina = 1, estado = 1) {
+  const { data } = await api.get(`/api/ofertas/pagina/${pagina}/apertura/estado/${estado}`)
+  return data
+}
+
+export async function contarOfertasPorEstado(estado = 1) {
+  const { data } = await api.get('/api/ofertas')
+  return (data.data || []).filter(o => o.estado === estado).length
+}
+
 export default {
   listarOfertas,
   obtenerOfertaPorId,
+  obtenerTitulo,
   buscarOfertasPorTitulo,
   crearOferta,
   editarOferta,
   cambiarEstadoOferta,
-  listarOfertasPorEmpleador
+  darDeBajaOferta,
+  listarOfertasPorEmpleador,
+  listarOfertasPaginadasPorEstado,
+  contarOfertasPorEstado,
 }
