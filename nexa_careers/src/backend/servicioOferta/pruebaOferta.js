@@ -87,36 +87,42 @@ async function ejecutarPruebas() {
     console.log('➡️ 11. Ejecutando GET: Solicitando pagina de ofertas 1...');
     const getPaginaResponse = await axios.get(`${API_URL}/pagina/1/size/5`);
     console.table(getPaginaResponse.data.data);
+   console.log('Numero de páginas:', getPaginaResponse.data.paginas); 
     console.log('--------------------------------------------------\n');
 
   // 12. GET: Pagina 1 y estado 1 
     console.log('➡️ 12. Ejecutando GET: Solicitando pagina de ofertas 1 y oferta en 1...');
     const getPaginaEstadoResponse = await axios.get(`${API_URL}/pagina/1/size/3/estado/1`);
     console.table(getPaginaEstadoResponse.data.data);
+    console.log('Numero de páginas:', getPaginaEstadoResponse.data.paginas);
     console.log('--------------------------------------------------\n');
 
   // 13. GET: Pagina 1 ordenado por fecha ascendente
    console.log('➡️ 13. Ejecutando GET: Solicitando pagina de ofertas 1 ordenadas por fecha ascendente...');
    const getPaginaFechaResponseA = await axios.get(`${API_URL}/pagina/1/size/25/apertura/arriba`);
    console.table(getPaginaFechaResponseA.data.data);
+    console.log('Numero de páginas:',getPaginaFechaResponseA.data.paginas);
    console.log('--------------------------------------------------\n');
 
   // 14. GET: Pagina 1 ordenado por fecha descendente
   console.log('➡️ 14. Ejecutando GET: Solicitando pagina de ofertas 1 ordenadas por fecha descendente...');
   const getPaginaFechaResponseD = await axios.get(`${API_URL}/pagina/1/size/25/apertura/abajo`);
   console.table(getPaginaFechaResponseD.data.data);
+  console.log('Numero de páginas:',getPaginaFechaResponseD.data.paginas);
   console.log('--------------------------------------------------\n');
 
   // 15. GET: Pagina 1 con estado 1 ordenado por fecha
   console.log('➡️ 15. Ejecutando GET: Solicitando pagina de ofertas 1 con estado 1ordenadas por fecha ascendente...');
   const getPaginaFechaEstadoResponseA = await axios.get(`${API_URL}/pagina/1/size/17/apertura/arriba/estado/1`);
   console.table(getPaginaFechaEstadoResponseA.data.data);
+  console.log('Numero de páginas:',getPaginaFechaEstadoResponseA.data.paginas);
   console.log('--------------------------------------------------\n');
 
   // 16. GET: Pagina 1 con estado 1 ordenado por fecha
   console.log('➡️ 16. Ejecutando GET: Solicitando pagina de ofertas 1 con estado 1ordenadas por fecha descendente...');
   const getPaginaFechaEstadoResponseD = await axios.get(`${API_URL}/pagina/1/size/17/apertura/abajo/estado/1`);
   console.table(getPaginaFechaEstadoResponseD.data.data);
+  console.log('Numero de páginas:',getPaginaFechaEstadoResponseD.data.paginas);
   console.log('--------------------------------------------------\n');
 
   console.log('\n Todas las pruebas de ofertas finalizaron con éxito.');
