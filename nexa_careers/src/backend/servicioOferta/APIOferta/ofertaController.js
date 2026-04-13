@@ -247,7 +247,7 @@ export const obtenerPostulantesPorOferta = async (req, res) => {
 //9. Obtener ofertas por paginacion 
 export const obtenerOfertasPaginacion = async (req, res) => {
   const pagina = parseInt(req.params.pagina) || 1;
-  const limite = 15; 
+  const limite = parseInt(req.params.size) || 15;
   const offset = (pagina - 1) * limite;
 
   try {
@@ -262,6 +262,7 @@ export const obtenerOfertasPaginacion = async (req, res) => {
     res.status(200).json({ 
       success: true, 
       data: rows,
+      paginas: totalPaginas
     });
 
   } catch (error) {
@@ -273,7 +274,7 @@ export const obtenerOfertasPaginacion = async (req, res) => {
 //10. Obtener ofertas por paginacion por estado
 export const obtenerOfertasPaginacionPorEstado = async (req, res) => {
   const pagina = parseInt(req.params.pagina) || 1;
-  const limite = 15; 
+  const limite = parseInt(req.params.size) || 15;
   const offset = (pagina - 1) * limite;
   const estado = req.params.estado; 
 
@@ -289,6 +290,7 @@ export const obtenerOfertasPaginacionPorEstado = async (req, res) => {
     res.status(200).json({ 
       success: true, 
       data: rows,
+      paginas: totalPaginas
     });
 
   } catch (error) {
@@ -297,10 +299,10 @@ export const obtenerOfertasPaginacionPorEstado = async (req, res) => {
   }
 }
 
-//11. Obtener ofertas por paginacion ordenado por fecha de apertura 
-export const obtenerOfertasPaginacionPorFecha = async (req, res) => {
+//11. Obtener ofertas por paginacion ordenado por fecha de apertura ascendente
+export const obtenerOfertasPaginacionPorFechaAscendente = async (req, res) => {
   const pagina = parseInt(req.params.pagina) || 1;
-  const limite = 15; 
+  const limite = parseInt(req.params.size) || 15; 
   const offset = (pagina - 1) * limite; 
 
   try {
@@ -315,6 +317,7 @@ export const obtenerOfertasPaginacionPorFecha = async (req, res) => {
     res.status(200).json({ 
       success: true, 
       data: rows,
+      paginas: totalPaginas
     });
 
   } catch (error) {
@@ -323,10 +326,37 @@ export const obtenerOfertasPaginacionPorFecha = async (req, res) => {
   }
 }
 
-//12. Obtener ofertas por paginacion ordenado por fecha de apertura y con estado 
-export const obtenerOfertasPaginacionPorEstadoYFecha = async (req, res) => {
+//12. Obtener ofertas por paginacion ordenado por fecha de apertura descendente
+export const obtenerOfertasPaginacionPorFechaDescendente = async (req, res) => {
   const pagina = parseInt(req.params.pagina) || 1;
-  const limite = 15; 
+  const limite = parseInt(req.params.size) || 15; 
+  const offset = (pagina - 1) * limite; 
+
+  try {
+    const [countResult] = await db.query('SELECT COUNT(*) as total FROM oferta');
+    const totalOfertas = countResult[0].total;
+    const totalPaginas = Math.ceil(totalOfertas / limite);
+
+    const [rows] = await db.query(
+      'SELECT * FROM oferta ORDER BY fecha_apertura DESC LIMIT ? OFFSET ?',
+      [limite, offset]
+    );
+    res.status(200).json({ 
+      success: true, 
+      data: rows,
+      paginas: totalPaginas
+    });
+
+  } catch (error) {
+    console.error('Error al obtener ofertas paginadas:', error);
+    res.status(500).json({ success: false, message: 'Error interno al paginar las ofertas' });
+  }
+}
+
+//13. Obtener ofertas por paginacion ordenado por fecha de apertura y con estado 
+export const obtenerOfertasPaginacionPorEstadoYFechaAscendente = async (req, res) => {
+  const pagina = parseInt(req.params.pagina) || 1;
+  const limite = parseInt(req.params.size) || 15; 
   const offset = (pagina - 1) * limite; 
   const estado = req.params.estado;
 
@@ -342,6 +372,35 @@ export const obtenerOfertasPaginacionPorEstadoYFecha = async (req, res) => {
     res.status(200).json({ 
       success: true, 
       data: rows,
+      paginas: totalPaginas
+    });
+
+  } catch (error) {
+    console.error('Error al obtener ofertas paginadas:', error);
+    res.status(500).json({ success: false, message: 'Error interno al paginar las ofertas' });
+  }
+}
+
+//14. Obtener ofertas por paginacion ordenado por fecha de apertura y con estado 
+export const obtenerOfertasPaginacionPorEstadoYFechaDescendente = async (req, res) => {
+  const pagina = parseInt(req.params.pagina) || 1;
+  const limite = parseInt(req.params.size) || 15; 
+  const offset = (pagina - 1) * limite; 
+  const estado = req.params.estado;
+
+  try {
+    const [countResult] = await db.query('SELECT COUNT(*) as total FROM oferta');
+    const totalOfertas = countResult[0].total;
+    const totalPaginas = Math.ceil(totalOfertas / limite);
+
+    const [rows] = await db.query(
+      'SELECT * FROM oferta WHERE estado = ? ORDER BY fecha_apertura DESC LIMIT ? OFFSET ? ',
+      [estado, limite, offset]
+    );
+    res.status(200).json({ 
+      success: true, 
+      data: rows,
+      paginas: totalPaginas
     });
 
   } catch (error) {

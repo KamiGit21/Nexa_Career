@@ -19,10 +19,12 @@ router.put('/:id/editar', ofertaController.editarOferta);
 router.patch('/:id/estado', ofertaController.cambiarEstadoOferta);
 router.put('/:id/archivar', ofertaController.cambiarEstadoOfertaAPendiente); // estado = 3 (inactivo), para dar de baja una oferta
 
-router.get('/pagina/:pagina', ofertaController.obtenerOfertasPaginacion);
-router.get('/pagina/:pagina/estado/:estado', ofertaController.obtenerOfertasPaginacionPorEstado);
-router.get('/pagina/:pagina/apertura/', ofertaController.obtenerOfertasPaginacionPorFecha);
-router.get('/pagina/:pagina/apertura/estado/:estado/', ofertaController.obtenerOfertasPaginacionPorEstadoYFecha);
+router.get('/pagina/:pagina/size/:size', ofertaController.obtenerOfertasPaginacion);
+router.get('/pagina/:pagina/size/:size/estado/:estado', ofertaController.obtenerOfertasPaginacionPorEstado);
+router.get('/pagina/:pagina/size/:size/apertura/arriba', ofertaController.obtenerOfertasPaginacionPorFechaAscendente);
+router.get('/pagina/:pagina/size/:size/apertura/abajo', ofertaController.obtenerOfertasPaginacionPorFechaDescendente);
+router.get('/pagina/:pagina/size/:size/apertura/arriba/estado/:estado/', ofertaController.obtenerOfertasPaginacionPorEstadoYFechaAscendente);
+router.get('/pagina/:pagina/size/:size/apertura/abajo/estado/:estado/', ofertaController.obtenerOfertasPaginacionPorEstadoYFechaDescendente);
 
 
 export default router;
