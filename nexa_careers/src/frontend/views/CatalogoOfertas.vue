@@ -120,6 +120,9 @@ import { useRouter } from 'vue-router'
 import { listarOfertasPaginadasPorEstado, obtenerOfertasPaginacionPorEstadoYFecha } from '../services/ofertaService.js'
 import CatalogoCursosPaginacion from '../components/catalogoCursos/CatalogoCursosPaginacion.vue'
 
+const limite = ref(15);
+
+
 const router   = useRouter()
 const loading  = ref(true)
 const error    = ref(null)
@@ -171,42 +174,28 @@ const esNueva = (fecha) => {
 
 // Lógica principal de conexión
 const cargarOfertas = async (pagina = 1) => {
-  loading.value = true
-  error.value   = null
-  paginaActual.value = pagina
+  loading.value = true;
+  paginaActual.value = pagina;
 
   try {
     let response;
-    
-    // Decidimos a qué API llamar dependiendo de si el botón está apretado
+    // Pasamos paginaActual, el estado (1) y nuestro limite (15)
     if (ordenadoPorFecha.value) {
-      response = await obtenerOfertasPaginacionPorEstadoYFecha(paginaActual.value, 1)
+      response = await obtenerOfertasPaginacionPorEstadoYFecha(paginaActual.value, 1, limite.value);
     } else {
-      response = await listarOfertasPaginadasPorEstado(paginaActual.value, 1) 
+      response = await listarOfertasPaginadasPorEstado(paginaActual.value, 1, limite.value);
     }
 
     if (response.success) {
-      ofertas.value = response.data || []
-      
-      // Si tu backend devuelve la meta-data de paginación (como configuramos antes), la guardamos
-      if (response.paginacion) {
-        totalPaginas.value = response.paginacion.totalPaginas
-        totalOfertasBackend.value = response.paginacion.totalOfertas
-      } else {
-        // Respaldo por si el backend aún no envía la meta-data
-        totalPaginas.value = ofertas.value.length === 15 ? paginaActual.value + 1 : paginaActual.value
-      }
-
-    } else {
-      error.value = response.message || 'Error al cargar ofertas'
+      ofertas.value = response.data; // Las 15 (o menos) ofertas de esta página
+      totalPaginas.value = response.paginas; // El número dinámico (ej. 3 páginas)
     }
   } catch (err) {
-    console.error('Error:', err)
-    error.value = 'Error de conexión con el servidor'
+    error.value = 'Error de comunicación';
   } finally {
-    loading.value = false
+    loading.value = false;
   }
-}
+};
 
 onMounted(() => cargarOfertas(1))
 </script>

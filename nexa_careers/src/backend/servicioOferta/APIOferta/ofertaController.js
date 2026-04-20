@@ -259,8 +259,8 @@ export const obtenerOfertasPaginacion = async (req, res) => {
       'SELECT * FROM oferta LIMIT ? OFFSET ?',
       [limite, offset]
     );
-    res.status(200).json({ 
-      success: true, 
+    res.status(200).json({
+      success: true,
       data: rows,
       paginas: totalPaginas
     });
@@ -276,10 +276,10 @@ export const obtenerOfertasPaginacionPorEstado = async (req, res) => {
   const pagina = parseInt(req.params.pagina) || 1;
   const limite = parseInt(req.params.size) || 15;
   const offset = (pagina - 1) * limite;
-  const estado = req.params.estado; 
+  const estado = req.params.estado;
 
   try {
-    const [countResult] = await db.query('SELECT COUNT(*) as total FROM oferta');
+    const [countResult] = await db.query('SELECT COUNT(*) as total FROM oferta WHERE estado = ?', [estado]);
     const totalOfertas = countResult[0].total;
     const totalPaginas = Math.ceil(totalOfertas / limite);
 
@@ -287,8 +287,8 @@ export const obtenerOfertasPaginacionPorEstado = async (req, res) => {
       'SELECT * FROM oferta WHERE estado = ? LIMIT ? OFFSET ?',
       [estado, limite, offset]
     );
-    res.status(200).json({ 
-      success: true, 
+    res.status(200).json({
+      success: true,
       data: rows,
       paginas: totalPaginas
     });
@@ -302,8 +302,8 @@ export const obtenerOfertasPaginacionPorEstado = async (req, res) => {
 //11. Obtener ofertas por paginacion ordenado por fecha de apertura ascendente
 export const obtenerOfertasPaginacionPorFechaAscendente = async (req, res) => {
   const pagina = parseInt(req.params.pagina) || 1;
-  const limite = parseInt(req.params.size) || 15; 
-  const offset = (pagina - 1) * limite; 
+  const limite = parseInt(req.params.size) || 15;
+  const offset = (pagina - 1) * limite;
 
   try {
     const [countResult] = await db.query('SELECT COUNT(*) as total FROM oferta');
@@ -314,8 +314,8 @@ export const obtenerOfertasPaginacionPorFechaAscendente = async (req, res) => {
       'SELECT * FROM oferta ORDER BY fecha_apertura ASC LIMIT ? OFFSET ?',
       [limite, offset]
     );
-    res.status(200).json({ 
-      success: true, 
+    res.status(200).json({
+      success: true,
       data: rows,
       paginas: totalPaginas
     });
@@ -329,8 +329,8 @@ export const obtenerOfertasPaginacionPorFechaAscendente = async (req, res) => {
 //12. Obtener ofertas por paginacion ordenado por fecha de apertura descendente
 export const obtenerOfertasPaginacionPorFechaDescendente = async (req, res) => {
   const pagina = parseInt(req.params.pagina) || 1;
-  const limite = parseInt(req.params.size) || 15; 
-  const offset = (pagina - 1) * limite; 
+  const limite = parseInt(req.params.size) || 15;
+  const offset = (pagina - 1) * limite;
 
   try {
     const [countResult] = await db.query('SELECT COUNT(*) as total FROM oferta');
@@ -341,8 +341,8 @@ export const obtenerOfertasPaginacionPorFechaDescendente = async (req, res) => {
       'SELECT * FROM oferta ORDER BY fecha_apertura DESC LIMIT ? OFFSET ?',
       [limite, offset]
     );
-    res.status(200).json({ 
-      success: true, 
+    res.status(200).json({
+      success: true,
       data: rows,
       paginas: totalPaginas
     });
@@ -356,8 +356,8 @@ export const obtenerOfertasPaginacionPorFechaDescendente = async (req, res) => {
 //13. Obtener ofertas por paginacion ordenado por fecha de apertura y con estado 
 export const obtenerOfertasPaginacionPorEstadoYFechaAscendente = async (req, res) => {
   const pagina = parseInt(req.params.pagina) || 1;
-  const limite = parseInt(req.params.size) || 15; 
-  const offset = (pagina - 1) * limite; 
+  const limite = parseInt(req.params.size) || 15;
+  const offset = (pagina - 1) * limite;
   const estado = req.params.estado;
 
   try {
@@ -369,8 +369,8 @@ export const obtenerOfertasPaginacionPorEstadoYFechaAscendente = async (req, res
       'SELECT * FROM oferta WHERE estado = ? ORDER BY fecha_apertura ASC LIMIT ? OFFSET ? ',
       [estado, limite, offset]
     );
-    res.status(200).json({ 
-      success: true, 
+    res.status(200).json({
+      success: true,
       data: rows,
       paginas: totalPaginas
     });
@@ -384,8 +384,8 @@ export const obtenerOfertasPaginacionPorEstadoYFechaAscendente = async (req, res
 //14. Obtener ofertas por paginacion ordenado por fecha de apertura y con estado 
 export const obtenerOfertasPaginacionPorEstadoYFechaDescendente = async (req, res) => {
   const pagina = parseInt(req.params.pagina) || 1;
-  const limite = parseInt(req.params.size) || 15; 
-  const offset = (pagina - 1) * limite; 
+  const limite = parseInt(req.params.size) || 15;
+  const offset = (pagina - 1) * limite;
   const estado = req.params.estado;
 
   try {
@@ -397,8 +397,8 @@ export const obtenerOfertasPaginacionPorEstadoYFechaDescendente = async (req, re
       'SELECT * FROM oferta WHERE estado = ? ORDER BY fecha_apertura DESC LIMIT ? OFFSET ? ',
       [estado, limite, offset]
     );
-    res.status(200).json({ 
-      success: true, 
+    res.status(200).json({
+      success: true,
       data: rows,
       paginas: totalPaginas
     });

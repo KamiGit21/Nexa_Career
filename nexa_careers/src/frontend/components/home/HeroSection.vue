@@ -26,7 +26,7 @@
 
       <div class="relative flex justify-center">
         <div class="w-[520px] h-[520px] bg-gradient-to-br from-[#e8f0fb] to-[#d0b06d]/10 rounded-[4rem] flex items-center justify-center">
-          <span class="text-[160px]">🚀</span>
+          <img src="../../assets/images/hero.png" alt="Hero" class="w-full h-full object-contain">
         </div>
       </div>
     </div>
