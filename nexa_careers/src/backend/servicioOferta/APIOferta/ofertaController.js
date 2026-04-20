@@ -306,7 +306,7 @@ export const obtenerOfertasPaginacionPorFechaAscendente = async (req, res) => {
   const offset = (pagina - 1) * limite;
 
   try {
-    const [countResult] = await db.query('SELECT COUNT(*) as total FROM oferta');
+    const [countResult] = await db.query('SELECT COUNT(*) as total FROM oferta WHERE estado = ?', [estado]);
     const totalOfertas = countResult[0].total;
     const totalPaginas = Math.ceil(totalOfertas / limite);
 
@@ -333,7 +333,7 @@ export const obtenerOfertasPaginacionPorFechaDescendente = async (req, res) => {
   const offset = (pagina - 1) * limite;
 
   try {
-    const [countResult] = await db.query('SELECT COUNT(*) as total FROM oferta');
+    const [countResult] = await db.query('SELECT COUNT(*) as total FROM oferta WHERE estado = ?', [estado]);
     const totalOfertas = countResult[0].total;
     const totalPaginas = Math.ceil(totalOfertas / limite);
 
@@ -361,7 +361,7 @@ export const obtenerOfertasPaginacionPorEstadoYFechaAscendente = async (req, res
   const estado = req.params.estado;
 
   try {
-    const [countResult] = await db.query('SELECT COUNT(*) as total FROM oferta');
+    const [countResult] = await db.query('SELECT COUNT(*) as total FROM oferta WHERE estado = ?', [estado]);
     const totalOfertas = countResult[0].total;
     const totalPaginas = Math.ceil(totalOfertas / limite);
 
@@ -389,7 +389,7 @@ export const obtenerOfertasPaginacionPorEstadoYFechaDescendente = async (req, re
   const estado = req.params.estado;
 
   try {
-    const [countResult] = await db.query('SELECT COUNT(*) as total FROM oferta');
+    const [countResult] = await db.query('SELECT COUNT(*) as total FROM oferta WHERE estado = ?', [estado]);
     const totalOfertas = countResult[0].total;
     const totalPaginas = Math.ceil(totalOfertas / limite);
 
