@@ -113,3 +113,11 @@ CREATE TABLE `categoria_curso` (
   FOREIGN KEY (`id_categoria`) REFERENCES `categoria`(`id_categoria`),
   FOREIGN KEY (`id_curso`)     REFERENCES `curso`(`id_curso`)
 );
+
+--Motivo y fecha de bloqueo de estudiante
+ALTER TABLE estudiante ADD COLUMN motivo_bloqueo TEXT DEFAULT NULL;
+ALTER TABLE estudiante ADD COLUMN fecha_bloqueo DATETIME DEFAULT NULL;
+
+--Motivo y fecha de bloqueo de empleador
+ALTER TABLE empleador ADD COLUMN motivo_bloqueo TEXT DEFAULT NULL;
+ALTER TABLE empleador ADD COLUMN fecha_bloqueo DATETIME DEFAULT NULL;

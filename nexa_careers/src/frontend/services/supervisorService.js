@@ -212,7 +212,7 @@ export const bloquearUsuario = async (tipo, id, motivo = '') => {
     const res = await fetch(`${API_URL}/supervisores/${idSupervisor}/bloquear`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ tipo_usuario: tipo, id_usuario: id })
+      body: JSON.stringify({ tipo_usuario: tipo, id_usuario: id , motivo: motivo})
     });
     return await res.json();
   } catch (error) {
