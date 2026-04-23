@@ -14,8 +14,8 @@
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-10">
           <StatCard label="Empleadores registrados" :value="estadisticas.empleadores" color="#1B2A4A" />
           <StatCard label="Estudiantes registrados" :value="estadisticas.estudiantes" color="#B5943A" />
-          <StatCard label="Ofertas activas"          :value="estadisticas.ofertas"     color="#3B6D11" />
-          <StatCard label="Cursos creados"           :value="estadisticas.cursos"      color="#534AB7" />
+          <StatCard label="Ofertas activas" :value="estadisticas.ofertas" color="#3B6D11" />
+          <StatCard label="Cursos creados" :value="estadisticas.cursos" color="#534AB7" />
         </div>
 
         <!-- Acciones rápidas -->
@@ -24,16 +24,9 @@
             Acciones rápidas
           </h3>
           <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            <QuickActionCard
-              v-for="(action, index) in quickActions"
-              :key="index"
-              :iconName="action.iconName"
-              :title="action.title"
-              :description="action.description"
-              :buttonText="action.buttonText"
-              :borderColor="action.borderColor"
-              @action-click="ejecutarAccion(action.route)"
-            />
+            <QuickActionCard v-for="(action, index) in quickActions" :key="index" :iconName="action.iconName"
+              :title="action.title" :description="action.description" :buttonText="action.buttonText"
+              :borderColor="action.borderColor" @action-click="ejecutarAccion(action.route)" />
           </div>
         </div>
 
@@ -43,33 +36,43 @@
             Moderación de contenido
           </h3>
 
+          <div class="relative flex items-center w-full md:w-96">
+
+            <div class="absolute left-3 flex items-center pointer-events-none z-20"
+              style="top: 45%; transform: translateY(-50%);">
+              <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
+                  d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              </svg>
+            </div>
+
+            <input v-model="busquedaModeracion" type="text"
+              :placeholder="tabActivo === 'cursos' ? 'Buscar curso...' : 'Buscar oferta...'"
+              style="padding-left: 3rem !important;"
+              class="block w-full pr-4 py-3 bg-white border border-gray-200 rounded-xl text-sm font-medium focus:ring-2 focus:ring-[#1b2a4a]/20 focus:border-[#1b2a4a] outline-none transition-all shadow-sm text-slate-700" />
+          </div>
+
           <div class="flex gap-2 border-b border-gray-200 mb-6">
-            <button
-              @click="tabActivo = 'cursos'"
-              :class="[
-                'px-6 py-3 text-sm font-semibold transition-colors border-b-2 -mb-px',
-                tabActivo === 'cursos'
-                  ? 'border-[#1b2a4a] text-[#1b2a4a]'
-                  : 'border-transparent text-gray-400 hover:text-gray-600'
-              ]"
-            >
+            <button @click="tabActivo = 'cursos'" :class="[
+              'px-6 py-3 text-sm font-semibold transition-colors border-b-2 -mb-px',
+              tabActivo === 'cursos'
+                ? 'border-[#1b2a4a] text-[#1b2a4a]'
+                : 'border-transparent text-gray-400 hover:text-gray-600'
+            ]">
               Cursos pendientes
             </button>
-            <button
-              @click="tabActivo = 'ofertas'"
-              :class="[
-                'px-6 py-3 text-sm font-semibold transition-colors border-b-2 -mb-px',
-                tabActivo === 'ofertas'
-                  ? 'border-[#1b2a4a] text-[#1b2a4a]'
-                  : 'border-transparent text-gray-400 hover:text-gray-600'
-              ]"
-            >
+            <button @click="tabActivo = 'ofertas'" :class="[
+              'px-6 py-3 text-sm font-semibold transition-colors border-b-2 -mb-px',
+              tabActivo === 'ofertas'
+                ? 'border-[#1b2a4a] text-[#1b2a4a]'
+                : 'border-transparent text-gray-400 hover:text-gray-600'
+            ]">
               Ofertas pendientes
             </button>
           </div>
 
-          <PendientesCursos  v-if="tabActivo === 'cursos'"  />
-          <PendientesOfertas v-if="tabActivo === 'ofertas'" />
+          <PendientesCursos v-if="tabActivo === 'cursos'" :filtro="busquedaModeracion" />
+          <PendientesOfertas v-if="tabActivo === 'ofertas'" :filtro="busquedaModeracion" />
         </div>
 
         <!-- Actividad reciente -->
@@ -122,27 +125,32 @@
 </template>
 
 <script setup>
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted, computed, watch } from 'vue'
 import { useRouter } from 'vue-router'
 
-import StatCard           from '../components/dashboardSupervisor/StatCard.vue'
-import QuickActionCard    from '../components/dashboardSupervisor/QuickActionCard.vue'
-import PendientesCursos  from '../components/dashboardSupervisor/PendientesCursos.vue'
+import StatCard from '../components/dashboardSupervisor/StatCard.vue'
+import QuickActionCard from '../components/dashboardSupervisor/QuickActionCard.vue'
+import PendientesCursos from '../components/dashboardSupervisor/PendientesCursos.vue'
 import PendientesOfertas from '../components/dashboardSupervisor/PendientesOfertas.vue'
 
 import { obtenerEstadisticasDashboard } from '../services/supervisorService.js'
 
 import imgEmpleadores from '../assets/images/empleadores.png'
-import imgOfertas     from '../assets/images/ofertas.png'
+import imgOfertas from '../assets/images/ofertas.png'
 import imgEstudiantes from '../assets/images/estudiantes.png'
-import imgCursos      from '../assets/images/cursos.png'
+import imgCursos from '../assets/images/cursos.png'
 
-const router       = useRouter()
-const supervisor   = ref({ nombre: '', email: '' })
+const router = useRouter()
+const supervisor = ref({ nombre: '', email: '' })
 const estadisticas = ref({ empleadores: 0, estudiantes: 0, ofertas: 0, cursos: 0 })
-const actividades  = ref([])
-const loading      = ref(true)
-const tabActivo    = ref('cursos')
+const actividades = ref([])
+const loading = ref(true)
+const tabActivo = ref('cursos')
+const busquedaModeracion = ref('')
+
+watch(tabActivo, () => {
+  busquedaModeracion.value = ''
+})
 
 const quickActions = computed(() => [
   {
@@ -193,7 +201,7 @@ onMounted(async () => {
     const response = await obtenerEstadisticasDashboard()
     if (response.success) {
       estadisticas.value = response.metricas
-      actividades.value  = response.recientes
+      actividades.value = response.recientes
     }
   } catch (error) {
     console.error('Error al sincronizar el Dashboard:', error)
@@ -218,6 +226,11 @@ const formatearFecha = (fecha) => {
 </script>
 
 <style scoped>
-main { background-color: #F5F0E8; }
-tbody tr { transition: all 0.2s ease; }
+main {
+  background-color: #F5F0E8;
+}
+
+tbody tr {
+  transition: all 0.2s ease;
+}
 </style>
