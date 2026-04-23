@@ -14,9 +14,15 @@
       <p class="text-sm mt-1">Todos los cursos han sido revisados</p>
     </div>
 
+    <div v-else-if="cursosFiltrados.length === 0" class="text-center py-12 text-gray-400">
+      <p class="text-4xl mb-3">🔍</p>
+      <p class="font-medium">No se encontraron cursos</p>
+      <p class="text-sm mt-1">Prueba con otro término de búsqueda</p>
+    </div>
+
     <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
       <ModerarItemCard
-        v-for="curso in pendientes"
+        v-for="curso in cursosFiltrados"
         :key="curso.id_curso"
         :item="mapearCurso(curso)"
         :cargando="procesando === curso.id_curso"
@@ -27,13 +33,27 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import ModerarItemCard from './ModerarItemCard.vue'
 import { listarCursosPendientes, cambiarEstadoCurso } from '../../services/supervisorService.js'
 
 const pendientes = ref([])
 const loading    = ref(true)
 const procesando = ref(null)
+
+const props = defineProps({
+  filtro: { type: String, default: '' }
+})
+
+const cursosFiltrados = computed(() => {
+  const search = props.filtro.toLowerCase().trim()
+  if (!search) return pendientes.value
+  
+  return pendientes.value.filter(c => 
+    c.curso?.toLowerCase().includes(search) || 
+    c.nombre_publicador?.toLowerCase().includes(search)
+  )
+})
 
 const mapearCurso = (curso) => ({
   id:          curso.id_curso,
