@@ -36,7 +36,6 @@ import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { listarOfertasPaginadasPorEstado, obtenerOfertasPaginacionPorEstadoYFecha } from '../services/ofertaService.js'
 
-
 // Importación de Componentes Atómicos
 import OfertasHeader from '../components/catalogoOfertas/OfertasHeader.vue'
 import OfertaGrid from '../components/catalogoOfertas/OfertaGrid.vue'
@@ -95,9 +94,9 @@ const cargarOfertas = async (pagina = 1) => {
     error.value = 'Error de conexión con el servidor'
     console.error(err)
   } finally {
-    loading.value = false;
+    loading.value = false
   }
-};
+}
 
 onMounted(() => cargarOfertas(1))
 </script>

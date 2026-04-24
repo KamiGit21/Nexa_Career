@@ -18,9 +18,11 @@ router.get('/', cursoController.listarCursos);
 router.patch('/:id_curso/estado', cursoController.cambiarEstadoCurso);
 router.get('/:id_curso', cursoController.obtenerCursoPorId);
 
-router.get('/pagina/:pagina', cursoController.obtenerCursosPaginacion);
-router.get('/pagina/:pagina/estado/:estado', cursoController.obtenerCursosPaginacionPorEstado);
-router.get('/pagina/:pagina/fecha', cursoController.obtenerCursosPaginacionPorFecha);
-router.get('/pagina/:pagina/fecha/estado/:estado', cursoController.obtenerCursosPaginacionPorEstadoYFecha);
+router.get('/pagina/:pagina/size/:size', cursoController.obtenerCursosPaginacion);
+router.get('/pagina/:pagina/size/:size/estado/:estado', cursoController.obtenerCursosPaginacionPorEstado);
+router.get('/pagina/:pagina/size/:size/fecha/abajo', cursoController.obtenerCursosPaginacionPorFechaDesendente);
+router.get('/pagina/:pagina/size/:size/fecha/arriba', cursoController.obtenerCursosPaginacionPorFechaAscendente);
+router.get('/pagina/:pagina/size/:size/fecha/abajo/estado/:estado', cursoController.obtenerCursosPaginacionPorEstadoYFechaDescendente);
+router.get('/pagina/:pagina/size/:size/fecha/arriba/estado/:estado', cursoController.obtenerCursosPaginacionPorEstadoYFechaAscendente);
 
 export default router;

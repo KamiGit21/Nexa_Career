@@ -2,134 +2,154 @@
   <div class="min-h-screen bg-[#f8f5f0]">
     <div class="max-w-7xl mx-auto px-6 py-10">
 
-      <CatalogoCursosHeader />
+      <CatalogoCursosHeader 
+        v-model:busqueda="busqueda"
+        :orden="orden"
+        @buscar="cargarCursos(1)"
+        @toggle-orden="toggleOrden"
+      />
 
       <CatalogoCursosFiltros
-        v-model:busqueda="busqueda"
         v-model:categoriaActiva="categoriaActiva"
         v-model:orden="orden"
         :categorias="CATEGORIAS"
       />
 
-      <!-- Contador de resultados -->
-      <div v-if="!loading && cursosTotalesFiltrados.length > 0" class="mb-5 text-sm text-gray-500">
-        Mostrando <span class="font-semibold text-[#1b2a4a]">{{ rangoInicio }}–{{ rangoFin }}</span>
-        de <span class="font-semibold text-[#1b2a4a]">{{ cursosTotalesFiltrados.length }}</span>
-        {{ cursosTotalesFiltrados.length === 1 ? 'curso' : 'cursos' }}
-      </div>
-
-      <!-- Loading -->
       <div v-if="loading" class="text-center py-20 text-gray-500">
         Cargando cursos...
       </div>
 
-      <div v-else-if="cursosTotalesFiltrados.length === 0" class="text-center py-20 text-gray-400">
-        <p class="text-5xl mb-4">🔍</p>
-        <p class="text-lg font-medium">No se encontraron cursos</p>
-        <p class="text-sm mt-1">Intenta con otro nombre o categoría</p>
-      </div>
+      <template v-else>
+        <div v-if="cursosAMostrar.length === 0" class="text-center py-20 text-gray-400">
+          <p class="text-5xl mb-4">🔍</p>
+          <p class="text-lg font-medium">No encontramos resultados para tu búsqueda</p>
+          <button @click="restablecerFiltros" class="mt-4 text-[#1b2a4a] font-bold hover:underline">
+            Limpiar todos los filtros
+          </button>
+        </div>
 
-      <CursoPublicoGrid
-        v-else
-        :cursos="cursosPaginaActual"
-        @ver="irDetalle"
-      />
+        <template v-else>
+          <CursoPublicoGrid
+            :cursos="cursosAMostrar"
+            @ver="irDetalle"
+          />
 
-      <CatalogoCursosPaginacion
-        :pagina-actual="paginaActual"
-        :total-paginas="totalPaginas"
-        @cambiar="cambiarPagina"
-      />
-
+          <CatalogoCursosPaginacion
+            v-if="totalPaginas > 1"
+            :pagina-actual="paginaActual"
+            :total-paginas="totalPaginas"
+            @cambiar="cambiarPagina"
+          />
+        </template>
+      </template>
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, computed, watch, onMounted } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
-import { listarCursosPublicos } from '../services/cursoService.js'
-import CatalogoCursosHeader      from '../components/catalogoCursos/CatalogoCursosHeader.vue'
-import CatalogoCursosFiltros     from '../components/catalogoCursos/CatalogoCursosFiltros.vue'
-import CursoPublicoGrid          from '../components/catalogoCursos/CursoPublicoGrid.vue'
-import CatalogoCursosPaginacion  from '../components/catalogoCursos/CatalogoCursosPaginacion.vue'
+import { 
+  listarCursosPublicosPaginados, 
+  listarCursosPublicosPaginadosPorFecha 
+} from '../services/cursoService.js'
 
-const router  = useRouter()
-const cursos  = ref([])
+// Componentes
+import CatalogoCursosHeader from '../components/catalogoCursos/CatalogoCursosHeader.vue'
+import CatalogoCursosFiltros from '../components/catalogoCursos/CatalogoCursosFiltros.vue'
+import CursoPublicoGrid from '../components/catalogoCursos/CursoPublicoGrid.vue'
+import CatalogoCursosPaginacion from '../components/catalogoCursos/CatalogoCursosPaginacion.vue'
+
+const router = useRouter()
+const cursos = ref([]) 
 const loading = ref(true)
 
-const busqueda        = ref('')
+// Filtros y Paginación
+const busqueda = ref('')
 const categoriaActiva = ref('Todos')
-const orden           = ref('reciente')
+const orden = ref('reciente') // 'reciente' o 'antiguo'
 const CATEGORIAS = ['Todos', 'Tecnología', 'Finanzas', 'Diseño', 'Marketing', 'Redes']
 
 const ITEMS_POR_PAGINA = 15
-const paginaActual     = ref(1)
+const paginaActual = ref(1)
+const totalPaginas = ref(1)
 
-watch([busqueda, categoriaActiva, orden], () => {
-  paginaActual.value = 1
-})
 
-// Datos filtrados (resultados sin paginar) 
-const cursosTotalesFiltrados = computed(() => {
-  let lista = cursos.value.filter(c => {
-    const cumpleCategoria =
-      categoriaActiva.value === 'Todos' ||
-      c.categoria?.toLowerCase() === categoriaActiva.value.toLowerCase()
+const toggleOrden = () => {
+  orden.value = orden.value === 'reciente' ? 'antiguo' : 'reciente';
+  cargarCursos(1);
+}
 
-    const q = busqueda.value.toLowerCase().trim()
-    const cumpleBusqueda =
-      !q ||
-      c.curso?.toLowerCase().includes(q) ||
-      c.categoria?.toLowerCase().includes(q)
-
-    return cumpleCategoria && cumpleBusqueda
-  })
-
-  return lista.sort((a, b) => {
+const cargarCursos = async (pagina = 1) => {
+  loading.value = true
+  paginaActual.value = pagina
+  
+  try {
+    let response;
     if (orden.value === 'reciente') {
-      return new Date(b.fecha_creacion || 0) - new Date(a.fecha_creacion || 0)
+      response = await listarCursosPublicosPaginadosPorFecha(pagina, ITEMS_POR_PAGINA, 'abajo');
     } else if (orden.value === 'antiguo') {
-      return new Date(a.fecha_creacion || 0) - new Date(b.fecha_creacion || 0)
-    } else if (orden.value === 'titulo') {
-      return (a.curso || '').localeCompare(b.curso || '')
+      response = await listarCursosPublicosPaginadosPorFecha(pagina, ITEMS_POR_PAGINA, 'arriba');
+    } else {
+      response = await listarCursosPublicosPaginados(pagina, ITEMS_POR_PAGINA);
     }
-    return 0
-  })
-})
 
-const totalPaginas = computed(() =>
-  Math.max(1, Math.ceil(cursosTotalesFiltrados.value.length / ITEMS_POR_PAGINA))
-)
+    if (response.success) {
+      cursos.value = response.data;
+      totalPaginas.value = response.paginas;
+    } else {
+      cursos.value = [];
+      totalPaginas.value = 1;
+    }
+  } catch (err) {
+    console.error("Error al conectar con el servidor:", err);
+    cursos.value = [];
+  } finally {
+    loading.value = false
+  }
+}
 
-const cursosPaginaActual = computed(() => {
-  const inicio = (paginaActual.value - 1) * ITEMS_POR_PAGINA
-  return cursosTotalesFiltrados.value.slice(inicio, inicio + ITEMS_POR_PAGINA)
-})
+const cursosAMostrar = computed(() => {
+  let lista = cursos.value;
 
-const rangoInicio = computed(() => (paginaActual.value - 1) * ITEMS_POR_PAGINA + 1)
-const rangoFin    = computed(() =>
-  Math.min(paginaActual.value * ITEMS_POR_PAGINA, cursosTotalesFiltrados.value.length)
-)
+  if (categoriaActiva.value !== 'Todos') {
+    lista = lista.filter(c => c.categoria?.toLowerCase() === categoriaActiva.value.toLowerCase());
+  }
+
+  if (busqueda.value.trim()) {
+    const q = busqueda.value.toLowerCase().trim();
+    lista = lista.filter(c => 
+      c.curso?.toLowerCase().includes(q) //|| 
+      //c.descripcion?.toLowerCase().includes(q)
+    );
+  }
+  return lista;
+});
+
+
+watch(orden, () => {
+  cargarCursos(1);
+});
+
+// Resetear página si el usuario filtra
+watch([busqueda, categoriaActiva], () => {
+  paginaActual.value = 1;
+});
 
 const cambiarPagina = (nuevaPagina) => {
   if (nuevaPagina < 1 || nuevaPagina > totalPaginas.value) return
-  paginaActual.value = nuevaPagina
+  cargarCursos(nuevaPagina)
   window.scrollTo({ top: 0, behavior: 'smooth' })
+}
+
+const restablecerFiltros = () => {
+  busqueda.value = '';
+  categoriaActiva.value = 'Todos';
+  orden.value = 'reciente';
+  cargarCursos(1);
 }
 
 const irDetalle = (id) => router.push(`/cursos/${id}`)
 
-onMounted(async () => {
-  try {
-    const response = await listarCursosPublicos()
-    if (response.success) {
-      cursos.value = response.data || []
-    }
-  } catch (error) {
-    console.error('Error al cargar catálogo:', error)
-  } finally {
-    loading.value = false
-  }
-})
+onMounted(() => cargarCursos(1))
 </script>
