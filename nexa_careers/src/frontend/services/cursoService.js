@@ -79,3 +79,23 @@ export const obtenerCursoPorId = async (id) => {
     return { success: false, message: error.message }
   }
 }
+
+export const listarCursosPublicosPaginados = async (pagina = 1, size = 15) => {
+  try {
+    const res = await fetch(`${API_URL}/cursos/pagina/${pagina}/size/${size}/estado/1`);
+    return await res.json();
+  } catch (error) {
+    console.error('Error en listarCursosPublicosPaginados:', error);
+    return { success: false, message: error.message };
+  }
+};
+
+export const listarCursosPublicosPaginadosPorFecha = async (pagina, size, direccion) => {
+  try {
+    //abajo (DESC) o arriba (ASC)
+    const res = await fetch(`${API_URL}/cursos/pagina/${pagina}/size/${size}/fecha/${direccion}/estado/1`);
+    return await res.json();
+  } catch (error) {
+    return { success: false, message: error.message };
+  }
+};
