@@ -1,5 +1,5 @@
 <template>
-  <header class="bg-[#1b2a4a] text-white py-16 px-8 text-center rounded-b-[3rem] mb-10 shadow-xl">
+  <header class="bg-[#1b2a4a] text-white py-16 px-8 text-center  mb-10 shadow-xl">
     <h1 class="text-4xl font-extrabold mb-4">Potencia tus habilidades</h1>
     <p class="text-[#d0b06d] max-w-2xl mx-auto mb-8 font-medium">
       Cursos creados por la comunidad Nexa para impulsar tu carrera.

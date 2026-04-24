@@ -1,6 +1,5 @@
 <template>
   <div class="min-h-screen bg-[#f8f5f0]">
-    <div class="max-w-7xl mx-auto px-6 py-10">
 
       <CatalogoCursosHeader 
         v-model:busqueda="busqueda"
@@ -42,7 +41,6 @@
           />
         </template>
       </template>
-    </div>
   </div>
 </template>
 
