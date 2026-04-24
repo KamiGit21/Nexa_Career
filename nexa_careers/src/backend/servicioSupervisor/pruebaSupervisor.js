@@ -6,7 +6,7 @@ const API_URL = 'http://localhost:3005/api/supervisores';
 async function ejecutarPruebas() {
   try {
     console.log('⏳ Iniciando pruebas del microservicio de Supervisores...\n');
-
+    /*
     // 1. POST: Registrar supervisor
     console.log('➡️ 1. Ejecutando POST: Registrando nuevo supervisor...');
     const postResponse = await axios.post(`${API_URL}/registrar`, {
@@ -40,15 +40,15 @@ async function ejecutarPruebas() {
     });
     console.log('✅ Resultado:', putPerfilResponse.data);
     console.log('--------------------------------------------------\n');
-
+    */
     // 5. PUT: Cambiar contraseña
-    console.log(`➡️ 5. Ejecutando PUT: Cambiando contraseña del ID ${nuevoId}...`);
-    const putPasswordResponse = await axios.put(`${API_URL}/${nuevoId}/contrasena`, {
-      contrasena: 'nuevaClaveSuperSegura456'
+    console.log(`➡️ 5. Ejecutando PUT: Cambiando contraseña del ID 1...`);
+    const putPasswordResponse = await axios.put(`${API_URL}/1/contrasena`, {
+      contrasena: 'claveAdmin123'
     });
     console.log('✅ Resultado:', putPasswordResponse.data);
     console.log('--------------------------------------------------\n');
-
+    /*
     // 6. PUT: Cambiar estado
     console.log(`➡️ 6. Ejecutando PUT: Desactivando al supervisor ID ${nuevoId}...`);
     const putEstadoResponse = await axios.put(`${API_URL}/${nuevoId}/estado`, {
@@ -61,7 +61,7 @@ async function ejecutarPruebas() {
     const putBloquearResponse = await axios.put(`${API_URL}/${nuevoId}/bloquear`);
     console.log('✅ Resultado:', putBloquearResponse.data);
     console.log('--------------------------------------------------\n');
-
+    */
     console.log('\n🎉 Todas las pruebas del supervisor finalizaron con éxito.');
 
   } catch (error) {

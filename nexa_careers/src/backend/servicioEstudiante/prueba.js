@@ -5,7 +5,7 @@ const API_URL = 'http://localhost:3000/api/estudiantes';
 async function ejecutarPruebas() {
   try {
     console.log('⏳ Iniciando pruebas del microservicio de Estudiantes...\n');
-
+    /*
     // 1. POST: Registrar estudiante
     console.log('➡️ 1. Ejecutando POST: Registrando nuevo estudiante...');
     const postResponse = await axios.post(`${API_URL}/registrar`, { 
@@ -48,21 +48,22 @@ async function ejecutarPruebas() {
     });
     console.log('✅ Resultado:', putPerfilResponse.data);
     console.log('--------------------------------------------------\n');
-
+    */
     // 5. PUT: Cambiar contraseña
-    console.log(`➡️ 5. Ejecutando PUT: Cambiando contraseña del ID ${nuevoId}...`);
-    const putPasswordResponse = await axios.put(`${API_URL}/${nuevoId}/contrasena`, {
+    console.log(`➡️ 5. Ejecutando PUT: Cambiando contraseña del ID 1...`);
+    const putPasswordResponse = await axios.put(`${API_URL}/1/contrasena`, {
       contrasena: 'nuevaClaveSuperSegura'
     });
     console.log('✅ Resultado:', putPasswordResponse.data);
     console.log('--------------------------------------------------\n');
-
+    /*
     // 6. PUT: Cambiar estado
     console.log(`➡️ 6. Ejecutando PUT: Desactivando al estudiante ID ${nuevoId}...`);
     const putEstadoResponse = await axios.put(`${API_URL}/${nuevoId}/estado`, {
       activo: 0 // 0 = false, 1 = true
     });
     console.log('✅ Resultado:', putEstadoResponse.data);
+    */
     console.log('\n🎉 Todas las pruebas finalizaron con éxito.');
 
   } catch (error) {

@@ -89,10 +89,23 @@ export const cambiarContrasena = async (req, res) => {
   const { contrasena } = req.body;
 
   if (!contrasena) return res.status(400).json({ success: false, message: 'La nueva contraseña es obligatoria' });
+   if (typeof contrasena !== 'string' || contrasena.length < 8 || contrasena.length > 60) {
+    return res.status(400).json({ success: false, message: 'La contraseña debe tener entre 8 y 60 caracteres' });
+  }
 
   try {
+    const [rows] = await db.query('SELECT contrasena FROM supervisor WHERE id_supervisor = ?', [id]);
+    if (rows.length === 0) {
+      return res.status(404).json({ success: false, message: 'Supervisor no encontrado' });
+    }
+    const contrasenaActual = rows[0].contrasena;
+
+    if (contrasena === contrasenaActual) {
+      return res.status(400).json({ success: false, message: 'La nueva contraseña no puede ser igual a la anterior' });
+    }
+
     const [result] = await db.query('UPDATE supervisor SET contrasena = ? WHERE id_supervisor = ?', [contrasena, id]);
-    if (result.affectedRows === 0) return res.status(404).json({ success: false, message: 'Supervisor no encontrado' });
+    //if (result.affectedRows === 0) return res.status(404).json({ success: false, message: 'Supervisor no encontrado' });
     res.status(200).json({ success: true, message: 'Contraseña actualizada correctamente' });
   } catch (error) {
     console.error('Error al cambiar contraseña:', error);

@@ -184,8 +184,17 @@ export const cambiarContrasena = async (req, res) => {
   }
 
   try {
+    const [rows] = await db.query('SELECT contrasena FROM empleador WHERE id_empleador = ?', [id]);
+    if (rows.length === 0) {
+      return res.status(404).json({ success: false, message: 'Empleador no encontrado' });
+    }
+    const contrasenaActual = rows[0].contrasena;
+    if (contrasena === contrasenaActual) {
+      return res.status(400).json({ success: false, message: 'La nueva contraseña no puede ser igual a la anterior' });
+    }
+
     const [result] = await db.query('UPDATE empleador SET contrasena = ? WHERE id_empleador = ?', [contrasena, id]);
-    if (result.affectedRows === 0) return res.status(404).json({ success: false, message: 'Empleador no encontrado' });
+    //if (result.affectedRows === 0) return res.status(404).json({ success: false, message: 'Empleador no encontrado' });
     res.status(200).json({ success: true, message: 'Contraseña actualizada correctamente' });
   } catch (error) {
     console.error('Error al cambiar contraseña:', error);
