@@ -96,10 +96,13 @@ const abrirDetalle = async (e) => {
 const abrirModalBloqueo    = (u) => { usuarioABloquear.value = u; modalBloqueoVisible.value = true }
 const abrirModalDesbloqueo = (u) => { usuarioADesbloquear.value = u; modalDesbloqueoVisible.value = true }
 
-const confirmarBloqueo = async ({ id }) => {
-  const res = await bloquearUsuario('estudiante', id)
-  if (res.success) { alert('Estudiante bloqueado correctamente'); await cargarEstudiantes() }
-  else alert('Error al bloquear: ' + res.message)
+const confirmarBloqueo = async ({ id, motivo }) => {
+  const res = await bloquearUsuario('estudiante', id, motivo || 'Sin motivo especificado')
+  if (res.success) { 
+    alert('Estudiante bloqueado correctamente'); await cargarEstudiantes() 
+  }else {
+    alert('Error al bloquear: ' + res.message)
+  }
   modalBloqueoVisible.value = false
   usuarioABloquear.value    = null
 }
