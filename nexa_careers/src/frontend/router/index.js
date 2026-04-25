@@ -36,6 +36,11 @@ import ListaEstudiantes from '@/views/ListaEstudiantes.vue'
 import ListaEmpleadores from '@/views/ListaEmpleadores.vue'
 import ListaSupervisores from '@/views/ListaSupervisores.vue'
 
+// Recuperar contrasenia
+import SolicitarRecuperacion from '@/views/SolicitarRecuperacion.vue'
+import VerificarCodigo from '@/views/VerificarCodigo.vue'
+import NuevaPassword from '@/views/NuevaPassword.vue'
+
 const routes = [
   { path: '/', redirect: '/home' },
 
@@ -83,7 +88,7 @@ const routes = [
     component: DetalleOferta
   },
 
-  
+
   { path: '/mis-ofertas', name: 'MisOfertas', component: MisOfertas, meta: { requiereRol: ['empleador'] } },
   { path: '/mis-ofertas/nueva', name: 'NuevaOferta', component: NuevaOferta, meta: { requiereRol: ['empleador'] } },
   { path: '/mis-ofertas/:ofertaId/postulantes', name: 'ListaPostulantes', component: ListaPostulantes, meta: { requiereRol: ['empleador'] } },
@@ -150,6 +155,11 @@ const routes = [
     component: ListaSupervisores,
     meta: { requiereRol: ['supervisor'] }
   },
+
+  // Recuperar contrasenia
+  { path: '/recuperar-password', name: 'SolicitarRecuperacion', component: SolicitarRecuperacion, meta: { soloPublico: true } },
+  { path: '/verificar-codigo', name: 'VerificarCodigo', component: VerificarCodigo, meta: { soloPublico: true } },
+  { path: '/nueva-password', name: 'NuevaPassword', component: NuevaPassword, meta: { soloPublico: true } },
 
   { path: '/:pathMatch(.*)*', redirect: '/home' },
 ]
