@@ -30,6 +30,7 @@ import CatalogoCursos from '@/views/CatalogoCursos.vue'
 import DetalleCurso from '@/views/DetalleCurso.vue'
 import EmpleadorCursos from '@/views/EmpleadorCursos.vue'
 import EstudianteCursos from '@/views/EstudianteCursos.vue'
+import EditarCurso from '@/views/EditarCurso.vue'
 
 //Logs del supervisor
 import ListaEstudiantes from '@/views/ListaEstudiantes.vue'
@@ -108,6 +109,14 @@ const routes = [
     component: EstudianteCursos,
     meta: { requiereRol: ['estudiante'] }
   },
+
+  {
+    path: '/mis-cursos/:id/editar',
+    name: 'EditarCurso',
+    component: EditarCurso,
+    meta: { requiereRol: ['estudiante'] }
+  },
+ 
 
   // Perfiles
   {

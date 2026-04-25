@@ -57,9 +57,17 @@
             {{ curso.descripcion || 'Sin descripción' }}
           </p>
 
-          <div class="text-sm text-gray-600 space-y-1">
+           <div class="text-sm text-gray-600 space-y-1">
             <p><span class="font-medium">Contacto:</span> {{ curso.contacto || 'No especificado' }}</p>
             <p><span class="font-medium">Fecha:</span> {{ formatearFecha(curso.fecha_creacion) }}</p>
+          </div>
+ 
+          <div class="mt-4 flex justify-end">
+            <router-link
+              :to="`/mis-cursos/${curso.id_curso}/editar`"
+              class="px-4 py-2 bg-[#1b2a4a] text-white text-xs font-semibold rounded-xl hover:bg-[#0f1a2e] transition-colors">
+              ✏️ Editar
+            </router-link>
           </div>
         </div>
       </div>
