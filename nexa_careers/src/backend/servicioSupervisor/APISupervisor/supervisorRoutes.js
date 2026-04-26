@@ -21,4 +21,6 @@ router.put('/:id/contrasena', supervisorController.cambiarContrasena);
 router.put('/:id/estado', supervisorController.cambiarEstado);
 router.put('/:id_supervisor/bloquear', supervisorController.bloquearUsuario);
 
+router.post('/enviar-codigo', supervisorController.enviarCodigoSupervisor);
+
 export default router;

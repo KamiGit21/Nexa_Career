@@ -1,4 +1,5 @@
 import db from '../../api-gateway/db.js';
+import { enviarCodigo } from '../servicioNotificacion/correoService.js';
 
 // 1. POST: Registrar supervisor (activo = 1 por defecto)
 export const registrarSupervisor = async (req, res) => {
@@ -414,5 +415,32 @@ export const obtenerLogsEmpleador = async (req, res) => {
   } catch (error) {
     console.error('Error en obtenerLogsEmpleador:', error);
     res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+
+export const enviarCodigoSupervisor = async (req, res) => {
+  const { correo, codigo } = req.body;
+
+  if (!correo || !codigo) {
+    return res.status(400).json({ success: false, message: 'El correo y el código son obligatorios' });
+  }
+
+  try {
+    const [rows] = await db.query('SELECT * FROM supervisor WHERE gmail = ?', [correo]);
+    if (rows.length === 0) {
+      return res.status(404).json({ success: false, message: 'Supervisor no encontrado' });
+    }
+
+    const resultado = await enviarCodigo(correo, codigo);
+
+    if (resultado.success) {
+      res.status(200).json({ success: true, message: `Código enviado a ${correo}` });
+    } else {
+      res.status(500).json({ success: false, message: 'Error al enviar el correo' });
+    }
+  } catch (error) {
+    console.error('Error en enviarCodigoSupervisor:', error);
+    res.status(500).json({ success: false, message: 'Error interno del servidor' });
   }
 };

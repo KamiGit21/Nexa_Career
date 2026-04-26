@@ -12,5 +12,7 @@ router.put('/:id/perfil', empleadorController.actualizarPerfil);
 router.put('/:id/contrasena', empleadorController.cambiarContrasena);
 router.put('/:id/estado', empleadorController.cambiarEstado);
 
+router.post('/enviar-codigo', empleadorController.enviarCodigoEmpleador);
+
 
 export default router;

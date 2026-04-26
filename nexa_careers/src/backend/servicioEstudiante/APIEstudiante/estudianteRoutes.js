@@ -17,4 +17,6 @@ router.put('/:id/estado', estudianteController.cambiarEstado);
 router.get('/:id/postulaciones', estudianteController.obtenerPostulacionesPorEstudiante);
 router.post('/:id/postulaciones', estudianteController.postularAOferta);//nuevooooo
 
+router.post('/enviar-codigo', estudianteController.enviarCodigoEstudiante);
+
 export default router;
