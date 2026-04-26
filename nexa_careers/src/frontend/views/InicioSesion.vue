@@ -93,7 +93,7 @@ import { useRouter } from 'vue-router'
 import { obtenerEmpleadorPorGmail } from '../services/empleadorService.js'
 import { obtenerEstudiantePorGmail } from '../services/estudianteService.js'
 import { obtenerSupervisorPorGmail } from '../services/supervisorService.js'
-import { authState } from '../auth.js' // <--- Importación asegurada
+import { authState } from '../auth.js' 
 
 const router = useRouter()
 const showPassword = ref(false)

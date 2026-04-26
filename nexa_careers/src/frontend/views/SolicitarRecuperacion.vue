@@ -20,6 +20,17 @@
           />
         </div>
 
+        <div>
+          <!-- v-model="form.rol" poner a lado del select -->
+            <label class="block text-sm font-medium text-gray-600 mb-2">Rol</label>
+            <select 
+              class="w-full px-6 py-4 bg-gray-50 border border-gray-200 rounded-2xl focus:border-[#b5943a] focus:ring-2 focus:ring-[#b5943a]/30 transition-all">
+              <option value="estudiante">Estudiante</option>
+              <option value="empleador">Empleador</option>
+              <option value="supervisor">Supervisor</option>
+            </select>
+          </div>
+
         <div class="flex gap-4 pt-4">
           <button 
             @click="$router.push('/login')"
