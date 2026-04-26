@@ -36,6 +36,9 @@ import ListaEstudiantes from '@/views/ListaEstudiantes.vue'
 import ListaEmpleadores from '@/views/ListaEmpleadores.vue'
 import ListaSupervisores from '@/views/ListaSupervisores.vue'
 
+//Categorias ofertas laborales
+import GestionCategorias from '@/views/GestionCategorias.vue'
+
 const routes = [
   { path: '/', redirect: '/home' },
 
@@ -150,8 +153,14 @@ const routes = [
     component: ListaSupervisores,
     meta: { requiereRol: ['supervisor'] }
   },
-
-  { path: '/:pathMatch(.*)*', redirect: '/home' },
+  //Categorias ofertas laborales
+  {
+  path: '/supervisor/categorias',
+  name: 'GestionCategorias',
+  component: GestionCategorias,
+  meta: { requiereRol: ['supervisor'] }
+},
+  { path: '/:pathMatch(.*)*', redirect: '/home' }
 ]
 
 const router = createRouter({
