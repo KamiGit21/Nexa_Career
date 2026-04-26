@@ -17,14 +17,17 @@
             type="email" 
             placeholder="ejemplo@ucb.edu.bo"
             class="w-full p-3 border-2 border-gray-300 rounded-xl focus:border-[#002855] outline-none transition-all"
+            :disabled="cargando"
           />
         </div>
 
-        <div>
-          <!-- v-model="form.rol" poner a lado del select -->
-            <label class="block text-sm font-medium text-gray-600 mb-2">Rol</label>
+       <div>
+            <label class="block text-[#002855] font-semibold mb-2 text-xl">Rol:</label>
             <select 
-              class="w-full px-6 py-4 bg-gray-50 border border-gray-200 rounded-2xl focus:border-[#b5943a] focus:ring-2 focus:ring-[#b5943a]/30 transition-all">
+              v-model="rol"
+              class="w-full px-6 py-4 bg-gray-50 border border-gray-200 rounded-2xl focus:border-[#b5943a] focus:ring-2 focus:ring-[#b5943a]/30 transition-all"
+              :disabled="cargando"
+            >
               <option value="estudiante">Estudiante</option>
               <option value="empleador">Empleador</option>
               <option value="supervisor">Supervisor</option>
@@ -35,12 +38,14 @@
           <button 
             @click="$router.push('/login')"
             class="flex-1 py-3 border-2 border-[#002855] text-[#c5a059] rounded-xl font-bold text-xl hover:bg-gray-50 transition-colors"
+            :disabled="cargando"
           >
             Volver atrás
           </button>
           <button 
             @click="enviarCorreo"
             class="flex-1 py-3 bg-[#002855] text-[#c5a059] rounded-xl font-bold text-xl hover:bg-[#001f42] transition-colors"
+            :disabled="cargando || !email"
           >
             Aceptar
           </button>
@@ -53,12 +58,45 @@
 <script setup>
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
+import { enviarCodigoAEstudiante, enviarCodigoAEmpleador, enviarCodigoASupervisor } from '@/services/notificacionService.js';
+import { crearCodigo } from '@/services/codigoService.js';
 
 const router = useRouter();
 const email = ref('');
+const rol = ref('estudiante'); // Valor por defecto
+const cargando = ref(false);
+const mensajeError = ref('');
 
-const enviarCorreo = () => {
-  //cositas de integracion wiii
-  router.push('/verificar-codigo');
+const enviarCorreo = async () => {
+  cargando.value = true;
+  mensajeError.value = '';
+  
+  const codigo = await crearCodigo();
+  let respuesta;
+
+  try {
+    if (rol.value === 'estudiante') {
+      respuesta = await enviarCodigoAEstudiante(email.value, codigo);
+    } else if (rol.value === 'empleador') {
+      respuesta = await enviarCodigoAEmpleador(email.value, codigo);
+    } else if (rol.value === 'supervisor') {
+      respuesta = await enviarCodigoASupervisor(email.value, codigo);
+    }
+
+    if (respuesta && respuesta.success) {
+      // Guardar datos en la sesión para el siguiente paso
+      sessionStorage.setItem('recuperacion_email', email.value);
+      sessionStorage.setItem('recuperacion_rol', rol.value);
+      sessionStorage.setItem('recuperacion_codigo', codigo);
+      
+      router.push('/verificar-codigo');
+    } else {
+      mensajeError.value = respuesta?.message || 'Error al enviar el correo. Verifica que exista.';
+    }
+  } catch (error) {
+    mensajeError.value = 'Error de conexión.';
+  } finally {
+    cargando.value = false;
+  }
 };
 </script>

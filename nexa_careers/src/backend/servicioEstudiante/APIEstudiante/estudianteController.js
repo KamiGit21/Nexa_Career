@@ -1,5 +1,5 @@
 import db from '../../api-gateway/db.js';
-import { enviarCodigo } from '../servicioNotificacion/correoService.js';
+import { enviarCodigo } from '../../servicioNotificacion/correoService.js';
 
 const dominiosPermitidos = ['ucb.edu.bo'];
 
@@ -220,6 +220,34 @@ export const cambiarEstado = async (req, res) => {
   }
 };
 
+//Enviar codigo de verificación por correo
+export const enviarCodigoEstudiante = async (req, res) => {
+  const { correo, codigo } = req.body;
+
+
+  if (!correo || !codigo) {
+    return res.status(400).json({ success: false, message: 'El correo y el código son obligatorios' });
+  }
+
+  try {
+    const [rows] = await db.query('SELECT * FROM estudiante WHERE gmail = ?', [correo]);
+    if (rows.length === 0) {
+      return res.status(404).json({ success: false, message: 'Estudiante no encontrado' });
+    }
+
+    const resultado = await enviarCodigo(correo, codigo);
+
+    if (resultado.success) {
+      res.status(200).json({ success: true, message: `Código enviado a ${correo}` });
+    } else {
+      res.status(500).json({ success: false, message: 'Error al enviar el correo' });
+    }
+  } catch (error) {
+    console.error('Error en enviarCodigoEstudiante:', error);
+    res.status(500).json({ success: false, message: 'Error interno del servidor' });
+  }
+};
+
 // 8. GET: Obtener postulaciones de un estudiante
 export const obtenerPostulacionesPorEstudiante = async (req, res) => {
   const { id } = req.params;
@@ -281,30 +309,3 @@ export const postularAOferta = async (req, res) => {
   }
 };
 
-//Enviar codigo de verificación por correo
-export const enviarCodigoEstudiante = async (req, res) => {
-  const { correo, codigo } = req.body;
-
-
-  if (!correo || !codigo) {
-    return res.status(400).json({ success: false, message: 'El correo y el código son obligatorios' });
-  }
-
-  try {
-    const [rows] = await db.query('SELECT * FROM estudiante WHERE gmail = ?', [correo]);
-    if (rows.length === 0) {
-      return res.status(404).json({ success: false, message: 'Estudiante no encontrado' });
-    }
-
-    const resultado = await enviarCodigo(correo, codigo);
-
-    if (resultado.success) {
-      res.status(200).json({ success: true, message: `Código enviado a ${correo}` });
-    } else {
-      res.status(500).json({ success: false, message: 'Error al enviar el correo' });
-    }
-  } catch (error) {
-    console.error('Error en enviarCodigoEstudiante:', error);
-    res.status(500).json({ success: false, message: 'Error interno del servidor' });
-  }
-};

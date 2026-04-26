@@ -1,5 +1,5 @@
 import db from '../../api-gateway/db.js';
-import { enviarCodigo } from '../servicioNotificacion/correoService.js';
+import { enviarCodigo } from '../../servicioNotificacion/correoService.js';
 
 const isValidEmail = (email) => {
   if (!email || typeof email !== 'string') return false;

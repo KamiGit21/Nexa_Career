@@ -2,7 +2,7 @@ const API_URL = 'http://localhost:3000/api';
 
 export const enviarCodigoAEstudiante = async (correo, codigo) => {
   try {
-    const res = await fetch(`${API_URL}/estudiantes/enviar-codigo`, {
+    const res = await fetch(`${API_URL}/estudiantes/enviarCodigo`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ correo, codigo })
@@ -16,7 +16,7 @@ export const enviarCodigoAEstudiante = async (correo, codigo) => {
 
 export const enviarCodigoAEmpleador = async (correo, codigo) => {
   try {
-    const res = await fetch(`${API_URL}/empleadores/enviar-codigo`, {
+    const res = await fetch(`${API_URL}/empleadores/enviarCodigo`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ correo, codigo })
@@ -30,7 +30,7 @@ export const enviarCodigoAEmpleador = async (correo, codigo) => {
 
 export const enviarCodigoASupervisor = async (correo, codigo) => {
   try {
-    const res = await fetch(`${API_URL}/supervisores/enviar-codigo`, {
+    const res = await fetch(`${API_URL}/supervisores/enviarCodigo`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ correo, codigo })

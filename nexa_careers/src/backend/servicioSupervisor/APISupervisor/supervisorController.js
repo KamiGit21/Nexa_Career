@@ -1,5 +1,5 @@
 import db from '../../api-gateway/db.js';
-import { enviarCodigo } from '../servicioNotificacion/correoService.js';
+import { enviarCodigo } from '../../servicioNotificacion/correoService.js';
 
 // 1. POST: Registrar supervisor (activo = 1 por defecto)
 export const registrarSupervisor = async (req, res) => {

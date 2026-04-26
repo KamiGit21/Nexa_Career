@@ -115,6 +115,7 @@ app.put('/api/estudiantes/:id/perfil', proxyTo('http://localhost:3003'));
 app.put('/api/estudiantes/:id/contrasena', proxyTo('http://localhost:3003'));
 app.put('/api/estudiantes/:id/estado', proxyTo('http://localhost:3003'));
 app.get('/api/estudiantes/:id/postulaciones', proxyTo('http://localhost:3003'));
+app.post('/api/estudiantes/enviarCodigo', proxyTo('http://localhost:3003'));
 
 // Rutas de CV (manejo especial)
 app.post('/api/estudiantes/:id/cv/upload', proxyFileTo('http://localhost:3003'));

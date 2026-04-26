@@ -1,10 +1,13 @@
-const nodemailer = require('nodemailer');
+import nodemailer from 'nodemailer';
 
 const transporter = nodemailer.createTransport({
   service: 'gmail',
   auth: {
     user: 'nexacareersjobs@gmail.com',
-    pass: 'iwtwfiiatotilicc711' 
+    pass: 'okxkisznolmexsja' 
+  },
+  tls: {
+    rejectUnauthorized: false
   }
 });
 
