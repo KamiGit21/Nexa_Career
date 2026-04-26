@@ -3,7 +3,7 @@
 
     <header class="bg-[#1b2a4a] py-4 px-8">
       <nav class="max-w-4xl mx-auto text-sm text-slate-400 flex items-center gap-2">
-        <span class="hover:text-white transition cursor-pointer" @click="$router.push('/mis-cursos')">
+        <span class="hover:text-white transition cursor-pointer" @click="$router.push(rutaOrigen)">
           Mis Cursos
         </span>
         <span>/</span>
@@ -17,15 +17,15 @@
         Modifica los datos del curso. Los cambios quedarán pendientes de revisión.
       </p>
 
-      <!-- integración paara mostrar mensaje de guardado exitoso, esto lo hace quien haga la integración, cambia a esto guardado.value = true y luego setTimeout(() => guardado.value = false, 4000)
-     hacer guardado.value = true y luego setTimeout(() => guardado.value = false, 4000)
+      <!-- integración para mostrar mensaje de guardado exitoso, esto lo hace quien haga la integración:
+           hacer guardado.value = true y luego setTimeout(() => guardado.value = false, 4000)
 
-<div v-if="guardado"
-  class="mb-6 px-5 py-4 bg-green-50 border border-green-200 rounded-xl
-         flex items-center gap-3 text-green-700 text-sm font-semibold">
-  ✅ Cambios guardados correctamente
-</div>
--->
+      <div v-if="guardado"
+        class="mb-6 px-5 py-4 bg-green-50 border border-green-200 rounded-xl
+               flex items-center gap-3 text-green-700 text-sm font-semibold">
+        ✅ Cambios guardados correctamente
+      </div>
+      -->
 
       <div v-if="cargando" class="text-center py-20 text-gray-500">
         Cargando curso...
@@ -42,7 +42,7 @@
           :guardado="guardado"
           :error="error"
           @guardar="onGuardar"
-          @cancelar="$router.push('/mis-cursos')"
+          @cancelar="$router.push(rutaOrigen)"
         />
       </div>
     </div>
@@ -51,27 +51,33 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import { useRoute } from 'vue-router'
 import CursoEditarForm from '../components/misCursos/CursoEditarForm.vue'
 
 const route = useRoute()
 
-// integración: cargar con obtenerCursoPorId
-const cargando     = ref(false)
-const guardando    = ref(false)
-const guardado     = ref(false)
-const error        = ref('')
+// Detecta el rol para saber a dónde redirigir al cancelar o volver
+const sesion = JSON.parse(localStorage.getItem('sesion') || '{}')
+const rutaOrigen = computed(() =>
+  sesion.rol === 'empleador' ? '/mis-cursos-empleador' : '/mis-cursos'
+)
 
-//integración: poner los valores desde la respuesta del servicio
-const curso        = ref('')
-const descripcion  = ref('')
-const contacto     = ref('')
+// integración: cargar con obtenerCursoPorId
+const cargando      = ref(false)
+const guardando     = ref(false)
+const guardado      = ref(false)
+const error         = ref('')
+
+// integración: poner los valores desde la respuesta del servicio
+const curso         = ref('')
+const descripcion   = ref('')
+const contacto      = ref('')
 const fechaCreacion = ref('')
-const estado       = ref(0)
+const estado        = ref(0)
 
 const onGuardar = (form) => {
-  //integración de guardado aqui
+  // integración de guardado aqui
   console.log('Datos a guardar:', { id: route.params.id, ...form })
 }
 </script>

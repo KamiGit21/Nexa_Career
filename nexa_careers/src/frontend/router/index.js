@@ -114,7 +114,7 @@ const routes = [
     path: '/mis-cursos/:id/editar',
     name: 'EditarCurso',
     component: EditarCurso,
-    meta: { requiereRol: ['estudiante'] }
+    meta: { requiereRol: ['estudiante', 'empleador'] }
   },
  
 

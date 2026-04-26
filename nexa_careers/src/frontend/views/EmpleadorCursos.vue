@@ -32,15 +32,12 @@
         </router-link>
       </div>
 
-      <!-- Cards de cursos -->
       <div v-else class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-
         <div
           v-for="curso in cursos"
           :key="curso.id_curso"
           class="bg-white rounded-3xl shadow-sm p-6 hover:shadow-md transition duration-300">
 
-          <!-- Estado badge -->
           <div class="flex justify-between items-start mb-3">
             <h2 class="text-xl font-semibold text-[#1b2a4a] leading-tight">
               {{ curso.curso }}
@@ -67,8 +64,15 @@
             <p><span class="font-medium">Fecha:</span> {{ formatearFecha(curso.fecha_creacion) }}</p>
           </div>
 
-        </div>
+          <div class="flex justify-end">
+            <router-link
+              :to="`/mis-cursos/${curso.id_curso}/editar`"
+              class="px-4 py-2 bg-[#1b2a4a] text-white text-xs font-semibold rounded-xl hover:bg-[#0f1a2e] transition-colors">
+              ✏️ Editar
+            </router-link>
+          </div>
 
+        </div>
       </div>
 
     </div>
