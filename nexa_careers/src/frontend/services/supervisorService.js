@@ -109,6 +109,17 @@ export const listarCursosPendientes = async () => {
   }
 };
 
+// todos
+export const listarTodosCursos = async () => {
+  try {
+    const res = await fetch(`${API_URL}/cursos`);
+    return await res.json();
+  } catch (error) {
+    console.error('Error en listarTodosCursos:', error);
+    return { success: false, message: error.message };
+  }
+};
+
 export const cambiarEstadoCurso = async (id, estado, rechazo = null) => {
   try {
     const res = await fetch(`${API_URL}/cursos/${id}/estado`, {
