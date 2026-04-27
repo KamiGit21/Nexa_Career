@@ -70,6 +70,13 @@ const routes = [
     meta: { requiereRol: ['supervisor'] }
   },
 
+{
+  path: '/supervisor/oferta/:id',
+  name: 'SupervisorDetalleOferta',
+  component: () => import('@/views/DetalleOferta.vue'),
+  meta: { requiereRol: ['supervisor'] }
+},
+
   // Ofertas
   {
     path: '/ofertas',
