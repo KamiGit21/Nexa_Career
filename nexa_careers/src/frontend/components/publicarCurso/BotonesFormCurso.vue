@@ -1,3 +1,4 @@
+<!-- C:\xampp\htdocs\Nexa_Career\nexa_careers\src\frontend\components\publicarCurso\BotonesFormCurso.vue -->
 <template>
   <div class="flex gap-4 pt-2">
     <button
@@ -6,7 +7,7 @@
       class="flex-1 py-3 bg-[#1b2a4a] text-white font-semibold rounded-xl
              hover:bg-[#0f1a2e] disabled:opacity-50 transition"
     >
-      {{ cargando ? 'Publicando...' : 'Publicar Curso' }}
+      {{ cargando ? 'Guardando...' : (isEditing ? 'Actualizar Curso' : 'Publicar Curso') }}
     </button>
     <button
       type="button"
@@ -22,6 +23,9 @@
 <script setup>
 import { useRouter } from 'vue-router'
 
-defineProps({ cargando: { type: Boolean, default: false } })
+defineProps({ 
+  cargando: { type: Boolean, default: false },
+  isEditing: { type: Boolean, default: false }
+})
 const router = useRouter()
 </script>
