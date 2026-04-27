@@ -22,6 +22,21 @@
       </div>
 
       <template v-else>
+        <div class="flex justify-end items-center mb-6 gap-3">
+          <label for="pageSize" class="text-[#002855] font-semibold text-sm">
+            Cursos por página:
+          </label>
+          <select 
+            id="pageSize" 
+            v-model="itemsPorPagina"
+            class="border-2 border-gray-300 rounded-lg px-3 py-1.5 bg-white text-gray-700 focus:outline-none focus:border-[#b5943a] transition-colors cursor-pointer"
+          >
+            <option v-for="n in opcionesPagina" :key="n" :value="n">
+              {{ n }}
+            </option>
+          </select>
+        </div>
+
         <CursoPublicoGrid :cursos="cursosAMostrar" @ver="irDetalle" />
 
         <CatalogoCursosPaginacion id="punto-final" v-if="totalPaginas > 1" :pagina-actual="paginaActual" :total-paginas="totalPaginas"
@@ -62,7 +77,9 @@ const categoriaActiva = ref('Todos')
 const orden = ref('reciente') // 'reciente' o 'antiguo'
 const CATEGORIAS = ['Todos', 'Tecnología', 'Finanzas', 'Diseño', 'Marketing', 'Redes']
 
-const ITEMS_POR_PAGINA = 15
+const itemsPorPagina = ref(15) 
+const opcionesPagina = [9, 12, 15, 18, 21, 24, 27, 30]
+
 const paginaActual = ref(1)
 const totalPaginas = ref(1)
 
@@ -79,11 +96,11 @@ const cargarCursos = async (pagina = 1) => {
   try {
     let response;
     if (orden.value === 'reciente') {
-      response = await listarCursosPublicosPaginadosPorFecha(pagina, ITEMS_POR_PAGINA, 'abajo');
+      response = await listarCursosPublicosPaginadosPorFecha(pagina, itemsPorPagina.value, 'abajo');
     } else if (orden.value === 'antiguo') {
-      response = await listarCursosPublicosPaginadosPorFecha(pagina, ITEMS_POR_PAGINA, 'arriba');
+      response = await listarCursosPublicosPaginadosPorFecha(pagina, itemsPorPagina.value, 'arriba');
     } else {
-      response = await listarCursosPublicosPaginados(pagina, ITEMS_POR_PAGINA);
+      response = await listarCursosPublicosPaginados(pagina, itemsPorPagina.value);
     }
 
     if (response.success) {
@@ -119,7 +136,7 @@ const cursosAMostrar = computed(() => {
 });
 
 
-watch(orden, () => {
+watch([orden, itemsPorPagina], () => {
   cargarCursos(1);
 });
 

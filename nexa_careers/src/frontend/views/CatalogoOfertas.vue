@@ -5,10 +5,27 @@
       @toggle-orden="toggleOrden" />
 
     <main class="max-w-7xl mx-auto pt-12 pb-4 px-6">
-      <p v-if="!loading && !error && ofertasFiltradas.length > 0" class="text-sm text-gray-500 mb-6">
-        Página <span class="font-semibold text-[#1b2a4a]">{{ paginaActual }}</span> de <span
-          class="font-semibold text-[#1b2a4a]">{{ totalPaginas }}</span>
-      </p>
+      <div v-if="!loading && !error && ofertasFiltradas.length > 0" class="flex flex-col sm:flex-row justify-between items-center mb-6 gap-4">
+        <p class="text-sm text-gray-500">
+          Página <span class="font-semibold text-[#1b2a4a]">{{ paginaActual }}</span> de <span
+            class="font-semibold text-[#1b2a4a]">{{ totalPaginas }}</span>
+        </p>
+
+        <div class="flex items-center gap-3">
+          <label for="pageSize" class="text-[#002855] font-semibold text-sm">
+            Ofertas por página:
+          </label>
+          <select 
+            id="pageSize" 
+            v-model="limite"
+            class="border-2 border-gray-300 rounded-lg px-3 py-1.5 bg-white text-gray-700 focus:outline-none focus:border-[#b5943a] transition-colors cursor-pointer"
+          >
+            <option v-for="n in opcionesPagina" :key="n" :value="n">
+              {{ n }}
+            </option>
+          </select>
+        </div>
+      </div>
 
       <OfertaGrid :ofertas="ofertasFiltradas" :loading="loading" :error="error"
         @reintentar="cargarOfertas(paginaActual)" @ver-detalle="verDetalle" />
@@ -23,7 +40,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { listarOfertasPaginadasPorEstado, obtenerOfertasPaginacionPorEstadoYFecha } from '../services/ofertaService.js'
 
@@ -37,6 +54,7 @@ import BotonScroll from '../components/comunes/BotonScroll.vue'
 
 // --- Configuración y Estado ---
 const limite = ref(15)
+const opcionesPagina = [9, 12, 15, 18, 21, 24, 27, 30] 
 const router = useRouter()
 const loading = ref(true)
 const error = ref(null)
@@ -91,6 +109,10 @@ const cargarOfertas = async (pagina = 1) => {
     loading.value = false
   }
 }
+
+watch(limite, () => {
+  cargarOfertas(1)
+})
 
 onMounted(() => cargarOfertas(1))
 </script>
