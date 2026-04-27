@@ -109,6 +109,15 @@ const routes = [
     meta: { requiereRol: ['estudiante'] }
   },
 
+  //editar
+
+{
+  path: '/editar-curso/:id',
+  name: 'EditarCurso',
+  component: () => import('@/views/EditarCurso.vue'),
+  meta: { requiresAuth: true, rol: 'empleador' }
+}
+
   // Perfiles
   {
     path: '/perfil-estudiante/:id',

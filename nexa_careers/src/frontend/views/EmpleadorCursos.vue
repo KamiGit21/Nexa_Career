@@ -95,7 +95,7 @@
             </span>
           </div>
 
-          <!-- === NUEVO: Mostrar categorías del curso === -->
+          <!-- Mostrar categorías del curso -->
           <div v-if="curso.categorias && curso.categorias.length > 0" class="flex flex-wrap gap-1 mb-3">
             <span
               v-for="cat in curso.categorias"
@@ -116,6 +116,22 @@
           <div class="text-sm text-gray-600 space-y-1 mb-4">
             <p><span class="font-medium">Contacto:</span> {{ curso.contacto || 'No especificado' }}</p>
             <p><span class="font-medium">Fecha:</span> {{ formatearFecha(curso.fecha_creacion) }}</p>
+          </div>
+
+          <!-- === NUEVO: BOTONES DE ACCIÓN === -->
+          <div class="flex gap-2 mt-4 pt-3 border-t border-gray-100">
+            <button
+              @click="verDetalle(curso)"
+              class="text-sm text-blue-600 hover:text-blue-800 font-medium"
+            >
+              Ver detalles
+            </button>
+            <button
+              @click="editarCurso(curso)"
+              class="text-sm text-green-600 hover:text-green-800 font-medium"
+            >
+              Editar
+            </button>
           </div>
 
         </div>
@@ -187,6 +203,15 @@ const cargarCategorias = async () => {
   } catch (error) {
     console.error('Error al cargar categorías:', error)
   }
+}
+
+// === NUEVAS FUNCIONES ===
+const verDetalle = (curso) => {
+  router.push(`/detalle-curso/${curso.id_curso}`)
+}
+
+const editarCurso = (curso) => {
+  router.push(`/editar-curso/${curso.id_curso}`)
 }
 
 onMounted(() => {
