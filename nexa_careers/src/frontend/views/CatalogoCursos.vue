@@ -1,55 +1,46 @@
 <template>
-  <div class="min-h-screen bg-[#f8f5f0]">
+  <div class="h-auto pb-20 bg-[#f8f5f0] overflow-hidden">
 
-      <CatalogoCursosHeader 
-        v-model:busqueda="busqueda"
-        :orden="orden"
-        @buscar="cargarCursos(1)"
-        @toggle-orden="toggleOrden"
-      />
+    <CatalogoCursosHeader v-model:busqueda="busqueda" :orden="orden" @buscar="cargarCursos(1)"
+      @toggle-orden="toggleOrden" />
 
-      <CatalogoCursosFiltros
-        v-model:categoriaActiva="categoriaActiva"
-        v-model:orden="orden"
-        :categorias="CATEGORIAS"
-      />
+    <CatalogoCursosFiltros v-model:categoriaActiva="categoriaActiva" v-model:orden="orden" :categorias="CATEGORIAS" />
 
-      <div v-if="loading" class="text-center py-20 text-gray-500">
-        Cargando cursos...
+    <main class="max-w-7xl mx-auto pt-12 pb-4 px-6">
+
+    <div v-if="loading" class="text-center py-20 text-gray-500">
+      Cargando cursos...
+    </div>
+
+    <template v-else>
+      <div v-if="cursosAMostrar.length === 0" class="text-center py-20 text-gray-400">
+        <p class="text-5xl mb-4">🔍</p>
+        <p class="text-lg font-medium">No encontramos resultados para tu búsqueda</p>
+        <button @click="restablecerFiltros" class="mt-4 text-[#1b2a4a] font-bold hover:underline">
+          Limpiar todos los filtros
+        </button>
       </div>
 
       <template v-else>
-        <div v-if="cursosAMostrar.length === 0" class="text-center py-20 text-gray-400">
-          <p class="text-5xl mb-4">🔍</p>
-          <p class="text-lg font-medium">No encontramos resultados para tu búsqueda</p>
-          <button @click="restablecerFiltros" class="mt-4 text-[#1b2a4a] font-bold hover:underline">
-            Limpiar todos los filtros
-          </button>
-        </div>
+        <CursoPublicoGrid :cursos="cursosAMostrar" @ver="irDetalle" />
 
-        <template v-else>
-          <CursoPublicoGrid
-            :cursos="cursosAMostrar"
-            @ver="irDetalle"
-          />
-
-          <CatalogoCursosPaginacion
-            v-if="totalPaginas > 1"
-            :pagina-actual="paginaActual"
-            :total-paginas="totalPaginas"
-            @cambiar="cambiarPagina"
-          />
-        </template>
+        <CatalogoCursosPaginacion id="punto-final" v-if="totalPaginas > 1" :pagina-actual="paginaActual" :total-paginas="totalPaginas"
+          @cambiar="cambiarPagina" />
       </template>
+    </template>
+    </main>
+    <div class="min-h-screen bg-[#f8f5f0]">
+      <BotonScroll />
+    </div>
   </div>
 </template>
 
 <script setup>
 import { ref, computed, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
-import { 
-  listarCursosPublicosPaginados, 
-  listarCursosPublicosPaginadosPorFecha 
+import {
+  listarCursosPublicosPaginados,
+  listarCursosPublicosPaginadosPorFecha
 } from '../services/cursoService.js'
 
 // Componentes
@@ -58,8 +49,11 @@ import CatalogoCursosFiltros from '../components/catalogoCursos/CatalogoCursosFi
 import CursoPublicoGrid from '../components/catalogoCursos/CursoPublicoGrid.vue'
 import CatalogoCursosPaginacion from '../components/catalogoCursos/CatalogoCursosPaginacion.vue'
 
+// importar componente de botonscroll
+import BotonScroll from '../components/comunes/BotonScroll.vue'
+
 const router = useRouter()
-const cursos = ref([]) 
+const cursos = ref([])
 const loading = ref(true)
 
 // Filtros y Paginación
@@ -81,7 +75,7 @@ const toggleOrden = () => {
 const cargarCursos = async (pagina = 1) => {
   loading.value = true
   paginaActual.value = pagina
-  
+
   try {
     let response;
     if (orden.value === 'reciente') {
@@ -116,7 +110,7 @@ const cursosAMostrar = computed(() => {
 
   if (busqueda.value.trim()) {
     const q = busqueda.value.toLowerCase().trim();
-    lista = lista.filter(c => 
+    lista = lista.filter(c =>
       c.curso?.toLowerCase().includes(q) //|| 
       //c.descripcion?.toLowerCase().includes(q)
     );

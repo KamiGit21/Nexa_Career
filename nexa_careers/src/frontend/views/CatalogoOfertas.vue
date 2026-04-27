@@ -1,33 +1,24 @@
 <template>
-  <div class="min-h-screen bg-[#f8f5f0]">
-    
-    <OfertasHeader 
-      v-model:busqueda="busqueda"
-      :ordenado-por-fecha="ordenadoPorFecha"
-      @buscar="cargarOfertas(1)"
-      @toggle-orden="toggleOrden"
-    />
+  <div class="h-auto pb-20 bg-[#f8f5f0] overflow-hidden">
 
-    <main class="max-w-7xl mx-auto py-12 px-6">
+    <OfertasHeader v-model:busqueda="busqueda" :ordenado-por-fecha="ordenadoPorFecha" @buscar="cargarOfertas(1)"
+      @toggle-orden="toggleOrden" />
+
+    <main class="max-w-7xl mx-auto pt-12 pb-4 px-6">
       <p v-if="!loading && !error && ofertasFiltradas.length > 0" class="text-sm text-gray-500 mb-6">
-        Página <span class="font-semibold text-[#1b2a4a]">{{ paginaActual }}</span> de <span class="font-semibold text-[#1b2a4a]">{{ totalPaginas }}</span>
+        Página <span class="font-semibold text-[#1b2a4a]">{{ paginaActual }}</span> de <span
+          class="font-semibold text-[#1b2a4a]">{{ totalPaginas }}</span>
       </p>
 
-      <OfertaGrid 
-        :ofertas="ofertasFiltradas"
-        :loading="loading"
-        :error="error"
-        @reintentar="cargarOfertas(paginaActual)"
-        @ver-detalle="verDetalle"
-      />
+      <OfertaGrid :ofertas="ofertasFiltradas" :loading="loading" :error="error"
+        @reintentar="cargarOfertas(paginaActual)" @ver-detalle="verDetalle" />
 
-      <CatalogoOfertasPaginacion
-        v-if="!loading && !error && ofertasFiltradas.length > 0"
-        :pagina-actual="paginaActual"
-        :total-paginas="totalPaginas"
-        @cambiar="cambiarPagina"
-      />
+      <CatalogoOfertasPaginacion id="punto-final" v-if="!loading && !error && ofertasFiltradas.length > 0"
+        :pagina-actual="paginaActual" :total-paginas="totalPaginas" @cambiar="cambiarPagina" />
     </main>
+    <div class="min-h-screen bg-[#f8f5f0]">
+      <BotonScroll />
+    </div>
   </div>
 </template>
 
@@ -40,6 +31,9 @@ import { listarOfertasPaginadasPorEstado, obtenerOfertasPaginacionPorEstadoYFech
 import OfertasHeader from '../components/catalogoOfertas/OfertasHeader.vue'
 import OfertaGrid from '../components/catalogoOfertas/OfertaGrid.vue'
 import CatalogoOfertasPaginacion from '../components/catalogoOfertas/CatalogoOfertasPaginacion.vue'
+
+// importar componente de botonscroll
+import BotonScroll from '../components/comunes/BotonScroll.vue'
 
 // --- Configuración y Estado ---
 const limite = ref(15)
@@ -54,7 +48,7 @@ const ordenadoPorFecha = ref(false)
 
 // --- Lógica de Filtrado Local ---
 const ofertasFiltradas = computed(() =>
-  ofertas.value.filter(o => 
+  ofertas.value.filter(o =>
     !busqueda.value || o.oferta.toLowerCase().includes(busqueda.value.toLowerCase())
   )
 )
@@ -80,7 +74,7 @@ const cargarOfertas = async (pagina = 1) => {
   paginaActual.value = pagina
 
   try {
-    const response = ordenadoPorFecha.value 
+    const response = ordenadoPorFecha.value
       ? await obtenerOfertasPaginacionPorEstadoYFecha(pagina, 1, limite.value)
       : await listarOfertasPaginadasPorEstado(pagina, 1, limite.value)
 
