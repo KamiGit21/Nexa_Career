@@ -91,7 +91,7 @@ const routes = [
   { path: '/mis-ofertas/:ofertaId/editar', name: 'EditarOferta', component: EditarOferta, meta: { requiereRol: ['empleador'] } },
   { path: '/mis-postulaciones', name: 'MisPostulaciones', component: MisPostulaciones, meta: { requiereRol: ['estudiante'] } },
 
-  // Cursos - rutas separadas por rol (sin conflictos de nombre)
+    // Cursos - rutas separadas por rol (sin conflictos de nombre)
   { path: '/cursos', name: 'CatalogoCursos', component: CatalogoCursos },
   { path: '/cursos/:id', name: 'DetalleCurso', component: DetalleCurso },
   { path: '/publicar-curso', name: 'PublicarCurso', component: PublicarCurso, meta: { requiereRol: ['estudiante', 'empleador'] } },
@@ -109,12 +109,21 @@ const routes = [
     meta: { requiereRol: ['estudiante'] }
   },
 
-{
-  path: '/supervisor/curso/:id',
-  name: 'SupervisorDetalleCurso',
-  component: () => import('@/views/DetalleCurso.vue'),
-  meta: { requiereRol: ['supervisor'] }
-},
+  // Editar curso - ambos roles (de GPA-29/53)
+  {
+    path: '/editar-curso/:id',
+    name: 'EditarCurso',
+    component: () => import('@/views/EditarCurso.vue'),
+    meta: { requiereRol: ['estudiante', 'empleador'] }
+  },
+
+  // Supervisor - Ver detalle curso (de GPA-37)
+  {
+    path: '/supervisor/curso/:id',
+    name: 'SupervisorDetalleCurso',
+    component: () => import('@/views/DetalleCurso.vue'),
+    meta: { requiereRol: ['supervisor'] }
+  },
 
   // Perfiles
   {
