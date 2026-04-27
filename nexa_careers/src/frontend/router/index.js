@@ -111,12 +111,12 @@ const routes = [
 
   //editar
 
-{
+  {
   path: '/editar-curso/:id',
   name: 'EditarCurso',
   component: () => import('@/views/EditarCurso.vue'),
-  meta: { requiresAuth: true, rol: 'empleador' }
-}
+  meta: { requiereRol: ['estudiante', 'empleador'] }
+  }
 
   // Perfiles
   {

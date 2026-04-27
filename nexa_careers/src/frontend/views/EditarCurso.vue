@@ -6,7 +6,7 @@
       <nav class="max-w-4xl mx-auto text-sm text-slate-400 flex items-center gap-2">
         <router-link to="/home" class="hover:text-white transition">Inicio</router-link>
         <span>/</span>
-        <router-link to="/empleador/cursos" class="hover:text-white transition">Mis Cursos</router-link>
+        <router-link :to="rutaMisCursos" class="hover:text-white transition">Mis Cursos</router-link>
         <span>/</span>
         <span class="text-white">Editar Curso</span>
       </nav>
@@ -56,12 +56,23 @@ const cursoId = computed(() => parseInt(route.params.id))
 const modalVisible = ref(false)
 const errorCarga = ref('')
 
+// Determinar ruta de "Mis Cursos" según el rol del usuario
+const rutaMisCursos = computed(() => {
+  const sesion = JSON.parse(localStorage.getItem('sesion') || '{}')
+  if (sesion.rol === 'empleador') {
+    return '/mis-cursos-empleador'
+  } else if (sesion.rol === 'estudiante') {
+    return '/mis-cursos'
+  }
+  return '/home'
+})
+
 const onActualizado = () => {
   modalVisible.value = true
 }
 
 const irAMisCursos = () => {
   modalVisible.value = false
-  router.push('/empleador/cursos')
+  router.push(rutaMisCursos.value)
 }
 </script>
