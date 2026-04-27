@@ -109,6 +109,13 @@ const routes = [
     meta: { requiereRol: ['estudiante'] }
   },
 
+{
+  path: '/supervisor/curso/:id',
+  name: 'SupervisorDetalleCurso',
+  component: () => import('@/views/DetalleCurso.vue'),
+  meta: { requiereRol: ['supervisor'] }
+},
+
   // Perfiles
   {
     path: '/perfil-estudiante/:id',
