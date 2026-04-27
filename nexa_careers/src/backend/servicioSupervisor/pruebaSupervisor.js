@@ -56,10 +56,29 @@ async function ejecutarPruebas() {
     });
     console.log('✅ Resultado:', putEstadoResponse.data);
 
-    // 7. PUT: Bloquear usuario
-    console.log(`➡️ 7. Ejecutando PUT: Bloqueando al estudiante ID ${nuevoId}...`);
-    const putBloquearResponse = await axios.put(`${API_URL}/${nuevoId}/bloquear`);
+    // 7. PUT: Bloquear usuario (el supervisor que acabamos de crear)
+    console.log(`➡️ 7. Ejecutando PUT: Bloqueando al supervisor ID ${nuevoId}...`);
+    const putBloquearResponse = await axios.put(`${API_URL}/1/bloquear`, {
+      tipo_usuario: 'supervisor',
+      id_usuario: nuevoId,
+      motivo: 'Prueba de bloqueo desde test'
+    });
     console.log('✅ Resultado:', putBloquearResponse.data);
+    console.log('--------------------------------------------------\n');
+
+    // 8. GET: Listar usuarios bloqueados
+    console.log('➡️ 8. Ejecutando GET: Listando usuarios bloqueados...');
+    const getBloqueadosResponse = await axios.get(`${API_URL}/bloqueados`);
+    console.log('✅ Resultado:', getBloqueadosResponse.data);
+    console.log('--------------------------------------------------\n');
+
+    // 9. PUT: Desbloquear usuario
+    console.log(`➡️ 9. Ejecutando PUT: Desbloqueando al supervisor ID ${nuevoId}...`);
+    const putDesbloquearResponse = await axios.put(`${API_URL}/1/desbloquear`, {
+      tipo_usuario: 'supervisor',
+      id_usuario: nuevoId
+    });
+    console.log('✅ Resultado:', putDesbloquearResponse.data);
     console.log('--------------------------------------------------\n');
 
     console.log('\n🎉 Todas las pruebas del supervisor finalizaron con éxito.');

@@ -217,7 +217,157 @@ export const bloquearUsuario = async (req, res) => {
   }
 };
 
-// 9. GET: Estadisticas de supervisores (empleadores, postulantes, ofertas)
+// 8.1. PUT: Desbloquear usuario (cambiar estado a activo) - GPA 40
+export const desbloquearUsuario = async (req, res) => {
+  console.log("--- INTENTO DE DESBLOQUEO ---");
+  console.log("Body recibido:", req.body);
+  console.log("ID Supervisor:", req.params.id_supervisor);
+
+  const { tipo_usuario, id_usuario } = req.body;
+  const { id_supervisor } = req.params;
+
+  // Validar parámetros
+  if (!tipo_usuario || !id_usuario || !id_supervisor) {
+    return res.status(400).json({
+      success: false,
+      message: 'tipo_usuario, id_usuario e id_supervisor son obligatorios'
+    });
+  }
+
+  const tiposValidos = ['estudiante', 'empleador', 'supervisor'];
+  if (!tiposValidos.includes(tipo_usuario)) {
+    return res.status(400).json({
+      success: false,
+      message: 'tipo_usuario debe ser: estudiante, empleador o supervisor'
+    });
+  }
+
+  try {
+    // Verificar que el supervisor existe y está activo
+    const [supervisor] = await db.query('SELECT activo FROM supervisor WHERE id_supervisor = ? AND activo = 1', [id_supervisor]);
+    if (supervisor.length === 0) {
+      return res.status(403).json({ success: false, message: 'Supervisor no autorizado o inactivo' });
+    }
+
+    // Determinar tabla y columna ID según tipo_usuario
+    let tabla, columnaId;
+    switch (tipo_usuario) {
+      case 'estudiante':
+        tabla = 'estudiante';
+        columnaId = 'id_estudiante';
+        break;
+      case 'empleador':
+        tabla = 'empleador';
+        columnaId = 'id_empleador';
+        break;
+      case 'supervisor':
+        tabla = 'supervisor';
+        columnaId = 'id_supervisor';
+        break;
+    }
+
+    // Verificar que el usuario existe
+    const [usuario] = await db.query(`SELECT activo FROM ${tabla} WHERE ${columnaId} = ?`, [id_usuario]);
+    if (usuario.length === 0) {
+      return res.status(404).json({ success: false, message: `${tipo_usuario} no encontrado` });
+    }
+
+    if (usuario[0].activo === 1) {
+      return res.status(400).json({ success: false, message: `${tipo_usuario} ya está activo` });
+    }
+
+    // Desbloquear usuario (activo = 1, limpiar motivo y fecha de bloqueo)
+    const [result] = await db.query(`UPDATE ${tabla} SET activo = 1, motivo_bloqueo = NULL, fecha_bloqueo = NULL WHERE ${columnaId} = ?`, [id_usuario]);
+
+    if (result.affectedRows === 0) {
+      return res.status(500).json({ success: false, message: 'Error al desbloquear usuario' });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: `${tipo_usuario} desbloqueado exitosamente`,
+      tipo_usuario,
+      id_usuario,
+      fecha_desbloqueo: new Date(),
+    });
+
+  } catch (error) {
+    console.error('Error al desbloquear usuario:', error);
+    res.status(500).json({ success: false, message: 'Error interno al desbloquear usuario' });
+  }
+};
+
+// 8.2. GET: Listar todos los usuarios bloqueados (con estado inactivo) - GPA 567
+export const listarUsuariosBloqueados = async (req, res) => {
+  try {
+    // Obtener estudiantes bloqueados
+    const [estudiantesBloqueados] = await db.query(`
+      SELECT
+        id_estudiante as id_usuario,
+        CONCAT(nombre, ' ', apellido) as nombre_completo,
+        gmail,
+        telefono,
+        motivo_bloqueo,
+        fecha_bloqueo,
+        'estudiante' as tipo_usuario,
+        creado_en
+      FROM estudiante
+      WHERE activo = 0
+      ORDER BY fecha_bloqueo DESC
+    `);
+
+    // Obtener empleadores bloqueados
+    const [empleadoresBloqueados] = await db.query(`
+      SELECT
+        id_empleador as id_usuario,
+        empresa as nombre_completo,
+        gmail,
+        telefono,
+        motivo_bloqueo,
+        fecha_bloqueo,
+        'empleador' as tipo_usuario,
+        creado_en
+      FROM empleador
+      WHERE activo = 0
+      ORDER BY fecha_bloqueo DESC
+    `);
+
+// Obtener supervisores bloqueados
+    const [supervisoresBloqueados] = await db.query(`
+      SELECT 
+        id_supervisor as id_usuario,
+        CONCAT(nombre, ' ', apellido) as nombre_completo,
+        gmail,
+        telefono,
+        motivo_bloqueo,
+        fecha_bloqueo,
+        'supervisor' as tipo_usuario,
+        creado_en
+      FROM supervisor 
+      WHERE activo = 0
+      ORDER BY fecha_bloqueo DESC
+    `);
+
+    // Combinar todos los usuarios bloqueados
+    const usuariosBloqueados = [
+      ...estudiantesBloqueados,
+      ...empleadoresBloqueados,
+      ...supervisoresBloqueados
+    ].sort((a, b) => new Date(b.fecha_bloqueo || b.creado_en) - new Date(a.fecha_bloqueo || a.creado_en));
+
+    res.status(200).json({
+      success: true,
+      data: usuariosBloqueados,
+      total: usuariosBloqueados.length
+    });
+
+  } catch (error) {
+    console.error('Error al listar usuarios bloqueados:', error);
+    res.status(500).json({ success: false, message: 'Error interno al listar usuarios bloqueados' });
+  }
+};
+
+// 9. GET: Estadísticas de supervisores (empleadores, postulaciones, ofertas) 
 export const obtenerEstadisticasDashboard = async (req, res) => {
   try {
     //Contar Empleadores
