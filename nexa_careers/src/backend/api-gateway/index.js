@@ -141,6 +141,7 @@ app.put('/api/supervisores/:id/contrasena', proxyTo('http://localhost:3005'));
 app.put('/api/supervisores/:id/estado', proxyTo('http://localhost:3005'));
 app.put('/api/supervisores/:id_supervisor/bloquear', proxyTo('http://localhost:3005'));
 app.get('/api/supervisores/dashboard/stats', proxyTo('http://localhost:3005'));
+app.post('/api/supervisores/enviarCodigo', proxyTo('http://localhost:3005'));
 
 // Servicio de Ofertas (puerto 3006)
 app.use('/api/ofertas', proxyTo('http://localhost:3006'));

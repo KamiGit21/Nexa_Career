@@ -6,19 +6,19 @@ const API_URL = 'http://localhost:3005/api/supervisores';
 async function ejecutarPruebas() {
   try {
     console.log('⏳ Iniciando pruebas del microservicio de Supervisores...\n');
-    /*
+    
     // 1. POST: Registrar supervisor
     console.log('➡️ 1. Ejecutando POST: Registrando nuevo supervisor...');
     const postResponse = await axios.post(`${API_URL}/registrar`, {
-      nombre: 'Carlos Administrador',
-      telefono: 65432100,
-      gmail: 'carlos.jefe@nexacareers.com',
-      contrasena: 'claveAdmin123'
+      nombre: 'Nati Urrutia',
+      telefono: 73098719,
+      gmail: 'natalia.urrutia1325@gmail.com',
+      contrasena: 'claveAdmin123?'
     });
     const nuevoId = postResponse.data.id_supervisor;
     console.log('✅ Resultado:', postResponse.data);
     console.log('--------------------------------------------------\n');
-
+    /*
     // 2. GET: Listar todos
     console.log('➡️ 2. Ejecutando GET: Solicitando todos los supervisores...');
     const getResponse = await axios.get(API_URL);
@@ -40,7 +40,6 @@ async function ejecutarPruebas() {
     });
     console.log('✅ Resultado:', putPerfilResponse.data);
     console.log('--------------------------------------------------\n');
-    */
     // 5. PUT: Cambiar contraseña
     console.log(`➡️ 5. Ejecutando PUT: Cambiando contraseña del ID 1...`);
     const putPasswordResponse = await axios.put(`${API_URL}/1/contrasena`, {
@@ -48,7 +47,6 @@ async function ejecutarPruebas() {
     });
     console.log('✅ Resultado:', putPasswordResponse.data);
     console.log('--------------------------------------------------\n');
-    /*
     // 6. PUT: Cambiar estado
     console.log(`➡️ 6. Ejecutando PUT: Desactivando al supervisor ID ${nuevoId}...`);
     const putEstadoResponse = await axios.put(`${API_URL}/${nuevoId}/estado`, {
