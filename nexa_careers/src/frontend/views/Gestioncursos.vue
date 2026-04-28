@@ -1,98 +1,172 @@
 <template>
-  <div class="gestion-cursos">
-    <GestionCursosHeader :total="cursos.length" v-model:busqueda="busqueda" />
-    <GestionCursosFiltros v-model:estadoFiltro="estadoFiltro" :conteos="conteos" />
+  <div class="h-auto pb-20 bg-[#f8f5f0] overflow-hidden min-h-screen">
 
-    <div v-if="loading" class="gestion-cursos__estado">
-      <p class="text-4xl mb-3 animate-pulse">⏳</p>
-      <p>Cargando cursos...</p>
+    <div class="bg-[#1b2a4a] py-8 px-6 text-center shadow-md">
+      <h1 class="text-3xl font-bold text-[#D1B16D] mb-2">Gestión de Cursos</h1>
+      <p class="text-gray-300">Administra, filtra y revisa todos los cursos de la plataforma.</p>
     </div>
-    <div v-else-if="cursos.length === 0" class="gestion-cursos__estado">
-      <p class="text-4xl mb-3">📭</p>
-      <p>No hay cursos registrados</p>
-    </div>
-    <div v-else-if="cursosFiltrados.length === 0" class="gestion-cursos__estado">
-      <p class="text-4xl mb-3">🔍</p>
-      <p>No se encontraron cursos con ese filtro</p>
-      <button @click="limpiarFiltros" class="btn-limpiar">Limpiar filtros</button>
-    </div>
-    <div v-else class="gestion-cursos__grid">
-      <ModerarItemCard
-        v-for="curso in cursosFiltrados"
-        :key="curso.id_curso"
-        :item="mapearCurso(curso)"
-        :cargando="procesando === curso.id_curso"
-        @accion="({ id, estado, rechazo }) => moderarCurso(id, estado, rechazo)"
-      />
-    </div>
+
+    <main class="max-w-7xl mx-auto pt-8 pb-4 px-6">
+
+      <div class="flex flex-wrap justify-between items-center bg-white p-5 rounded-2xl shadow-sm mb-8 gap-4 border border-gray-100">
+        
+        <div class="flex items-center gap-3">
+          <label class="text-[#002855] font-semibold text-sm">Estado:</label>
+          <select 
+            v-model="estadoFiltro" 
+            class="border-2 border-gray-300 rounded-lg px-3 py-1.5 focus:border-[#b5943a] outline-none cursor-pointer text-sm bg-gray-50 hover:bg-white transition-colors"
+          >
+            <option value="Todos">Todos</option>
+            <option value="0">Pendiente</option>
+            <option value="1">Aprobado</option>
+            <option value="2">Rechazado</option>
+            <option value="3">Archivado</option>
+          </select>
+        </div>
+
+        <div class="flex items-center gap-4 flex-wrap">
+          <button 
+            @click="toggleOrden" 
+            class="text-sm font-semibold text-[#002855] border-2 border-[#002855] px-4 py-1.5 rounded-lg hover:bg-[#002855] hover:text-white transition-colors"
+          >
+            Orden: {{ orden === 'reciente' ? 'Más Recientes' : 'Más Antiguos' }}
+          </button>
+
+          <div class="flex items-center gap-3">
+            <label class="text-[#002855] font-semibold text-sm">Mostrar:</label>
+            <select 
+              v-model="itemsPorPagina" 
+              class="border-2 border-gray-300 rounded-lg px-3 py-1.5 focus:border-[#b5943a] outline-none cursor-pointer text-sm bg-gray-50 hover:bg-white transition-colors"
+            >
+              <option v-for="n in opcionesPagina" :key="n" :value="n">{{ n }}</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div v-if="loading" class="text-center py-20 text-gray-500">
+        <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-[#1b2a4a] mx-auto mb-4"></div>
+        Cargando inventario de cursos...
+      </div>
+
+      <template v-else>
+        <div v-if="cursos.length === 0" class="text-center py-20 text-gray-400 bg-white rounded-3xl border border-gray-100 shadow-sm">
+          <p class="text-5xl mb-4">📂</p>
+          <p class="text-lg font-medium">No hay cursos que coincidan con este filtro.</p>
+          <button @click="restablecerFiltros" class="mt-4 text-[#b5943a] font-bold hover:underline">
+            Restablecer todos los filtros
+          </button>
+        </div>
+
+        <template v-else>
+          <p class="text-sm text-gray-500 mb-6 font-medium">
+            Página <span class="text-[#1b2a4a]">{{ paginaActual }}</span> de <span class="text-[#1b2a4a]">{{ totalPaginas }}</span>
+          </p>
+
+          <CursoPublicoGrid
+            :cursos="cursos"
+            @ver="irDetalle"
+          />
+
+          <CatalogoCursosPaginacion
+            id="punto-final"
+            v-if="totalPaginas > 1"
+            :pagina-actual="paginaActual"
+            :total-paginas="totalPaginas"
+            @cambiar="cambiarPagina"
+          />
+        </template>
+      </template>
+
+    </main>
+    
+    <BotonScroll />
   </div>
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
-import GestionCursosHeader  from '@/components/gestionCursos/GestionCursosHeader.vue'
-import GestionCursosFiltros from '@/components/gestionCursos/GestionCursosFiltros.vue'
-import ModerarItemCard       from '@/components/dashboardSupervisor/ModerarItemCard.vue'
-import { listarTodosCursos, cambiarEstadoCurso } from '@/services/supervisorService.js'
+import { 
+  listarCursosPaginadosPorFecha,
+  listarCursosPublicosPaginadosPorFechaPorEstado 
+} from '../services/cursoService.js'
 
-const router       = useRouter()
-const cursos       = ref([])
-const loading      = ref(true)
-const procesando   = ref(null)
-const busqueda     = ref('')
-const estadoFiltro = ref('todos')
+import CursoPublicoGrid from '@/components/catalogoCursos/CursoPublicoGrid.vue'
+import CatalogoCursosPaginacion from '@/components/catalogoCursos/CatalogoCursosPaginacion.vue'
+//import BotonScroll from '@/components/comunes/BotonScroll.vue'
+import { obtenerEstudiantePorId } from '@/services/estudianteService.js'
+import { obtenerEmpleadorPorId } from '@/services/empleadorService.js'
 
-onMounted(async () => {
-  const sesion = JSON.parse(localStorage.getItem('sesion') || '{}')
-  if (sesion.rol !== 'supervisor') { router.push('/login'); return }
-  await cargar()
-})
+const router = useRouter()
+const cursos = ref([]) 
+const loading = ref(true)
 
-const cargar = async () => {
+
+const estadoFiltro = ref('Todos') 
+const orden = ref('reciente') 
+const itemsPorPagina = ref(15) 
+const opcionesPagina = [9, 12, 15, 18, 21, 24, 27, 30]
+
+const paginaActual = ref(1)
+const totalPaginas = ref(1)
+
+const toggleOrden = () => {
+  orden.value = orden.value === 'reciente' ? 'antiguo' : 'reciente';
+}
+
+const cargarCursos = async (pagina = 1) => {
   loading.value = true
+  paginaActual.value = pagina
+  
   try {
-    const res = await listarTodosCursos()
-    if (res.success) cursos.value = res.data
-  } catch (e) {
-    console.error('Error al cargar cursos:', e)
+    let response;
+    const direccion = orden.value === 'reciente' ? 'abajo' : 'arriba';
+
+    // Determinar qué endpoint llamar basado en el filtro de estado
+    if (estadoFiltro.value === 'Todos') {
+      response = await listarCursosPaginadosPorFecha(pagina, itemsPorPagina.value, direccion);
+    } else {
+      // Usamos el servicio que filtra por estado y fecha
+      response = await listarCursosPublicosPaginadosPorFechaPorEstado(pagina, itemsPorPagina.value, direccion, estadoFiltro.value);
+    }
+
+    if (response && response.success) {
+      cursos.value = response.data;
+      totalPaginas.value = response.paginas;
+    } else {
+      cursos.value = [];
+      totalPaginas.value = 1;
+    }
+  } catch (err) {
+    console.error("Error al conectar con el servidor:", err);
+    cursos.value = [];
   } finally {
     loading.value = false
   }
 }
 
-const conteos = computed(() =>
-  cursos.value.reduce((acc, c) => { acc[c.estado] = (acc[c.estado] ?? 0) + 1; return acc }, {})
-)
 
-const cursosFiltrados = computed(() => {
-  const porEstado = estadoFiltro.value !== 'todos'
-    ? cursos.value.filter(c => c.estado === parseInt(estadoFiltro.value))
-    : [...cursos.value]
-  const q = busqueda.value.toLowerCase().trim()
-  return q
-    ? porEstado.filter(c => c.curso?.toLowerCase().includes(q) || c.nombre_publicador?.toLowerCase().includes(q))
-    : porEstado
-})
+watch([estadoFiltro, orden, itemsPorPagina], () => {
+  cargarCursos(1);
+});
 
-const limpiarFiltros = () => { busqueda.value = ''; estadoFiltro.value = 'todos' }
-
-const mapearCurso = (c) => ({
-  id: c.id_curso, titulo: c.curso, descripcion: c.descripcion, fecha: c.fecha_creacion,
-  tipo: c.tipo_ofertante === 0 ? 'Estudiante' : 'Empleador', publicador: c.nombre_publicador || '—', estado: c.estado
-})
-
-const moderarCurso = async (id, estado, rechazo) => {
-  procesando.value = id
-  try { const res = await cambiarEstadoCurso(id, estado, rechazo); if (res.success) await cargar() }
-  catch (e) { console.error('Error al moderar:', e) }
-  finally { procesando.value = null }
+const cambiarPagina = (nuevaPagina) => {
+  if (nuevaPagina < 1 || nuevaPagina > totalPaginas.value) return
+  cargarCursos(nuevaPagina)
+  window.scrollTo({ top: 0, behavior: 'smooth' })
 }
-</script>
 
-<style scoped>
-.gestion-cursos { padding: 24px; }
-.gestion-cursos__estado { text-align: center; padding: 60px 0; color: #94a3b8; }
-.gestion-cursos__grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
-.btn-limpiar { margin-top: 12px; font-size: 14px; font-weight: 600; color: #1b2a4a; text-decoration: underline; background: none; border: none; cursor: pointer; }
-</style>
+const restablecerFiltros = () => {
+  estadoFiltro.value = 'Todos';
+  orden.value = 'reciente';
+  itemsPorPagina.value = 15;
+}
+
+// NUEVO: Redirección exclusiva de supervisor
+const irDetalle = (id) => {
+  router.push(`/supervisor/curso/${id}`)
+}
+
+onMounted(() => cargarCursos(1))
+</script>
