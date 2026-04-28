@@ -36,6 +36,11 @@ import ListaEstudiantes from '@/views/ListaEstudiantes.vue'
 import ListaEmpleadores from '@/views/ListaEmpleadores.vue'
 import ListaSupervisores from '@/views/ListaSupervisores.vue'
 
+// Recuperar contrasenia
+import SolicitarRecuperacion from '@/views/SolicitarRecuperacion.vue'
+import VerificarCodigo from '@/views/VerificarCodigo.vue'
+import NuevaPassword from '@/views/NuevaPassword.vue'
+
 const routes = [
   { path: '/', redirect: '/home' },
 
@@ -70,6 +75,13 @@ const routes = [
     meta: { requiereRol: ['supervisor'] }
   },
 
+{
+  path: '/supervisor/oferta/:id',
+  name: 'SupervisorDetalleOferta',
+  component: () => import('@/views/DetalleOferta.vue'),
+  meta: { requiereRol: ['supervisor'] }
+},
+
   // Ofertas
   {
     path: '/ofertas',
@@ -83,7 +95,7 @@ const routes = [
     component: DetalleOferta
   },
 
-  
+
   { path: '/mis-ofertas', name: 'MisOfertas', component: MisOfertas, meta: { requiereRol: ['empleador'] } },
   { path: '/mis-ofertas/nueva', name: 'NuevaOferta', component: NuevaOferta, meta: { requiereRol: ['empleador'] } },
   { path: '/mis-ofertas/:ofertaId/postulantes', name: 'ListaPostulantes', component: ListaPostulantes, meta: { requiereRol: ['empleador'] } },
@@ -91,7 +103,7 @@ const routes = [
   { path: '/mis-ofertas/:ofertaId/editar', name: 'EditarOferta', component: EditarOferta, meta: { requiereRol: ['empleador'] } },
   { path: '/mis-postulaciones', name: 'MisPostulaciones', component: MisPostulaciones, meta: { requiereRol: ['estudiante'] } },
 
-  // Cursos - rutas separadas por rol (sin conflictos de nombre)
+    // Cursos - rutas separadas por rol (sin conflictos de nombre)
   { path: '/cursos', name: 'CatalogoCursos', component: CatalogoCursos },
   { path: '/cursos/:id', name: 'DetalleCurso', component: DetalleCurso },
   { path: '/publicar-curso', name: 'PublicarCurso', component: PublicarCurso, meta: { requiereRol: ['estudiante', 'empleador'] } },
@@ -107,6 +119,22 @@ const routes = [
     name: 'EstudianteCursos',
     component: EstudianteCursos,
     meta: { requiereRol: ['estudiante'] }
+  },
+
+  // Editar curso - ambos roles (de GPA-29/53)
+  {
+    path: '/editar-curso/:id',
+    name: 'EditarCurso',
+    component: () => import('@/views/EditarCurso.vue'),
+    meta: { requiereRol: ['estudiante', 'empleador'] }
+  },
+
+  // Supervisor - Ver detalle curso (de GPA-37)
+  {
+    path: '/supervisor/curso/:id',
+    name: 'SupervisorDetalleCurso',
+    component: () => import('@/views/DetalleCurso.vue'),
+    meta: { requiereRol: ['supervisor'] }
   },
 
   // Perfiles
@@ -150,6 +178,11 @@ const routes = [
     component: ListaSupervisores,
     meta: { requiereRol: ['supervisor'] }
   },
+
+  // Recuperar contrasenia
+  { path: '/recuperar-password', name: 'SolicitarRecuperacion', component: SolicitarRecuperacion, meta: { soloPublico: true } },
+  { path: '/verificar-codigo', name: 'VerificarCodigo', component: VerificarCodigo, meta: { soloPublico: true } },
+  { path: '/nueva-password', name: 'NuevaPassword', component: NuevaPassword, meta: { soloPublico: true } },
 
   { path: '/:pathMatch(.*)*', redirect: '/home' },
 ]

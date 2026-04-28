@@ -1,38 +1,46 @@
 <template>
-  <div class="min-h-screen bg-[#f8f5f0]">
-    
-    <OfertasHeader 
-      v-model:busqueda="busqueda"
-      :ordenado-por-fecha="ordenadoPorFecha"
-      @buscar="cargarOfertas(1)"
-      @toggle-orden="toggleOrden"
-    />
+  <div class="h-auto pb-20 bg-[#f8f5f0] overflow-hidden">
 
-    <main class="max-w-7xl mx-auto py-12 px-6">
-      <p v-if="!loading && !error && ofertasFiltradas.length > 0" class="text-sm text-gray-500 mb-6">
-        Página <span class="font-semibold text-[#1b2a4a]">{{ paginaActual }}</span> de <span class="font-semibold text-[#1b2a4a]">{{ totalPaginas }}</span>
-      </p>
+    <OfertasHeader v-model:busqueda="busqueda" :ordenado-por-fecha="ordenadoPorFecha" @buscar="cargarOfertas(1)"
+      @toggle-orden="toggleOrden" />
 
-      <OfertaGrid 
-        :ofertas="ofertasFiltradas"
-        :loading="loading"
-        :error="error"
-        @reintentar="cargarOfertas(paginaActual)"
-        @ver-detalle="verDetalle"
-      />
+    <main class="max-w-7xl mx-auto pt-12 pb-4 px-6">
+      <div v-if="!loading && !error && ofertasFiltradas.length > 0" class="flex flex-col sm:flex-row justify-between items-center mb-6 gap-4">
+        <p class="text-sm text-gray-500">
+          Página <span class="font-semibold text-[#1b2a4a]">{{ paginaActual }}</span> de <span
+            class="font-semibold text-[#1b2a4a]">{{ totalPaginas }}</span>
+        </p>
 
-      <CatalogoOfertasPaginacion
-        v-if="!loading && !error && ofertasFiltradas.length > 0"
-        :pagina-actual="paginaActual"
-        :total-paginas="totalPaginas"
-        @cambiar="cambiarPagina"
-      />
+        <div class="flex items-center gap-3">
+          <label for="pageSize" class="text-[#002855] font-semibold text-sm">
+            Ofertas por página:
+          </label>
+          <select 
+            id="pageSize" 
+            v-model="limite"
+            class="border-2 border-gray-300 rounded-lg px-3 py-1.5 bg-white text-gray-700 focus:outline-none focus:border-[#b5943a] transition-colors cursor-pointer"
+          >
+            <option v-for="n in opcionesPagina" :key="n" :value="n">
+              {{ n }}
+            </option>
+          </select>
+        </div>
+      </div>
+
+      <OfertaGrid :ofertas="ofertasFiltradas" :loading="loading" :error="error"
+        @reintentar="cargarOfertas(paginaActual)" @ver-detalle="verDetalle" />
+
+      <CatalogoOfertasPaginacion id="punto-final" v-if="!loading && !error && ofertasFiltradas.length > 0"
+        :pagina-actual="paginaActual" :total-paginas="totalPaginas" @cambiar="cambiarPagina" />
     </main>
+    <div class="min-h-screen bg-[#f8f5f0]">
+      <BotonScroll />
+    </div>
   </div>
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { listarOfertasPaginadasPorEstado, obtenerOfertasPaginacionPorEstadoYFecha } from '../services/ofertaService.js'
 
@@ -41,8 +49,12 @@ import OfertasHeader from '../components/catalogoOfertas/OfertasHeader.vue'
 import OfertaGrid from '../components/catalogoOfertas/OfertaGrid.vue'
 import CatalogoOfertasPaginacion from '../components/catalogoOfertas/CatalogoOfertasPaginacion.vue'
 
+// importar componente de botonscroll
+import BotonScroll from '../components/comunes/BotonScroll.vue'
+
 // --- Configuración y Estado ---
 const limite = ref(15)
+const opcionesPagina = [9, 12, 15, 18, 21, 24, 27, 30] 
 const router = useRouter()
 const loading = ref(true)
 const error = ref(null)
@@ -54,7 +66,7 @@ const ordenadoPorFecha = ref(false)
 
 // --- Lógica de Filtrado Local ---
 const ofertasFiltradas = computed(() =>
-  ofertas.value.filter(o => 
+  ofertas.value.filter(o =>
     !busqueda.value || o.oferta.toLowerCase().includes(busqueda.value.toLowerCase())
   )
 )
@@ -80,7 +92,7 @@ const cargarOfertas = async (pagina = 1) => {
   paginaActual.value = pagina
 
   try {
-    const response = ordenadoPorFecha.value 
+    const response = ordenadoPorFecha.value
       ? await obtenerOfertasPaginacionPorEstadoYFecha(pagina, 1, limite.value)
       : await listarOfertasPaginadasPorEstado(pagina, 1, limite.value)
 
@@ -97,6 +109,10 @@ const cargarOfertas = async (pagina = 1) => {
     loading.value = false
   }
 }
+
+watch(limite, () => {
+  cargarOfertas(1)
+})
 
 onMounted(() => cargarOfertas(1))
 </script>

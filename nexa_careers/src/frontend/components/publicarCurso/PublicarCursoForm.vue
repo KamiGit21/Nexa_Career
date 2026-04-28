@@ -1,3 +1,4 @@
+<!-- C:\xampp\htdocs\Nexa_Career\nexa_careers\src\frontend\components\publicarCurso\PublicarCursoForm.vue -->
 <template>
   <form
     @submit.prevent="enviar"
@@ -7,8 +8,7 @@
 
     <NombreCursoInput v-model="form.curso" />
     <DescripcionCurso v-model="form.descripcion" />
-    <!-- ojito que hay que descomentar esto para el 3 sprint-->
-    <!-- <CategoriaCursoSelect v-model="form.categoria" /> -->
+    <CategoriaCursoSelect v-model="form.categorias" />
     <ContactoCurso v-model="form.contacto" />
 
     <p
@@ -18,12 +18,12 @@
       {{ errorMsg }}
     </p>
 
-    <BotonesFormCurso :cargando="cargando" />
+    <BotonesFormCurso :cargando="cargando" :isEditing="isEditing" />
   </form>
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 import InfoPendiente        from './InfoPendiente.vue'
 import NombreCursoInput     from './NombreCursoInput.vue'
 import DescripcionCurso     from './DescripcionCurso.vue'
@@ -32,14 +32,53 @@ import ContactoCurso        from './ContactoCurso.vue'
 import BotonesFormCurso     from './BotonesFormCurso.vue'
 import {
   publicarCursoPorEstudiante,
-  publicarCursoPorEmpleador
+  publicarCursoPorEmpleador,
+  actualizarCurso,
+  obtenerCursoPorId
 } from '@/services/cursoService.js'
 
-const emit = defineEmits(['enviado'])
+const props = defineProps({
+  cursoId: { type: Number, default: null }  // Si tiene ID, es modo edición
+})
+const emit = defineEmits(['enviado', 'cancelado'])
 
 const cargando = ref(false)
 const errorMsg = ref('')
-const form = ref({ curso: '', descripcion: '', categoria: '', contacto: '' })
+const isEditing = ref(false)
+const form = ref({ 
+  curso: '', 
+  descripcion: '', 
+  categorias: [],  // Ahora es un array
+  contacto: '' 
+})
+
+// Cargar datos si es modo edición
+const cargarCursoParaEditar = async () => {
+  if (!props.cursoId) return
+  
+  isEditing.value = true
+  cargando.value = true
+  
+  try {
+    const response = await obtenerCursoPorId(props.cursoId)
+    if (response.success && response.data) {
+      const curso = response.data
+      form.value = {
+        curso: curso.curso,
+        descripcion: curso.descripcion,
+        categorias: curso.categorias?.map(c => c.id_categoria) || [],
+        contacto: curso.contacto
+      }
+    } else {
+      errorMsg.value = 'No se pudo cargar el curso para editar'
+    }
+  } catch (error) {
+    console.error('Error cargando curso:', error)
+    errorMsg.value = 'Error al cargar los datos del curso'
+  } finally {
+    cargando.value = false
+  }
+}
 
 const enviar = async () => {
   errorMsg.value = ''
@@ -68,27 +107,41 @@ const enviar = async () => {
     const payload = {
       curso:       form.value.curso,
       descripcion: form.value.descripcion,
+      categorias:  form.value.categorias,  // Enviar array de IDs
       contacto:    form.value.contacto,
       ...(sesion.rol === 'estudiante'
         ? { id_estudiante: sesion.id }
         : { id_empleador:  sesion.id })
     }
 
-    const fn = sesion.rol === 'estudiante'
-      ? publicarCursoPorEstudiante
-      : publicarCursoPorEmpleador
-
-    const response = await fn(payload)
+    let response
+    
+    if (isEditing.value && props.cursoId) {
+      // MODO EDICIÓN
+      response = await actualizarCurso(props.cursoId, payload)
+    } else {
+      // MODO CREACIÓN
+      const fn = sesion.rol === 'estudiante'
+        ? publicarCursoPorEstudiante
+        : publicarCursoPorEmpleador
+      response = await fn(payload)
+    }
 
     if (response.success) {
       emit('enviado')
     } else {
-      errorMsg.value = response.message || 'Error al publicar el curso.'
+      errorMsg.value = response.message || 'Error al guardar el curso.'
     }
-  } catch {
-    errorMsg.value = 'Error de conexión con el servidor.'
+  } catch (error) {
+    console.error('Error:', error)
+    errorMsg.value = error.message || 'Error de conexión con el servidor.'
   } finally {
     cargando.value = false
   }
 }
+
+// Cargar datos si estamos editando
+onMounted(() => {
+  cargarCursoParaEditar()
+})
 </script>

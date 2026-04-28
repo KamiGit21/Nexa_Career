@@ -59,7 +59,7 @@
                 ? 'border-[#1b2a4a] text-[#1b2a4a]'
                 : 'border-transparent text-gray-400 hover:text-gray-600'
             ]">
-              Cursos pendientes
+              Cursos Pendientes
             </button>
             <button @click="tabActivo = 'ofertas'" :class="[
               'px-6 py-3 text-sm font-semibold transition-colors border-b-2 -mb-px',

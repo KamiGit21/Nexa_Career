@@ -1,3 +1,4 @@
+<!-- C:\xampp\htdocs\Nexa_Career\nexa_careers\src\frontend\components\dashboardSupervisor\ModerarItemCard.vue -->
 <template>
   <div class="moderar-item-wrapper">
     <div class="bg-white rounded-2xl border border-gray-200 p-6 hover:shadow-lg transition-shadow">
@@ -17,6 +18,16 @@
         <span class="capitalize">👤 {{ item.tipo }} · {{ item.publicador }}</span>
       </div>
 
+      <!-- === NUEVO: Botón Ver detalles === -->
+      <div class="mb-3">
+        <button 
+          @click="verDetalle"
+          class="w-full py-2 px-3 bg-[#1b2a4a] text-white text-xs font-semibold rounded-xl hover:bg-[#0f1a2e] transition-colors mb-2"
+        >
+          👁️ Ver detalles completos
+        </button>
+      </div>
+
       <div class="flex gap-2 flex-wrap">
         <button @click="abrirModal(1)" :disabled="cargando"
           class="flex-1 py-2 px-3 bg-green-600 text-white text-[10px] sm:text-xs font-semibold rounded-xl hover:bg-green-700 transition-colors disabled:opacity-50">
@@ -33,6 +44,7 @@
       </div>
     </div>
 
+    <!-- Modal de confirmación (sin cambios) -->
     <Transition name="modal-fade">
       <div v-if="mostrarModal"
         class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4 backdrop-blur-sm"
@@ -86,13 +98,16 @@
 
 <script setup>
 import { ref, computed } from 'vue'
+import { useRouter } from 'vue-router'
 
 const props = defineProps({
   item: { type: Object, required: true },
-  cargando: { type: Boolean, default: false }
+  cargando: { type: Boolean, default: false },
+  tipoContenido: { type: String, required: true }
 })
 
 const emit = defineEmits(['accion'])
+const router = useRouter()
 
 const mostrarModal = ref(false)
 const estadoSeleccionado = ref(null)
@@ -106,6 +121,11 @@ const ESTADOS = {
 
 const config = computed(() => ESTADOS[estadoSeleccionado.value] ?? {})
 
+// === NUEVA FUNCIÓN: Ver detalle ===
+const verDetalle = () => {
+  router.push(`/supervisor/${props.tipoContenido}/${props.item.id}`)
+}
+
 const abrirModal = (estado) => {
   estadoSeleccionado.value = estado
   motivoRechazo.value = ''
@@ -117,7 +137,6 @@ const cerrarModal = () => {
 }
 
 const confirmarAccion = () => {
-  // Validación de seguridad antes de emitir
   if (estadoSeleccionado.value === 2 && !motivoRechazo.value.trim()) return
 
   emit('accion', {
@@ -135,7 +154,6 @@ const formatearFecha = (fecha) => {
 </script>
 
 <style scoped>
-/* Transición suave para el modal */
 .modal-fade-enter-active,
 .modal-fade-leave-active {
   transition: all 0.3s ease;
@@ -147,7 +165,6 @@ const formatearFecha = (fecha) => {
   transform: scale(0.95);
 }
 
-/* Efecto para truncar texto */
 .line-clamp-2 {
   display: -webkit-box;
   -webkit-line-clamp: 2;
