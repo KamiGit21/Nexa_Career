@@ -36,10 +36,14 @@ import ListaEstudiantes from '@/views/ListaEstudiantes.vue'
 import ListaEmpleadores from '@/views/ListaEmpleadores.vue'
 import ListaSupervisores from '@/views/ListaSupervisores.vue'
 
+
 // Recuperar contrasenia
 import SolicitarRecuperacion from '@/views/SolicitarRecuperacion.vue'
 import VerificarCodigo from '@/views/VerificarCodigo.vue'
 import NuevaPassword from '@/views/NuevaPassword.vue'
+
+import GestionCursos from '@/views/GestionCursos.vue'
+
 
 const routes = [
   { path: '/', redirect: '/home' },
@@ -176,6 +180,12 @@ const routes = [
     path: '/supervisor/supervisores',
     name: 'ListaSupervisores',
     component: ListaSupervisores,
+    meta: { requiereRol: ['supervisor'] }
+  },
+  {
+    path: '/supervisor/gestion-cursos',
+    name: 'GestionCursos',
+    component: GestionCursos,
     meta: { requiereRol: ['supervisor'] }
   },
 
