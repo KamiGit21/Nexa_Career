@@ -1,53 +1,40 @@
 <template>
-  <div class="flex flex-wrap gap-3 mb-8 items-center">
-    <!-- Búsqueda -->
-    <div class="relative flex-1 min-w-[200px]">
-      <input
-        :value="busqueda"
-        @input="$emit('update:busqueda', $event.target.value)"
-        type="text"
-        placeholder="🔍 Buscar por nombre..."
-        class="w-full pl-9 pr-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-[#1b2a4a] transition-colors"
-      />
-    </div>
-
-    <!-- Filtro categorías -->
+  <div class="flex flex-wrap gap-4 mb-8 items-center justify-between">
     <div class="flex flex-wrap gap-2">
       <button
         v-for="cat in categorias"
         :key="cat"
         @click="$emit('update:categoriaActiva', cat)"
         :class="[
-          'px-4 py-2 rounded-xl text-xs font-semibold transition-colors',
+          'px-5 py-2 rounded-full text-xs font-bold transition-all border active:scale-95',
           categoriaActiva === cat
-            ? 'bg-[#1b2a4a] text-white'
-            : 'bg-white border border-gray-200 text-gray-500 hover:border-[#1b2a4a] hover:text-[#1b2a4a]'
+            ? 'bg-[#1b2a4a] text-[#d0b06d] border-[#1b2a4a] shadow-md'
+            : 'bg-white border-gray-200 text-gray-500 hover:border-[#1b2a4a] hover:text-[#1b2a4a]'
         ]"
       >
         {{ cat }}
       </button>
     </div>
 
-    <!-- Ordenar -->
-    <select
-      :value="orden"
-      @change="$emit('update:orden', $event.target.value)"
-      class="border border-gray-200 rounded-xl text-xs px-3 py-2.5 text-gray-500 focus:outline-none focus:border-[#1b2a4a] transition-colors"
-    >
-      <option value="reciente">Más recientes</option>
-      <option value="antiguo">Más antiguos</option>
-      <option value="titulo">A → Z</option>
-    </select>
+    <!--<div class="w-full sm:w-auto">
+      <select
+        :value="orden"
+        @change="$emit('update:orden', $event.target.value)"
+        class="w-full sm:w-auto border border-gray-200 rounded-xl text-xs font-bold px-4 py-2.5 text-gray-500 focus:outline-none focus:border-[#1b2a4a] transition-all cursor-pointer bg-white"
+      >
+        <option value="reciente">Más recientes</option>
+        <option value="antiguo">Más antiguos</option>
+        <option value="titulo">A → Z</option>
+      </select>
+    </div>-->
   </div>
 </template>
 
 <script setup>
 defineProps({
-  busqueda:        { type: String,  required: true },
-  categoriaActiva: { type: String,  required: true },
-  orden:           { type: String,  required: true },
-  categorias:      { type: Array,   required: true },
+  categoriaActiva: { type: String, required: true },
+  orden:           { type: String, required: true },
+  categorias:      { type: Array,  required: true },
 })
-
-defineEmits(['update:busqueda', 'update:categoriaActiva', 'update:orden'])
+defineEmits(['update:categoriaActiva', 'update:orden'])
 </script>

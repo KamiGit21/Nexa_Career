@@ -4,7 +4,6 @@
     <p class="text-[#d0b06d] max-w-2xl mx-auto mb-8">
       Explora las mejores oportunidades laborales dentro de la red Nexa.
     </p>
-
     <div class="max-w-4xl mx-auto flex flex-col md:flex-row gap-4 items-stretch justify-center">
       <div
         class="flex-1 bg-white p-1.5 rounded-2xl shadow-2xl flex flex-col sm:flex-row gap-2 transition-all focus-within:ring-4 focus-within:ring-[#D1B16D]/30 focus-within:border-[#D1B16D]/50">

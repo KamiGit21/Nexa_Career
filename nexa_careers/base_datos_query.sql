@@ -121,3 +121,7 @@ ALTER TABLE estudiante ADD COLUMN fecha_bloqueo DATETIME DEFAULT NULL;
 --Motivo y fecha de bloqueo de empleador
 ALTER TABLE empleador ADD COLUMN motivo_bloqueo TEXT DEFAULT NULL;
 ALTER TABLE empleador ADD COLUMN fecha_bloqueo DATETIME DEFAULT NULL;
+
+--Motivo y fecha de bloqueo de supervisor
+ALTER TABLE supervisor ADD COLUMN motivo_bloqueo TEXT DEFAULT NULL;
+ALTER TABLE supervisor ADD COLUMN fecha_bloqueo DATETIME DEFAULT NULL;

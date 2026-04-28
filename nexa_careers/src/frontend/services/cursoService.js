@@ -1,3 +1,4 @@
+// C:\xampp\htdocs\Nexa_Career\nexa_careers\src\frontend\services\cursoService.js
 // src/frontend/services/cursoService.js
 const API_URL = 'http://localhost:3000/api'
 
@@ -29,6 +30,21 @@ export const publicarCursoPorEmpleador = async (data) => {
   }
 }
 
+// NUEVA: Actualizar curso (para edición)
+export const actualizarCurso = async (id, data) => {
+  try {
+    const res = await fetch(`${API_URL}/cursos/${id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data)
+    })
+    return await res.json()
+  } catch (error) {
+    console.error('Error en actualizarCurso:', error)
+    return { success: false, message: error.message }
+  }
+}
+
 export const listarCursosPorEstudiante = async (id) => {
   try {
     const res = await fetch(`${API_URL}/cursos/estudiante/${id}`)
@@ -42,18 +58,22 @@ export const listarCursosPorEstudiante = async (id) => {
 export const listarCursosPorEmpleador = async (id) => {
   try {
     const res = await fetch(`${API_URL}/cursos/empleador/${id}`)
-    return await res.json()
+    const data = await res.json()
+    return data
   } catch (error) {
     console.error('Error en listarCursosPorEmpleador:', error)
     return { success: false, message: error.message }
   }
 }
 
-// Obtiene las categorías de la tabla `categoria` via GET /api/categorias
 export const listarCategorias = async () => {
   try {
     const res = await fetch(`${API_URL}/categorias`)
-    return await res.json()
+    const data = await res.json()
+    if (data.success !== undefined) {
+      return data
+    }
+    return { success: true, data: data }
   } catch (error) {
     console.error('Error en listarCategorias:', error)
     return { success: false, data: [] }
@@ -79,3 +99,22 @@ export const obtenerCursoPorId = async (id) => {
     return { success: false, message: error.message }
   }
 }
+
+export const listarCursosPublicosPaginados = async (pagina = 1, size = 15) => {
+  try {
+    const res = await fetch(`${API_URL}/cursos/pagina/${pagina}/size/${size}/estado/1`);
+    return await res.json();
+  } catch (error) {
+    console.error('Error en listarCursosPublicosPaginados:', error);
+    return { success: false, message: error.message };
+  }
+};
+
+export const listarCursosPublicosPaginadosPorFecha = async (pagina, size, direccion) => {
+  try {
+    const res = await fetch(`${API_URL}/cursos/pagina/${pagina}/size/${size}/fecha/${direccion}/estado/1`);
+    return await res.json();
+  } catch (error) {
+    return { success: false, message: error.message };
+  }
+};
