@@ -25,6 +25,7 @@
         :key="curso.id_curso"
         :item="mapearCurso(curso)"
         :cargando="procesando === curso.id_curso"
+        tipoContenido="curso"
         @accion="({ id, estado, rechazo }) => moderarCurso(id, estado, rechazo)"
       />
     </div>
@@ -52,10 +53,7 @@ const estadosFiltro = ref({
 })
 
 const estadoAClave = {
-  0: 'pendiente',
-  1: 'aprobado',
-  2: 'rechazado',
-  3: 'archivado'
+  0: 'pendiente'
 }
 
 const contarPorEstado = (estado) => {
@@ -81,24 +79,6 @@ const cursosFiltrados = computed(() => {
   return resultado
 })
 
-
-const seleccionarTodos = () => {
-  estadosFiltro.value = {
-    pendiente: true,
-    aprobado: true,
-    rechazado: true,
-    archivado: true
-  }
-}
-
-const limpiarFiltros = () => {
-  estadosFiltro.value = {
-    pendiente: false,
-    aprobado: false,
-    rechazado: false,
-    archivado: false
-  }
-}
 
 const mapearCurso = (curso) => ({
   id:          curso.id_curso,
