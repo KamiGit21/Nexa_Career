@@ -1,5 +1,5 @@
 <template>
-  <div class="min-h-screen bg-[#002855] flex items-center justify-center p-4">
+  <div class="min-h-screen bg-[#1B2A4A] flex items-center justify-center p-4">
     <div class="bg-white rounded-3xl p-8 w-full max-w-2xl shadow-xl text-center">
       <h1 class="text-[#c5a059] text-4xl font-bold mb-6">Recupera tu Cuenta</h1>
       
@@ -33,7 +33,7 @@
           </button>
           <button 
             @click="verificar"
-            class="flex-1 py-3 bg-[#002855] text-[#c5a059] rounded-xl font-bold text-xl"
+            class="flex-1 py-3 bg-[#1B2A4A] text-[#c5a059] rounded-xl font-bold text-xl"
             :disabled="cargando || codigoIngresado.length < 6"
           >
             {{ cargando ? 'Verificando...' : 'Aceptar' }}
