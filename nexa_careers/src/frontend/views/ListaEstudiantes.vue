@@ -49,7 +49,8 @@ import EstudiantesTabla               from '../components/listaEstudiantes/Estud
 import DetalleEstudianteModal         from '../components/listaEstudiantes/DetalleEstudianteModal.vue'
 import ConfirmarBloqueoModal          from '../components/modals/ConfirmarBloqueoModal.vue'
 import DesbloquearEstudianteModal     from '../components/modals/DesbloquearEstudianteModal.vue'
-import { listarEstudiantesAdmin, obtenerLogsEstudiante, bloquearUsuario } from '../services/supervisorService.js'
+import { listarEstudiantesAdmin, obtenerLogsEstudiante } from '../services/supervisorService.js'
+import { bloquearEstudiante, desbloquearEstudiante } from '../services/estudianteService.js'
 
 const estudiantes         = ref([])
 const loading             = ref(true)
@@ -97,7 +98,7 @@ const abrirModalBloqueo    = (u) => { usuarioABloquear.value = u; modalBloqueoVi
 const abrirModalDesbloqueo = (u) => { usuarioADesbloquear.value = u; modalDesbloqueoVisible.value = true }
 
 const confirmarBloqueo = async ({ id, motivo }) => {
-  const res = await bloquearUsuario('estudiante', id, motivo || 'Sin motivo especificado')
+  const res = await bloquearEstudiante(id, motivo || 'Sin motivo especificado')
   if (res.success) { 
     alert('Estudiante bloqueado correctamente'); await cargarEstudiantes() 
   }else {
@@ -108,8 +109,19 @@ const confirmarBloqueo = async ({ id, motivo }) => {
 }
 
 const onDesbloqueado = async () => {
-  alert('Estudiante desbloqueado correctamente')
-  await cargarEstudiantes()
+  if (!usuarioADesbloquear.value?.id_estudiante) {
+    alert('Error: ID de estudiante no encontrado')
+    return
+  }
+  const res = await desbloquearEstudiante(usuarioADesbloquear.value.id_estudiante)
+  if (res.success) { 
+    alert('Estudiante desbloqueado correctamente')
+    await cargarEstudiantes() 
+  }else {
+    alert('Error al desbloquear: ' + res.message)
+  }
+  modalDesbloqueoVisible.value = false
+  usuarioADesbloquear.value   = null
 }
 
 onMounted(cargarEstudiantes)

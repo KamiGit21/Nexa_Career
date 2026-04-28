@@ -127,3 +127,33 @@ export const eliminarCV = async (idEstudiante) => {
     return { success: false, message: error.message };
   }
 };
+
+// Bloquear estudiante (cambiar estado a inactivo)
+export const bloquearEstudiante = async (idEstudiante, motivo = '') => {
+  try {
+    const res = await fetch(`${API_URL}/estudiantes/${idEstudiante}/estado`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ activo: 0, motivo })
+    });
+    return await res.json();
+  } catch (error) {
+    console.error('Error en bloquearEstudiante:', error);
+    return { success: false, message: error.message };
+  }
+};
+
+// Desbloquear estudiante (cambiar estado a activo)
+export const desbloquearEstudiante = async (idEstudiante) => {
+  try {
+    const res = await fetch(`${API_URL}/estudiantes/${idEstudiante}/estado`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ activo: 1 })
+    });
+    return await res.json();
+  } catch (error) {
+    console.error('Error en desbloquearEstudiante:', error);
+    return { success: false, message: error.message };
+  }
+};
