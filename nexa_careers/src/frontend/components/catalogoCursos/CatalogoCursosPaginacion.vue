@@ -1,5 +1,5 @@
 <template>
-  <div v-if="totalPaginas > 1" class="flex items-center justify-center gap-1.5 mt-12 select-none">
+  <div v-if="totalPaginas > 1" class="flex items-center justify-center gap-1.5 mt-8 mb-0 select-none">
 
     <!-- Botón Anterior -->
     <button

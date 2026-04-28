@@ -26,6 +26,7 @@
         :key="oferta.id_oferta"
         :item="mapearOferta(oferta)"
         :cargando="procesando === oferta.id_oferta"
+        tipoContenido="oferta"
         @accion="({ id, estado, rechazo }) => moderarOferta(id, estado, rechazo)"
       />
     </div>

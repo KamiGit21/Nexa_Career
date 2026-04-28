@@ -4,78 +4,6 @@
       Gestiona todos los cursos publicados en la plataforma.
     </p>
 
-    <div class="mb-6 bg-white rounded-xl p-4 shadow-sm border border-gray-200">
-      <h4 class="text-sm font-semibold text-gray-700 mb-3">Filtrar por estado:</h4>
-      <div class="flex flex-wrap gap-4">
-        <label class="flex items-center gap-2 cursor-pointer">
-          <input 
-            type="checkbox" 
-            v-model="estadosFiltro.pendiente" 
-            class="w-4 h-4 text-yellow-600 rounded border-gray-300 focus:ring-yellow-500"
-          />
-          <span class="text-sm text-gray-700">
-            <span class="inline-block w-2 h-2 rounded-full bg-yellow-500 mr-1"></span>
-            Pendiente
-          </span>
-          <span class="text-xs text-gray-400">({{ contarPorEstado(0) }})</span>
-        </label>
-        
-        <label class="flex items-center gap-2 cursor-pointer">
-          <input 
-            type="checkbox" 
-            v-model="estadosFiltro.aprobado" 
-            class="w-4 h-4 text-green-600 rounded border-gray-300 focus:ring-green-500"
-          />
-          <span class="text-sm text-gray-700">
-            <span class="inline-block w-2 h-2 rounded-full bg-green-500 mr-1"></span>
-            Aprobado
-          </span>
-          <span class="text-xs text-gray-400">({{ contarPorEstado(1) }})</span>
-        </label>
-        
-        <label class="flex items-center gap-2 cursor-pointer">
-          <input 
-            type="checkbox" 
-            v-model="estadosFiltro.rechazado" 
-            class="w-4 h-4 text-red-600 rounded border-gray-300 focus:ring-red-500"
-          />
-          <span class="text-sm text-gray-700">
-            <span class="inline-block w-2 h-2 rounded-full bg-red-500 mr-1"></span>
-            Rechazado
-          </span>
-          <span class="text-xs text-gray-400">({{ contarPorEstado(2) }})</span>
-        </label>
-        
-        <label class="flex items-center gap-2 cursor-pointer">
-          <input 
-            type="checkbox" 
-            v-model="estadosFiltro.archivado" 
-            class="w-4 h-4 text-gray-600 rounded border-gray-300 focus:ring-gray-500"
-          />
-          <span class="text-sm text-gray-700">
-            <span class="inline-block w-2 h-2 rounded-full bg-gray-500 mr-1"></span>
-            Archivado
-          </span>
-          <span class="text-xs text-gray-400">({{ contarPorEstado(3) }})</span>
-        </label>
-      </div>
-      
-      <div class="flex gap-2 mt-3 pt-3 border-t border-gray-100">
-        <button 
-          @click="seleccionarTodos" 
-          class="text-xs text-blue-600 hover:text-blue-800"
-        >
-          Seleccionar todos
-        </button>
-        <span class="text-gray-300">|</span>
-        <button 
-          @click="limpiarFiltros" 
-          class="text-xs text-red-600 hover:text-red-800"
-        >
-          Limpiar filtros
-        </button>
-      </div>
-    </div>
 
     <div v-if="loading" class="text-center py-12 text-gray-500">
       Cargando cursos...
@@ -98,6 +26,7 @@
         :key="curso.id_curso"
         :item="mapearCurso(curso)"
         :cargando="procesando === curso.id_curso"
+        tipoContenido="curso"
         @accion="({ id, estado, rechazo }) => moderarCurso(id, estado, rechazo)"
       />
     </div>
@@ -125,10 +54,8 @@ const estadosFiltro = ref({
 })
 
 const estadoAClave = {
-  0: 'pendiente',
-  1: 'aprobado',
-  2: 'rechazado',
-  3: 'archivado'
+
+  0: 'pendiente'
 }
 
 const contarPorEstado = (estado) => {
@@ -155,23 +82,6 @@ const cursosFiltrados = computed(() => {
 })
 
 
-const seleccionarTodos = () => {
-  estadosFiltro.value = {
-    pendiente: true,
-    aprobado: true,
-    rechazado: true,
-    archivado: true
-  }
-}
-
-const limpiarFiltros = () => {
-  estadosFiltro.value = {
-    pendiente: false,
-    aprobado: false,
-    rechazado: false,
-    archivado: false
-  }
-}
 
 const mapearCurso = (curso) => ({
   id:          curso.id_curso,
