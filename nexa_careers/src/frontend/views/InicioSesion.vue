@@ -65,6 +65,13 @@
 
         <div class="text-center mt-8 text-sm text-gray-500 space-y-2">
           <p>
+            ¿Olvidaste tu contraseña?
+            <router-link to="/recuperar-password" class="text-[#b5943a] font-medium hover:underline">Recupérala aquí</router-link>
+          </p>
+        </div>
+
+        <div class="text-center mt-8 text-sm text-gray-500 space-y-2">
+          <p>
             ¿Eres estudiante?
             <router-link to="/registro-estudiante" class="text-[#b5943a] font-medium hover:underline">Regístrate
               aquí</router-link>
@@ -86,7 +93,7 @@ import { useRouter } from 'vue-router'
 import { obtenerEmpleadorPorGmail } from '../services/empleadorService.js'
 import { obtenerEstudiantePorGmail } from '../services/estudianteService.js'
 import { obtenerSupervisorPorGmail } from '../services/supervisorService.js'
-import { authState } from '../auth.js' // <--- Importación asegurada
+import { authState } from '../auth.js' 
 
 const router = useRouter()
 const showPassword = ref(false)

@@ -20,5 +20,8 @@ router.put('/:id/perfil', supervisorController.actualizarPerfil);
 router.put('/:id/contrasena', supervisorController.cambiarContrasena);
 router.put('/:id/estado', supervisorController.cambiarEstado);
 router.put('/:id_supervisor/bloquear', supervisorController.bloquearUsuario);
+router.put('/:id_supervisor/desbloquear', supervisorController.desbloquearUsuario); // supervisor desbloquea a un usuario bloqueado
+
+router.post('/enviarCodigo', supervisorController.enviarCodigoSupervisor);
 
 export default router;
