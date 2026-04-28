@@ -102,7 +102,8 @@ import { useRouter } from 'vue-router'
 
 const props = defineProps({
   item: { type: Object, required: true },
-  cargando: { type: Boolean, default: false }
+  cargando: { type: Boolean, default: false },
+  tipoContenido: { type: String, required: true }
 })
 
 const emit = defineEmits(['accion'])
@@ -122,7 +123,7 @@ const config = computed(() => ESTADOS[estadoSeleccionado.value] ?? {})
 
 // === NUEVA FUNCIÓN: Ver detalle ===
 const verDetalle = () => {
-  router.push(`/supervisor/curso/${props.item.id}`)
+  router.push(`/supervisor/${props.tipoContenido}/${props.item.id}`)
 }
 
 const abrirModal = (estado) => {
