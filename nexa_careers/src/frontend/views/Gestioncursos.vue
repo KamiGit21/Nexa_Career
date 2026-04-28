@@ -94,7 +94,7 @@ import {
 
 import CursoPublicoGrid from '@/components/catalogoCursos/CursoPublicoGrid.vue'
 import CatalogoCursosPaginacion from '@/components/catalogoCursos/CatalogoCursosPaginacion.vue'
-//import BotonScroll from '@/components/comunes/BotonScroll.vue'
+import BotonScroll from '@/components/comunes/BotonScroll.vue'
 import { obtenerEstudiantePorId } from '@/services/estudianteService.js'
 import { obtenerEmpleadorPorId } from '@/services/empleadorService.js'
 
@@ -131,8 +131,39 @@ const cargarCursos = async (pagina = 1) => {
       response = await listarCursosPublicosPaginadosPorFechaPorEstado(pagina, itemsPorPagina.value, direccion, estadoFiltro.value);
     }
 
-    if (response && response.success) {
-      cursos.value = response.data;
+    if (response && response.success && response.data) {
+      // MAGIA: Enriquecer los cursos con el nombre del publicador
+      const cursosEnriquecidos = await Promise.all(
+        response.data.map(async (curso) => {
+          let nombrePublicador = 'Usuario Desconocido';
+          
+          if (curso.tipo_ofertante === 0 || curso.id_estudiante) {
+             const id = curso.id_estudiante || curso.id_ofertante;
+             if (id) {
+               try {
+                 const estRes = await obtenerEstudiantePorId(id);
+                 if (estRes.success && estRes.data) {
+                   nombrePublicador = `${estRes.data.nombre} ${estRes.data.apellido}`;
+                 }
+               } catch (e) {}
+             }
+          } else if (curso.tipo_ofertante === 1 || curso.id_empleador) {
+             const id = curso.id_empleador || curso.id_ofertante;
+             if (id) {
+               try {
+                 const empRes = await obtenerEmpleadorPorId(id);
+                 if (empRes.success && empRes.data) {
+                   nombrePublicador = empRes.data.empresa || empRes.data.nombre || 'Empresa';
+                 }
+               } catch (e) {}
+             }
+          }
+          
+          return { ...curso, nombre_publicador: nombrePublicador };
+        })
+      );
+
+      cursos.value = cursosEnriquecidos;
       totalPaginas.value = response.paginas;
     } else {
       cursos.value = [];
