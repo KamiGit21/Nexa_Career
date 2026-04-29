@@ -1,15 +1,13 @@
 <template>
-  <div class="flex flex-col min-h-screen">
+  <div class="flex flex-col min-h-screen bg-[#f8f5f0]">
     <Navbar />
 
     <div :class="{ 'flex flex-1': esSupervisor }">
-      
       <Sidebar v-if="esSupervisor" />
 
-      <main :class="esSupervisor ? 'flex-1 bg-gray-100 p-6' : 'w-full'">
+      <main :class="esSupervisor ? 'flex-1 bg-gray-100 p-6' : 'flex-1'">
         <router-view />
       </main>
-      
     </div>
   </div>
 </template>
@@ -37,8 +35,20 @@ const esSupervisor = computed(() => {
   box-sizing: border-box;
 }
 
-html, body {
-  width: 100%;
-  height: 100%;
+#punto-final {
+  height: 1px;
+  margin-top: -1px;
+}
+
+body, html {
+  margin: 0;
+  padding: 0;
+  background-color: #f8f5f0;
+}
+
+#app {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
 }
 </style>

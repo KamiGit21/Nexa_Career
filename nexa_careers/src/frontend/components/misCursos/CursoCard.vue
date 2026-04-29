@@ -4,6 +4,18 @@
       <h3 class="font-bold text-[#1b2a4a] text-lg leading-tight">{{ curso.curso }}</h3>
       <CursoEstadoBadge :estado="curso.estado" />
     </div>
+    
+    <!-- Mostrar categorías -->
+    <div v-if="curso.categorias && curso.categorias.length > 0" class="flex flex-wrap gap-1 mb-3">
+      <span
+        v-for="cat in curso.categorias"
+        :key="cat.id_categoria"
+        class="text-xs px-2 py-0.5 rounded-full bg-gray-100 text-gray-600"
+      >
+        {{ cat.categoria }}
+      </span>
+    </div>
+    
 
     <p class="text-sm text-gray-500 line-clamp-2 mb-4">{{ curso.descripcion || 'Sin descripción' }}</p>
 
