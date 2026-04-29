@@ -7,14 +7,17 @@
           <th class="p-4 text-left font-semibold">Correo</th>
           <th class="p-4 text-center font-semibold">Teléfono</th>
           <th class="p-4 text-center font-semibold">Estado</th>
+
           <th class="p-4 text-center font-semibold">Fecha de registro</th>
+          <th class="p-4 text-center font-semibold">Acción</th>
         </tr>
       </thead>
       <tbody class="divide-y divide-gray-100">
         <tr v-for="s in supervisores" :key="s.id_supervisor" class="hover:bg-gray-50 transition-colors">
           <td class="p-4">
             <div class="flex items-center gap-3">
-              <div class="w-9 h-9 rounded-full bg-violet-100 text-violet-700 flex items-center justify-center font-bold text-xs flex-shrink-0">
+              <div
+                class="w-9 h-9 rounded-full bg-violet-100 text-violet-700 flex items-center justify-center font-bold text-xs flex-shrink-0">
                 {{ obtenerIniciales(s.nombre, s.apellido) }}
               </div>
               <div>
@@ -29,6 +32,20 @@
             <UsuarioEstadoBadge :activo="s.activo !== undefined ? s.activo : true" />
           </td>
           <td class="p-4 text-center text-xs text-gray-400">{{ formatearFecha(s.creado_en) }}</td>
+          <td class="p-4 text-center">
+            <div v-if="s.activo === 1" class="space-x-1">
+              <button @click="$emit('bloquear', s)"
+                class="px-3 py-1.5 bg-red-600 text-white rounded-lg text-xs hover:bg-red-700 transition">
+                Bloquear
+              </button>
+            </div>
+            <div v-else class="space-x-1">
+              <button @click="$emit('desbloquear', s)"
+                class="px-3 py-1.5 bg-green-600 text-white rounded-lg text-xs hover:bg-green-700 transition">
+                Desbloquear
+              </button>
+            </div>
+          </td>
         </tr>
       </tbody>
     </table>
@@ -41,9 +58,13 @@
 <script setup>
 import UsuarioEstadoBadge from '../adminUsuarios/UsuarioEstadoBadge.vue'
 
-defineProps({ 
-  supervisores: { type: Array, required: true } 
+
+defineProps({
+  supervisores: { type: Array, required: true }
 })
+
+defineEmits(['ver', 'bloquear', 'desbloquear'])
+
 
 //Funcion para obtener iniciales
 const obtenerIniciales = (nombre, apellido) => {
@@ -55,12 +76,12 @@ const obtenerIniciales = (nombre, apellido) => {
 const formatearFecha = (f) => {
   if (!f) return '—'
   const fecha = new Date(f)
-  
+
   if (isNaN(fecha.getTime())) return '—'
-  return fecha.toLocaleDateString('es-ES', { 
-    day: '2-digit', 
-    month: 'short', 
-    year: 'numeric' 
+  return fecha.toLocaleDateString('es-ES', {
+    day: '2-digit',
+    month: 'short',
+    year: 'numeric'
   })
 }
 </script>
