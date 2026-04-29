@@ -18,13 +18,12 @@
         <span class="capitalize">👤 {{ item.tipo }} · {{ item.publicador }}</span>
       </div>
 
-      <!-- === NUEVO: Botón Ver detalles === -->
       <div class="mb-3">
         <button 
           @click="verDetalle"
           class="w-full py-2 px-3 bg-[#1b2a4a] text-white text-xs font-semibold rounded-xl hover:bg-[#0f1a2e] transition-colors mb-2"
         >
-          👁️ Ver detalles completos
+          👁️ Ver detalle completo
         </button>
       </div>
 
