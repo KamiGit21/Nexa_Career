@@ -231,3 +231,26 @@ export const bloquearUsuario = async (tipo, id, motivo = '') => {
     return { success: false, message: error.message };
   }
 };
+
+// Desbloquear una cuenta de usuario (estudiante y/o empleador)
+
+export const desbloquearUsuario = async (tipo, id) => {
+  try {
+    const sesion = JSON.parse(localStorage.getItem('sesion') || '{}');
+    const idSupervisor = sesion.id;
+
+    if (!idSupervisor) {
+      return { success: false, message: 'No se encontró la sesión del supervisor.' };
+    }
+
+    const res = await fetch(`${API_URL}/supervisores/${idSupervisor}/desbloquear`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ tipo_usuario: tipo, id_usuario: id })
+    });
+    return await res.json();
+  } catch (error) {
+    console.error(`Error en desbloquearUsuario (${tipo}):`, error);
+    return { success: false, message: error.message };
+  }
+};
