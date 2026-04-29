@@ -80,12 +80,12 @@ const routes = [
     meta: { requiereRol: ['supervisor'] }
   },
 
-{
-  path: '/supervisor/oferta/:id',
-  name: 'SupervisorDetalleOferta',
-  component: () => import('@/views/DetalleOferta.vue'),
-  meta: { requiereRol: ['supervisor'] }
-},
+  {
+    path: '/supervisor/oferta/:id',
+    name: 'SupervisorDetalleOferta',
+    component: () => import('@/views/DetalleOferta.vue'),
+    meta: { requiereRol: ['supervisor'] }
+  },
 
   // Ofertas
   {
@@ -104,11 +104,25 @@ const routes = [
   { path: '/mis-ofertas', name: 'MisOfertas', component: MisOfertas, meta: { requiereRol: ['empleador'] } },
   { path: '/mis-ofertas/nueva', name: 'NuevaOferta', component: NuevaOferta, meta: { requiereRol: ['empleador'] } },
   { path: '/mis-ofertas/:ofertaId/postulantes', name: 'ListaPostulantes', component: ListaPostulantes, meta: { requiereRol: ['empleador'] } },
-  { path: '/postulante/:id', name: 'PerfilEstudianteView', component: PerfilEstudianteView, meta: { requiereRol: ['empleador'] } },
+
+  //Ver Perfiles
+  {
+    path: '/postulante/:id',
+    name: 'PerfilEstudianteView',
+    component: PerfilEstudianteView,
+    meta: { requiereRol: ['empleador', 'supervisor'] }
+  },
+  {
+    path: '/empleador/:id',
+    name: 'PerfilEmpleadorView',
+    component: () => import('@/views/PerfilEmpleador.vue'), // O el nombre que le des al archivo
+    meta: { requiereRol: ['estudiante', 'empleador', 'supervisor'] }
+  },
+
   { path: '/mis-ofertas/:ofertaId/editar', name: 'EditarOferta', component: EditarOferta, meta: { requiereRol: ['empleador'] } },
   { path: '/mis-postulaciones', name: 'MisPostulaciones', component: MisPostulaciones, meta: { requiereRol: ['estudiante'] } },
 
-    // Cursos - rutas separadas por rol (sin conflictos de nombre)
+  // Cursos - rutas separadas por rol (sin conflictos de nombre)
   { path: '/cursos', name: 'CatalogoCursos', component: CatalogoCursos },
   { path: '/cursos/:id', name: 'DetalleCurso', component: DetalleCurso },
   { path: '/publicar-curso', name: 'PublicarCurso', component: PublicarCurso, meta: { requiereRol: ['estudiante', 'empleador'] } },
@@ -190,25 +204,16 @@ const routes = [
     meta: { requiereRol: ['supervisor'] }
   },
   {
-  path: '/supervisor/gestion-ofertas',
-  name: 'GestionOfertas',
-  component: GestionOfertas,
-  meta: { requiereRol: ['supervisor'] }
-},
+    path: '/supervisor/gestion-ofertas',
+    name: 'GestionOfertas',
+    component: GestionOfertas,
+    meta: { requiereRol: ['supervisor'] }
+  },
 
   // Recuperar contrasenia
   { path: '/recuperar-password', name: 'SolicitarRecuperacion', component: SolicitarRecuperacion, meta: { soloPublico: true } },
   { path: '/verificar-codigo', name: 'VerificarCodigo', component: VerificarCodigo, meta: { soloPublico: true } },
   { path: '/nueva-password', name: 'NuevaPassword', component: NuevaPassword, meta: { soloPublico: true } },
-
-  //ver Perfil Supervisor
-  // Busca esta línea en tu array de routes y cámbiala:
-{ 
-  path: '/postulante/:id', 
-  name: 'PerfilEstudianteView', 
-  component: PerfilEstudianteView,
-  meta: { requiereRol: ['empleador', 'supervisor'] } 
-},
 
   { path: '/:pathMatch(.*)*', redirect: '/home' },
 ]
