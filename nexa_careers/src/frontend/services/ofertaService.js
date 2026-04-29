@@ -71,6 +71,24 @@ export async function obtenerOfertasPaginacionPorEstadoYFecha(pagina, estado, si
   return data;
 }
 
+export async function buscarOfertasPaginadas(pagina, estado, size = 15, titulo = '', orden = 'reciente') {
+  const { data } = await api.get(`/api/ofertas/titulo/${encodeURIComponent(titulo)}/pagina/${pagina}/size/${size}`);
+  return data;
+}
+
+export async function buscarOfertasAvanzado(filtros) {
+  const params = {
+    pagina: filtros.pagina || 1,
+    size: filtros.size || 15,
+    q: filtros.titulo,
+    empresa: filtros.empleador,
+    modalidad: filtros.modalidad,
+    sort: filtros.orden || 'desc'
+  };
+
+  const { data } = await api.get('/api/ofertas/busqueda', { params });
+  return data;
+}
 
 
 export default {
