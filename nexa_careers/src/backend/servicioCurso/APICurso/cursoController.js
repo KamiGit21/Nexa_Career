@@ -337,3 +337,55 @@ export const obtenerCursosPaginacionPorEstadoYFechaAscendente = async (req, res)
     res.status(500).json({ success: false, message: 'Error interno al paginar los cursos' });
   }
 };
+
+// POST: Agregar categoría a curso (ademas evita duplicados)
+export const agregarCategoriaACurso = async (req, res) => {
+  const { id_curso } = req.params;
+  const { id_categoria } = req.body;
+  if (!id_categoria) return res.status(400).json({ success: false, message: 'id_categoria requerido' });
+  try {
+    const [exists] = await db.query('SELECT 1 FROM categoria_curso WHERE id_curso = ? AND id_categoria = ?', [id_curso, id_categoria]);
+    if (exists.length > 0) {
+      return res.status(409).json({ success: false, message: 'Relación ya existe' });
+    }
+    const [result] = await db.query('INSERT INTO categoria_curso (id_categoria, id_curso) VALUES (?, ?)', [id_categoria, id_curso]);
+    res.status(201).json({ success: true, id_categoria_curso: result.insertId, message: 'Categoría agregada correctamente' });
+  } catch (error) {
+    console.error('Error al agregar categoría a curso:', error);
+    res.status(500).json({ success: false, message: 'Error interno del servidor' });
+  }
+};
+
+// DELETE: Quitar categoría de curso
+export const quitarCategoriaDeCurso = async (req, res) => {
+  const { id_curso, id_categoria } = req.params;
+  try {
+    const [result] = await db.query('DELETE FROM categoria_curso WHERE id_curso = ? AND id_categoria = ?', [id_curso, id_categoria]);
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ success: false, message: 'Relación no encontrada' });
+    }
+    res.status(200).json({ success: true, message: 'Categoría removida correctamente' });
+  } catch (error) {
+    console.error('Error al quitar categoría de curso:', error);
+    res.status(500).json({ success: false, message: 'Error interno del servidor' });
+  }
+};
+
+// GET: Listar categorías de un curso con nombres
+export const listarCategoriasDeCurso = async (req, res) => {
+  const { id_curso } = req.params;
+  try {
+    const [rows] = await db.query(`
+      SELECT cc.id_categoria_curso, cc.id_categoria, c.categoria 
+      FROM categoria_curso cc 
+      JOIN categoria c ON cc.id_categoria = c.id_categoria 
+      WHERE cc.id_curso = ?
+      ORDER BY c.categoria
+    `, [id_curso]);
+    res.status(200).json({ success: true, data: rows });
+  } catch (error) {
+    console.error('Error al listar categorías del curso:', error);
+    res.status(500).json({ success: false, message: 'Error interno del servidor' });
+  }
+};
+

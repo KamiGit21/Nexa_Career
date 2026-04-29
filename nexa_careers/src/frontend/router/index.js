@@ -116,7 +116,7 @@ const routes = [
   name: 'EditarCurso',
   component: () => import('@/views/EditarCurso.vue'),
   meta: { requiereRol: ['estudiante', 'empleador'] }
-  }
+  },
 
   // Perfiles
   {
