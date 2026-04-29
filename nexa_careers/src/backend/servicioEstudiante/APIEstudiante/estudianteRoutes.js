@@ -12,9 +12,12 @@ router.get('/gmail/:gmail', estudianteController.buscarEstudiantePorGmail);
 router.put('/:id/perfil', estudianteController.actualizarPerfil);
 router.put('/:id/contrasena', estudianteController.cambiarContrasena);
 router.put('/:id/estado', estudianteController.cambiarEstado);
+router.post('/enviarCodigo', estudianteController.enviarCodigoEstudiante);
 
 // rutas pa postulaciones de un estudiante
 router.get('/:id/postulaciones', estudianteController.obtenerPostulacionesPorEstudiante);
 router.post('/:id/postulaciones', estudianteController.postularAOferta);//nuevooooo
+
+
 
 export default router;

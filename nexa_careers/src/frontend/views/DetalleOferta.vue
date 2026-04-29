@@ -1,3 +1,4 @@
+<!-- C:\xampp\htdocs\Nexa_Career\nexa_careers\src\frontend\views\DetalleOferta.vue -->
 <template>
   <div class="min-h-screen bg-[#f8f5f0]">
     <div class="max-w-7xl mx-auto px-6 py-10">
@@ -11,18 +12,42 @@
       <div v-else-if="error" class="text-center py-20 text-red-400">
         <p class="text-5xl mb-4">⚠️</p>
         <p class="text-lg font-medium">{{ error }}</p>
-        <router-link to="/ofertas" class="text-sm text-[#2e6da4] hover:underline mt-3 inline-block">
-          ← Volver al catálogo
+        <router-link :to="rutaVolver" class="text-sm text-[#2e6da4] hover:underline mt-3 inline-block">
+          ← Volver
         </router-link>
       </div>
 
       <!-- Contenido -->
       <template v-else-if="oferta">
 
+        <!-- Badge para supervisor si la oferta está pendiente -->
+        <div v-if="esSupervisor && oferta.estado === 0" class="mb-4">
+          <div class="bg-yellow-50 border border-yellow-200 rounded-xl p-3 flex items-center justify-between flex-wrap gap-2">
+            <div class="flex items-center gap-2">
+              <span class="text-yellow-600 text-xl">⏳</span>
+              <span class="text-sm text-yellow-700">Esta oferta está en revisión pendiente</span>
+            </div>
+            <div class="flex gap-2">
+              <button 
+                @click="moderarOferta(1)"
+                class="px-4 py-1.5 bg-green-600 text-white text-sm rounded-lg hover:bg-green-700 transition"
+              >
+                ✓ Aprobar
+              </button>
+              <button 
+                @click="abrirModalRechazo"
+                class="px-4 py-1.5 bg-red-500 text-white text-sm rounded-lg hover:bg-red-600 transition"
+              >
+                ✗ Rechazar
+              </button>
+            </div>
+          </div>
+        </div>
+
         <!-- Header -->
         <div class="mb-6">
-          <router-link to="/ofertas" class="text-sm text-[#2e6da4] hover:underline">
-            ← Volver al catálogo de ofertas
+          <router-link :to="rutaVolver" class="text-sm text-[#2e6da4] hover:underline">
+            ← Volver
           </router-link>
 
           <div class="mt-4 flex flex-wrap justify-between items-start gap-4">
@@ -81,6 +106,12 @@
                 </span>
               </div>
 
+              <!-- Imagen de la oferta -->
+              <div v-if="oferta.imagen" class="mt-5">
+                <h3 class="text-sm font-bold text-[#1b2a4a] mb-2">Imagen de la oferta</h3>
+                <img :src="oferta.imagen" :alt="oferta.oferta" class="max-w-full h-auto rounded-xl border border-gray-200">
+              </div>
+
               <!-- Motivo de rechazo -->
               <div v-if="oferta.rechazo" class="mt-5 p-4 bg-red-50 border border-red-100 rounded-xl">
                 <h3 class="text-sm font-bold text-red-700 mb-1">Motivo de rechazo</h3>
@@ -88,12 +119,11 @@
               </div>
             </div>
 
-            <!-- Acción principal (postular) -->
-            <div class="bg-white rounded-2xl border border-gray-200 p-6 mb-5">
+            <!-- Acción principal (postular - solo para estudiantes y ofertas activas) -->
+            <div v-if="!esSupervisor && oferta.estado === 1" class="bg-white rounded-2xl border border-gray-200 p-6 mb-5">
               <h2 class="text-lg font-bold text-[#1b2a4a] mb-1">¿Te interesa esta oferta?</h2>
               <p class="text-xs text-gray-400 mb-4">Postúlate directamente desde la plataforma.</p>
 
-              <!-- Estudiante logueado -->
               <template v-if="sesion.rol === 'estudiante'">
                 <button
                   v-if="!yaPostulado"
@@ -111,7 +141,6 @@
                 </div>
               </template>
 
-              <!-- Sin sesión o rol distinto -->
               <template v-else>
                 <button
                   @click="irALogin"
@@ -194,20 +223,59 @@
         </div>
       </div>
     </Transition>
+
+    <!-- Modal de rechazo para supervisor -->
+    <Transition name="fade">
+      <div v-if="mostrarModalRechazo"
+        class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4 backdrop-blur-sm"
+        @click.self="cerrarModalRechazo">
+        <div class="relative bg-white rounded-3xl shadow-2xl w-full max-w-sm p-8 text-center space-y-4">
+          <div class="mx-auto w-16 h-16 rounded-full bg-red-100 flex items-center justify-center text-3xl">
+            ❌
+          </div>
+          <div>
+            <h2 class="text-xl font-bold text-[#1b2a4a]">Rechazar oferta</h2>
+            <p class="text-sm text-gray-500 mt-1">
+              Ingresa el motivo del rechazo para "{{ oferta?.oferta }}"
+            </p>
+          </div>
+          <div class="text-left">
+            <input 
+              v-model="motivoRechazo" 
+              type="text" 
+              placeholder="Ej. Información incompleta, requisitos poco claros..."
+              class="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-red-200 focus:border-red-400 outline-none transition-all" 
+            />
+          </div>
+          <div class="flex gap-3 pt-1">
+            <button @click="cerrarModalRechazo"
+              class="flex-1 py-2.5 border border-gray-200 rounded-xl text-sm font-semibold text-gray-600 hover:bg-gray-50 transition-colors">
+              Cancelar
+            </button>
+            <button @click="confirmarRechazo" :disabled="!motivoRechazo.trim()"
+              class="flex-1 py-2.5 bg-red-500 rounded-xl text-sm font-semibold text-white hover:bg-red-600 transition-colors disabled:opacity-50">
+              Rechazar
+            </button>
+          </div>
+        </div>
+      </div>
+    </Transition>
   </div>
 </template>
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { obtenerOfertaPorId }             from '@/services/ofertaService.js'
-import { obtenerEmpleadorPorId }          from '@/services/empleadorService.js'
+import { obtenerOfertaPorId } from '@/services/ofertaService.js'
+import { cambiarEstadoOferta } from '@/services/supervisorService.js'
+import { obtenerEmpleadorPorId } from '@/services/empleadorService.js'
 import { obtenerPostulaciones, postularAOferta } from '@/services/postulacionService.js'
 
 const route  = useRoute()
 const router = useRouter()
 
 const sesion = JSON.parse(localStorage.getItem('sesion') || '{}')
+const esSupervisor = computed(() => sesion.rol === 'supervisor')
 
 const oferta           = ref(null)
 const empresaData      = ref(null)
@@ -217,7 +285,16 @@ const modalVisible     = ref(false)
 const postulando       = ref(false)
 const yaPostulado      = ref(false)
 const errorPostulacion = ref(null)
+const mostrarModalRechazo = ref(false)
+const motivoRechazo = ref('')
 
+// Ruta de volver según rol
+const rutaVolver = computed(() => {
+  if (esSupervisor.value) {
+    return '/dashboard-supervisor'
+  }
+  return '/ofertas'
+})
 
 const nombreEmpresa = computed(() =>
   empresaData.value?.empresa || `Empleador #${oferta.value?.id_empleador}`
@@ -242,7 +319,6 @@ const estiloEstado = computed(() => {
   return map[oferta.value?.estado] ?? 'bg-gray-100 text-gray-500'
 })
 
-
 const formatearFecha = (fecha) => {
   if (!fecha) return 'No especificada'
   return new Date(fecha).toLocaleDateString('es-ES', {
@@ -254,7 +330,6 @@ const formatearFechaCorta = (fecha) => {
   if (!fecha) return '—'
   return new Date(fecha).toISOString().slice(0, 10)
 }
-
 
 const irALogin    = () => router.push('/login')
 const abrirModal  = () => { modalVisible.value = true }
@@ -274,20 +349,58 @@ const confirmarPostulacion = async () => {
   }
 }
 
-// ── Carga de datos ───────────────────────────────────────────────────────────
+// Funciones para supervisor
+const moderarOferta = async (estado) => {
+  if (!oferta.value) return
+  
+  try {
+    const response = await cambiarEstadoOferta(oferta.value.id_oferta, estado, null)
+    if (response.success) {
+      router.push('/dashboard-supervisor')
+    } else {
+      alert('Error al moderar la oferta: ' + (response.message || 'Intenta de nuevo'))
+    }
+  } catch (error) {
+    console.error('Error:', error)
+    alert('Error de conexión al moderar la oferta')
+  }
+}
+
+const abrirModalRechazo = () => {
+  motivoRechazo.value = ''
+  mostrarModalRechazo.value = true
+}
+
+const cerrarModalRechazo = () => {
+  mostrarModalRechazo.value = false
+}
+
+const confirmarRechazo = async () => {
+  if (!motivoRechazo.value.trim() || !oferta.value) return
+  
+  try {
+    const response = await cambiarEstadoOferta(oferta.value.id_oferta, 2, motivoRechazo.value)
+    if (response.success) {
+      router.push('/dashboard-supervisor')
+    } else {
+      alert('Error al rechazar la oferta: ' + (response.message || 'Intenta de nuevo'))
+    }
+  } catch (error) {
+    console.error('Error:', error)
+    alert('Error de conexión al rechazar la oferta')
+  }
+}
 
 onMounted(async () => {
   try {
-    // 1. Cargar la oferta
     const res = await obtenerOfertaPorId(route.params.id)
     if (!res.success) throw new Error('Oferta no encontrada')
     oferta.value = res.data
 
-    // 2. Cargar datos del empleador en paralelo con verificación de postulación
     const [empRes] = await Promise.all([
       obtenerEmpleadorPorId(oferta.value.id_empleador),
       (async () => {
-        if (sesion.id && sesion.rol === 'estudiante') {
+        if (sesion.id && sesion.rol === 'estudiante' && oferta.value.estado === 1) {
           const posRes = await obtenerPostulaciones(sesion.id)
           const lista  = posRes.data ?? []
           yaPostulado.value = lista.some(

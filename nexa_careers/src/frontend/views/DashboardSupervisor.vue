@@ -37,7 +37,6 @@
           </h3>
 
           <div class="relative flex items-center w-full md:w-96">
-
             <div class="absolute left-3 flex items-center pointer-events-none z-20"
               style="top: 45%; transform: translateY(-50%);">
               <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -45,7 +44,6 @@
                   d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
               </svg>
             </div>
-
             <input v-model="busquedaModeracion" type="text"
               :placeholder="tabActivo === 'cursos' ? 'Buscar curso...' : 'Buscar oferta...'"
               style="padding-left: 3rem !important;"
@@ -54,25 +52,33 @@
 
           <div class="flex gap-2 border-b border-gray-200 mb-6">
             <button @click="tabActivo = 'cursos'" :class="[
-              'px-6 py-3 text-sm font-semibold transition-colors border-b-2 -mb-px',
+              'px-6 py-3 text-sm font-semibold transition-colors border-b-2 -mb-px flex items-center gap-2',
               tabActivo === 'cursos'
                 ? 'border-[#1b2a4a] text-[#1b2a4a]'
                 : 'border-transparent text-gray-400 hover:text-gray-600'
             ]">
-              Cursos pendientes
+              Cursos Pendientes
+              <span v-if="contadorCursos > 0"
+                class="inline-flex items-center justify-center min-w-[1.25rem] h-5 px-1 text-xs font-bold rounded-full bg-[#1b2a4a] text-white">
+                {{ contadorCursos }}
+              </span>
             </button>
             <button @click="tabActivo = 'ofertas'" :class="[
-              'px-6 py-3 text-sm font-semibold transition-colors border-b-2 -mb-px',
+              'px-6 py-3 text-sm font-semibold transition-colors border-b-2 -mb-px flex items-center gap-2',
               tabActivo === 'ofertas'
                 ? 'border-[#1b2a4a] text-[#1b2a4a]'
                 : 'border-transparent text-gray-400 hover:text-gray-600'
             ]">
-              Ofertas pendientes
+              Ofertas Pendientes
+              <span v-if="contadorOfertas > 0"
+                class="inline-flex items-center justify-center min-w-[1.25rem] h-5 px-1 text-xs font-bold rounded-full bg-[#B5943A] text-white">
+                {{ contadorOfertas }}
+              </span>
             </button>
           </div>
 
-          <PendientesCursos v-if="tabActivo === 'cursos'" :filtro="busquedaModeracion" />
-          <PendientesOfertas v-if="tabActivo === 'ofertas'" :filtro="busquedaModeracion" />
+          <PendientesCursos v-show="tabActivo === 'cursos'" :filtro="busquedaModeracion" @update:count="contadorCursos = $event" />
+          <PendientesOfertas v-show="tabActivo === 'ofertas'" :filtro="busquedaModeracion" @update:count="contadorOfertas = $event" />
         </div>
 
         <!-- Actividad reciente -->
@@ -147,6 +153,8 @@ const actividades = ref([])
 const loading = ref(true)
 const tabActivo = ref('cursos')
 const busquedaModeracion = ref('')
+const contadorCursos = ref(0)
+const contadorOfertas = ref(0)
 
 watch(tabActivo, () => {
   busquedaModeracion.value = ''

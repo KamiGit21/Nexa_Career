@@ -109,6 +109,17 @@ export const listarCursosPendientes = async () => {
   }
 };
 
+// todos
+export const listarTodosCursos = async () => {
+  try {
+    const res = await fetch(`${API_URL}/cursos`);
+    return await res.json();
+  } catch (error) {
+    console.error('Error en listarTodosCursos:', error);
+    return { success: false, message: error.message };
+  }
+};
+
 export const cambiarEstadoCurso = async (id, estado, rechazo = null) => {
   try {
     const res = await fetch(`${API_URL}/cursos/${id}/estado`, {
@@ -220,3 +231,24 @@ export const bloquearUsuario = async (tipo, id, motivo = '') => {
     return { success: false, message: error.message };
   }
 };
+
+//supervisor lista ofertas laborales por estado
+export const listarOfertasPaginadas = async (pagina = 1, size = 12) => {
+  try {
+    const res = await fetch(`${API_URL}/ofertas/pagina/${pagina}/size/${size}`)
+    return await res.json()
+  } catch (error) {
+    console.error('Error en listarOfertasPaginadas:', error)
+    return { success: false, message: error.message }
+  }
+}
+
+export const listarOfertasPaginadasPorEstado = async (pagina = 1, size = 12, estado) => {
+  try {
+    const res = await fetch(`${API_URL}/ofertas/pagina/${pagina}/size/${size}/apertura/abajo/estado/${estado}`)
+    return await res.json()
+  } catch (error) {
+    console.error('Error en listarOfertasPaginadasPorEstado:', error)
+    return { success: false, message: error.message }
+  }
+}
