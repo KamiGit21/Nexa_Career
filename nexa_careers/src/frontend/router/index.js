@@ -201,6 +201,15 @@ const routes = [
   { path: '/verificar-codigo', name: 'VerificarCodigo', component: VerificarCodigo, meta: { soloPublico: true } },
   { path: '/nueva-password', name: 'NuevaPassword', component: NuevaPassword, meta: { soloPublico: true } },
 
+  //ver Perfil Supervisor
+  // Busca esta línea en tu array de routes y cámbiala:
+{ 
+  path: '/postulante/:id', 
+  name: 'PerfilEstudianteView', 
+  component: PerfilEstudianteView,
+  meta: { requiereRol: ['empleador', 'supervisor'] } 
+},
+
   { path: '/:pathMatch(.*)*', redirect: '/home' },
 ]
 

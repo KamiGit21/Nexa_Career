@@ -2,7 +2,7 @@
   <div class="min-h-screen bg-[#f8f5f0]">
     <div class="max-w-5xl mx-auto px-6 py-10">
       <button @click="$router.back()" class="flex items-center gap-2 text-gray-500 hover:text-[#1b2a4a] mb-8">
-        ← Volver a postulantes
+        ← Volver
       </button>
 
       <div v-if="loading" class="text-center py-20 font-medium text-gray-600">
