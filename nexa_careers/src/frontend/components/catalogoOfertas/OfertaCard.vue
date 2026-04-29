@@ -7,14 +7,25 @@
       <div class="w-12 h-12 bg-[#1b2a4a]/10 rounded-lg flex items-center justify-center text-2xl">
         💼
       </div>
-      <span v-if="esNueva" class="bg-green-100 text-green-700 text-[10px] font-bold px-2 py-1 rounded-full">
-        Nueva
-      </span>
+      <div class="flex flex-col items-end gap-1">
+        <span v-if="!mostrarEstado && esNueva" class="bg-green-100 text-green-700 text-[10px] font-bold px-2 py-1 rounded-full">
+          Nueva
+        </span>
+        <template v-if="mostrarEstado">
+          <span :class="['text-[10px] font-bold px-2 py-1 rounded-full', estadoConfig.bg, estadoConfig.text]">
+            {{ estadoConfig.label }}
+          </span>
+        </template>
+      </div>
     </div>
 
     <h2 class="text-lg font-bold text-[#1b2a4a] hover:text-[#b89b4d] transition-colors">
       {{ oferta.oferta }}
     </h2>
+
+    <p v-if="mostrarEstado && oferta.nombre_empresa" class="text-xs text-[#b5943a] font-semibold mt-1">
+      {{ oferta.nombre_empresa }}
+    </p>
 
     <p class="text-sm text-gray-500 line-clamp-3 my-3">
       {{ oferta.descripcion || 'Sin descripción' }}
@@ -31,8 +42,24 @@
 import { computed } from 'vue'
 
 const props = defineProps({
-  oferta: Object
+  oferta: Object,
+  mostrarEstado: { type: Boolean, default: false }
 })
+
+const ESTADOS = {
+  0: { label: 'Pendiente', bg: 'bg-yellow-100', text: 'text-yellow-800' },
+  1: { label: 'Aprobada',  bg: 'bg-green-100',  text: 'text-green-800'  },
+  2: { label: 'Rechazada', bg: 'bg-red-100',    text: 'text-red-800'    },
+  3: { label: 'Archivada', bg: 'bg-gray-100',   text: 'text-gray-500'   },
+}
+
+const estadoConfig = computed(() => ESTADOS[props.oferta.estado] ?? ESTADOS[0])
+
+const esVencida = computed(() =>
+  props.oferta.estado === 1 &&
+  !!props.oferta.fecha_apertura &&
+  new Date(props.oferta.fecha_apertura) < new Date()
+)
 
 const fechaFormateada = computed(() => {
   if (!props.oferta.fecha_apertura) return 'Fecha no especificada'

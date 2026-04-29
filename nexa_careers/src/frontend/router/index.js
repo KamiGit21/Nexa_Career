@@ -16,6 +16,7 @@ import ListaPostulantes from '@/views/ListaPostulantes.vue'
 import DetallePostulante from '@/views/DetallePostulante.vue'
 import EditarOferta from '@/views/EditarOferta.vue'
 import MisPostulaciones from '@/views/MisPostulaciones.vue'
+import GestionOfertas from '@/views/GestionOfertas.vue'
 
 // Perfiles
 import PerfilEstudiante from '@/views/EditarPerfilEstudiante.vue'
@@ -188,6 +189,12 @@ const routes = [
     component: GestionCursos,
     meta: { requiereRol: ['supervisor'] }
   },
+  {
+  path: '/supervisor/gestion-ofertas',
+  name: 'GestionOfertas',
+  component: GestionOfertas,
+  meta: { requiereRol: ['supervisor'] }
+},
 
   // Recuperar contrasenia
   { path: '/recuperar-password', name: 'SolicitarRecuperacion', component: SolicitarRecuperacion, meta: { soloPublico: true } },
