@@ -13,7 +13,7 @@ import DetalleOferta from '@/views/DetalleOferta.vue'
 import MisOfertas from '@/views/MisOfertas.vue'
 import NuevaOferta from '@/views/NuevaOferta.vue'
 import ListaPostulantes from '@/views/ListaPostulantes.vue'
-import DetallePostulante from '@/views/DetallePostulante.vue'
+import PerfilEstudianteView from '@/views/PerfilEstudiante.vue'
 import EditarOferta from '@/views/EditarOferta.vue'
 import MisPostulaciones from '@/views/MisPostulaciones.vue'
 import GestionOfertas from '@/views/GestionOfertas.vue'
@@ -104,7 +104,7 @@ const routes = [
   { path: '/mis-ofertas', name: 'MisOfertas', component: MisOfertas, meta: { requiereRol: ['empleador'] } },
   { path: '/mis-ofertas/nueva', name: 'NuevaOferta', component: NuevaOferta, meta: { requiereRol: ['empleador'] } },
   { path: '/mis-ofertas/:ofertaId/postulantes', name: 'ListaPostulantes', component: ListaPostulantes, meta: { requiereRol: ['empleador'] } },
-  { path: '/postulante/:id', name: 'DetallePostulante', component: DetallePostulante, meta: { requiereRol: ['empleador'] } },
+  { path: '/postulante/:id', name: 'PerfilEstudianteView', component: PerfilEstudianteView, meta: { requiereRol: ['empleador'] } },
   { path: '/mis-ofertas/:ofertaId/editar', name: 'EditarOferta', component: EditarOferta, meta: { requiereRol: ['empleador'] } },
   { path: '/mis-postulaciones', name: 'MisPostulaciones', component: MisPostulaciones, meta: { requiereRol: ['estudiante'] } },
 
