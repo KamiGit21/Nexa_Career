@@ -67,6 +67,10 @@ import CatalogoCursosPaginacion from '../components/catalogoCursos/CatalogoCurso
 // importar componente de botonscroll
 import BotonScroll from '../components/comunes/BotonScroll.vue'
 
+import { obtenerEstudiantePorId } from '@/services/estudianteService.js'
+import { obtenerEmpleadorPorId } from '@/services/empleadorService.js'
+
+
 const router = useRouter()
 const cursos = ref([])
 const loading = ref(true)
@@ -103,8 +107,36 @@ const cargarCursos = async (pagina = 1) => {
       response = await listarCursosPublicosPaginados(pagina, itemsPorPagina.value);
     }
 
-    if (response.success) {
-      cursos.value = response.data;
+   if (response && response.success && response.data) {
+      const cursosEnriquecidos = await Promise.all(
+        response.data.map(async (curso) => {
+          let nombrePublicador = 'Usuario Desconocido';
+          if (curso.tipo_ofertante === 0 || curso.id_estudiante) {
+             const id = curso.id_estudiante || curso.id_ofertante;
+             if (id) {
+               try {
+                 const estRes = await obtenerEstudiantePorId(id);
+                 if (estRes.success && estRes.data) {
+                   nombrePublicador = `${estRes.data.nombre} ${estRes.data.apellido}`;
+                 }
+               } catch (e) { console.error('Error buscando estudiante:', e) }
+             }
+          } else if (curso.tipo_ofertante === 1 || curso.id_empleador) {
+             const id = curso.id_empleador || curso.id_ofertante;
+             if (id) {
+               try {
+                 const empRes = await obtenerEmpleadorPorId(id);
+                 if (empRes.success && empRes.data) {
+                   nombrePublicador = empRes.data.empresa || empRes.data.nombre || 'Empresa';
+                 }
+               } catch (e) { console.error('Error buscando empleador:', e) }
+             }
+          }
+          return { ...curso, nombre_publicador: nombrePublicador };
+        })
+      );
+
+      cursos.value = cursosEnriquecidos;
       totalPaginas.value = response.paginas;
     } else {
       cursos.value = [];

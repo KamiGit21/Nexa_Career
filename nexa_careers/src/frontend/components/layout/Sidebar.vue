@@ -39,6 +39,7 @@ const menuItems = computed(() => [
   { path: '/dashboard-supervisor',       text: 'Panel Principal',       icon: '📊' },
   { path: '/ofertas',                    text: 'Ofertas Laborales',      icon: '🏢' },
   { path: '/cursos',                     text: 'Catálogo Cursos',        icon: '🎓' },
+  { path: '/supervisor/gestion-cursos',  text: 'Gestión de Cursos',      icon: '📝' },
   { path: '/supervisor/estudiantes',     text: 'Estudiantes',            icon: '👨‍🎓', count: props.stats.estudiantes },
   { path: '/supervisor/empleadores',     text: 'Empleadores',            icon: '💼', count: props.stats.empleadores },
   { path: '/supervisor/supervisores',    text: 'Supervisores',           icon: '👨‍💼' },

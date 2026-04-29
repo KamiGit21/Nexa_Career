@@ -118,3 +118,41 @@ export const listarCursosPublicosPaginadosPorFecha = async (pagina, size, direcc
     return { success: false, message: error.message };
   }
 };
+
+export const listarTodosCursosPaginados = async (pagina = 1, size = 15) => {
+  try {
+    const res = await fetch(`${API_URL}/cursos/pagina/${pagina}/size/${size}`);
+    return await res.json();
+  } catch (error) {
+    console.error('Error en listarTodosCursosPaginados:', error);
+    return { success: false, message: error.message };
+  }
+};
+
+export const listarCursosPaginadosPorFecha = async (pagina, size, direccion) => {
+  try {
+    const res = await fetch(`${API_URL}/cursos/pagina/${pagina}/size/${size}/fecha/${direccion}`);
+    return await res.json();
+  } catch (error) {
+    return { success: false, message: error.message };
+  }
+};
+
+export const listarCursosPaginadosPorEstado = async (pagina = 1, size = 15, estado) => {
+  try {
+    const res = await fetch(`${API_URL}/cursos/pagina/${pagina}/size/${size}/estado/${estado}`);
+    return await res.json();
+  } catch (error) {
+    console.error('Error en listarCursosPublicosPaginados:', error);
+    return { success: false, message: error.message };
+  }
+};
+
+export const listarCursosPublicosPaginadosPorFechaPorEstado = async (pagina, size, direccion, estado) => {
+  try {
+    const res = await fetch(`${API_URL}/cursos/pagina/${pagina}/size/${size}/fecha/${direccion}/estado/${estado}`);
+    return await res.json();
+  } catch (error) {
+    return { success: false, message: error.message };
+  }
+};
