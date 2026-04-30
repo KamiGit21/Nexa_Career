@@ -23,8 +23,8 @@
       {{ oferta.oferta }}
     </h2>
 
-    <p v-if="mostrarEstado && oferta.nombre_empresa" class="text-xs text-[#b5943a] font-semibold mt-1">
-      {{ oferta.nombre_empresa }}
+    <p v-if="oferta.nombre_empleador || oferta.nombre_empresa" class="text-xs text-[#b5943a] font-semibold mt-1">
+      🏢 {{ oferta.nombre_empleador || oferta.nombre_empresa }}
     </p>
 
     <p class="text-sm text-gray-500 line-clamp-3 my-3">
