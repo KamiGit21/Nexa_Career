@@ -76,3 +76,33 @@ export const cambiarEstadoEmpleador = async (id, activo) => {
     return { success: false, message: error.message };
   }
 };
+
+// Bloquear empleador (cambiar estado a inactivo)
+export const bloquearEmpleador = async (idEmpleador, motivo = '') => {
+  try {
+    const res = await fetch(`${API_URL}/empleadores/${idEmpleador}/estado`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ activo: 0, motivo })
+    });
+    return await res.json();
+  } catch (error) {
+    console.error('Error en bloquearEmpleador:', error);
+    return { success: false, message: error.message };
+  }
+};
+
+// Desbloquear empleador (cambiar estado a activo)
+export const desbloquearEmpleador = async (idEmpleador) => {
+  try {
+    const res = await fetch(`${API_URL}/empleadores/${idEmpleador}/estado`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ activo: 1 })
+    });
+    return await res.json();
+  } catch (error) {
+    console.error('Error en desbloquearEmpleador:', error);
+    return { success: false, message: error.message };
+  }
+};

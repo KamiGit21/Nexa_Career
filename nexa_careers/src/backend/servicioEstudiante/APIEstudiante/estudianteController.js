@@ -202,7 +202,7 @@ export const cambiarContrasena = async (req, res) => {
 // 7. PUT: Cambiar estado (activo)
 export const cambiarEstado = async (req, res) => {
   const { id } = req.params;
-  const { activo } = req.body;
+  const { activo, motivo } = req.body;
 
   if (![0, 1, '0', '1', true, false].includes(activo)) {
     return res.status(400).json({ success: false, message: 'El valor activo debe ser 0 o 1' });
@@ -211,9 +211,23 @@ export const cambiarEstado = async (req, res) => {
   const valorActivo = activo === 1 || activo === '1' || activo === true ? 1 : 0;
 
   try {
-    const [result] = await db.query('UPDATE estudiante SET activo = ? WHERE id_estudiante = ?', [valorActivo, id]);
-    if (result.affectedRows === 0) return res.status(404).json({ success: false, message: 'Estudiante no encontrado' });
-    res.status(200).json({ success: true, message: `Estado del estudiante actualizado a ${valorActivo ? 'Activo' : 'Inactivo'}` });
+    if (valorActivo === 0 && motivo) {
+      // Bloquear: guardar motivo y fecha
+      const [result] = await db.query(
+        'UPDATE estudiante SET activo = ?, motivo_bloqueo = ?, fecha_bloqueo = NOW() WHERE id_estudiante = ?',
+        [valorActivo, motivo, id]
+      );
+      if (result.affectedRows === 0) return res.status(404).json({ success: false, message: 'Estudiante no encontrado' });
+      res.status(200).json({ success: true, message: 'Estudiante bloqueado correctamente' });
+    } else {
+      // Desbloquear: limpiar motivo y fecha
+      const [result] = await db.query(
+        'UPDATE estudiante SET activo = ?, motivo_bloqueo = NULL, fecha_bloqueo = NULL WHERE id_estudiante = ?',
+        [valorActivo, id]
+      );
+      if (result.affectedRows === 0) return res.status(404).json({ success: false, message: 'Estudiante no encontrado' });
+      res.status(200).json({ success: true, message: 'Estudiante desbloqueado correctamente' });
+    }
   } catch (error) {
     console.error('Error al cambiar estado:', error);
     res.status(500).json({ success: false, message: 'Error al actualizar estado' });

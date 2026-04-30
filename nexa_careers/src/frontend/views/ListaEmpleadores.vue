@@ -12,6 +12,7 @@
       :empleadores="empleadoresFiltrados"
       @ver="abrirDetalle"
       @bloquear="abrirModalBloqueo"
+      @desbloquear="abrirModalDesbloqueo"
     />
 
     <DetalleEmpleadorModal
@@ -29,6 +30,13 @@
       @cerrar="modalVisible = false"
       @confirmar="confirmarBloqueo"
     />
+
+    <DesbloquearEmpleadorModal
+      :visible="modalDesbloqueoVisible"
+      :empleador="usuarioADesbloquear"
+      @cerrar="modalDesbloqueoVisible = false"
+      @desbloqueado="onDesbloqueado"
+    />
   </div>
 </template>
 
@@ -38,7 +46,9 @@ import EmpleadoresHeader      from '../components/listaEmpleadores/EmpleadoresHe
 import EmpleadoresTabla       from '../components/listaEmpleadores/EmpleadoresTabla.vue'
 import DetalleEmpleadorModal  from '../components/listaEmpleadores/DetalleEmpleadorModal.vue'
 import ConfirmarBloqueoModal  from '../components/modals/ConfirmarBloqueoModal.vue'
-import { listarEmpleadoresAdmin, obtenerLogsEmpleador, bloquearUsuario } from '../services/supervisorService.js'
+import DesbloquearEmpleadorModal from '../components/modals/DesbloquearEmpleadorModal.vue'
+import { listarEmpleadoresAdmin, obtenerLogsEmpleador } from '../services/supervisorService.js'
+import { bloquearEmpleador, desbloquearEmpleador } from '../services/empleadorService.js'
 
 const empleadores  = ref([])
 const loading      = ref(true)
@@ -50,6 +60,10 @@ const cargandoLogs = ref(false)
 // Bloqueo
 const modalVisible = ref(false)
 const usuarioABloquear = ref(null)
+
+// Desbloqueo
+const modalDesbloqueoVisible = ref(false)
+const usuarioADesbloquear = ref(null)
 
 const empleadoresFiltrados = computed(() => {
   if (!busqueda.value.trim()) return empleadores.value
@@ -77,8 +91,13 @@ const abrirModalBloqueo = (usuario) => {
   modalVisible.value = true
 }
 
+const abrirModalDesbloqueo = (usuario) => {
+  usuarioADesbloquear.value = usuario
+  modalDesbloqueoVisible.value = true
+}
+
 const confirmarBloqueo = async ({ id, motivo }) => {
-  const res = await bloquearUsuario('empleador', id, motivo)
+  const res = await bloquearEmpleador(id, motivo || 'Sin motivo especificado')
   if (res.success) {
     alert('Empleador bloqueado correctamente')
     await cargarEmpleadores()
@@ -87,6 +106,22 @@ const confirmarBloqueo = async ({ id, motivo }) => {
   }
   modalVisible.value = false
   usuarioABloquear.value = null
+}
+
+const onDesbloqueado = async () => {
+  if (!usuarioADesbloquear.value?.id_empleador) {
+    alert('Error: ID de empleador no encontrado')
+    return
+  }
+  const res = await desbloquearEmpleador(usuarioADesbloquear.value.id_empleador)
+  if (res.success) {
+    alert('Empleador desbloqueado correctamente')
+    await cargarEmpleadores()
+  } else {
+    alert('Error al desbloquear: ' + res.message)
+  }
+  modalDesbloqueoVisible.value = false
+  usuarioADesbloquear.value = null
 }
 
 const cargarEmpleadores = async () => {

@@ -43,13 +43,24 @@
                 class="px-3 py-1.5 bg-[#1b2a4a] text-white rounded-lg text-xs hover:bg-[#0f1a2e] transition">
                 Ver detalle
               </button>
-              <button v-if="emp.activo === 1" @click="$emit('bloquear', emp)"
-                class="px-3 py-1.5 bg-red-600 text-white rounded-lg text-xs hover:bg-red-700 transition">
+
+               <!-- Activo: mostrar Bloquear -->
+              <button
+                v-if="emp.activo === 1"
+                @click="$emit('bloquear', emp)"
+                class="px-3 py-1.5 bg-red-600 text-white rounded-lg text-xs hover:bg-red-700 transition"
+              >
                 Bloquear
               </button>
-              <span v-else class="px-3 py-1.5 bg-gray-300 text-gray-500 rounded-lg text-xs">
-                Bloqueado
-              </span>
+
+              <!-- Inactivo: mostrar Desbloquear (verde, reemplaza el span gris anterior) -->
+              <button
+                v-else
+                @click="$emit('desbloquear', emp)"
+                class="px-3 py-1.5 bg-green-600 text-white rounded-lg text-xs hover:bg-green-700 transition"
+              >
+                Desbloquear
+              </button>
             </div>
           </td>
         </tr>
@@ -66,7 +77,7 @@ import UsuarioEstadoBadge from '../adminUsuarios/UsuarioEstadoBadge.vue'
 const router = useRouter()
 
 defineProps({ empleadores: { type: Array, required: true } })
-defineEmits(['ver', 'bloquear'])
+defineEmits(['ver', 'bloquear', 'desbloquear'])
 const formatearFecha = (f) => {
   if (!f) return '—'
   return new Date(f).toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' })

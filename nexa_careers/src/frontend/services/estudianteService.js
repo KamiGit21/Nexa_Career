@@ -1,4 +1,3 @@
-// src/frontend/services/estudianteService.js
 const API_URL = 'http://localhost:3000/api';
 
 export const registrarEstudiante = async (data) => {
@@ -129,6 +128,38 @@ export const eliminarCV = async (idEstudiante) => {
 };
 
 // Ver el CV
+// Ver el CV
 export const obtenerUrlVisorCV = (idEstudiante) => {
   return `${API_URL}/estudiantes/${idEstudiante}/cv/ver`;
+};
+
+// Bloquear estudiante (cambiar estado a inactivo)
+export const bloquearEstudiante = async (idEstudiante, motivo = '') => {
+  try {
+    const res = await fetch(`${API_URL}/estudiantes/${idEstudiante}/estado`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ activo: 0, motivo })
+    });
+    return await res.json();
+  } catch (error) {
+    console.error('Error en bloquearEstudiante:', error);
+    return { success: false, message: error.message };
+  }
+};
+
+// Desbloquear estudiante (cambiar estado a activo)
+export const desbloquearEstudiante = async (idEstudiante) => {
+  try {
+    const res = await fetch(`${API_URL}/estudiantes/${idEstudiante}/estado`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ activo: 1 })
+    });
+    return await res.json();
+  } catch (error) {
+    console.error('Error en desbloquearEstudiante:', error);
+    return { success: false, message: error.message };
+  }
+
 };

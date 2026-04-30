@@ -209,25 +209,32 @@ export const obtenerLogsEmpleador = async (id) => {
 };
 
 
-// Bloquear una cuenta de usuario (estudiante y/o empleador)
-
-export const bloquearUsuario = async (tipo, id, motivo = '') => {
+// Bloquear supervisor (cambiar estado a inactivo)
+export const bloquearSupervisor = async (idSupervisor, motivo = '') => {
   try {
-    const sesion = JSON.parse(localStorage.getItem('sesion') || '{}');
-    const idSupervisor = sesion.id;
-
-    if (!idSupervisor) {
-      return { success: false, message: 'No se encontró la sesión del supervisor.' };
-    }
-
-    const res = await fetch(`${API_URL}/supervisores/${idSupervisor}/bloquear`, {
+    const res = await fetch(`${API_URL}/supervisores/${idSupervisor}/estado`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ tipo_usuario: tipo, id_usuario: id , motivo: motivo})
+      body: JSON.stringify({ activo: 0, motivo })
     });
     return await res.json();
   } catch (error) {
-    console.error(`Error en bloquearUsuario (${tipo}):`, error);
+    console.error('Error en bloquearSupervisor:', error);
+    return { success: false, message: error.message };
+  }
+};
+
+// Desbloquear supervisor (cambiar estado a activo)
+export const desbloquearSupervisor = async (idSupervisor) => {
+  try {
+    const res = await fetch(`${API_URL}/supervisores/${idSupervisor}/estado`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ activo: 1 })
+    });
+    return await res.json();
+  } catch (error) {
+    console.error('Error en desbloquearSupervisor:', error);
     return { success: false, message: error.message };
   }
 };

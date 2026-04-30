@@ -114,15 +114,36 @@ export const cambiarContrasena = async (req, res) => {
   }
 };
 
-// 7. PUT: Cambiar estado (activo: 0 o 1)
+// 7. PUT: Cambiar estado (activo: 0 o 1) - Ahora también guarda motivo_bloqueo
 export const cambiarEstado = async (req, res) => {
   const { id } = req.params;
-  const { activo } = req.body; // Aquí se espera que envíes un 0 o un 1 desde el frontend
+  const { activo, motivo } = req.body; // Aqu
+
+  if (![0, 1, '0', '1', true, false].includes(activo)) {
+    return res.status(400).json({ success: false, message: 'El valor activo debe ser 0 o 1' });
+  }
+
+   const valorActivo = activo === 1 || activo === '1' || activo === true ? 1 : 0;
 
   try {
-    const [result] = await db.query('UPDATE supervisor SET activo = ? WHERE id_supervisor = ?', [activo, id]);
+    let query = 'UPDATE supervisor SET activo = ?';
+    let values = [valorActivo];
+    
+    // Si se bloquea (activo = 0), agregar motivo y fecha de bloqueo
+    if (valorActivo === 0) {
+      query += ', motivo_bloqueo = ?, fecha_bloqueo = NOW()';
+      values.push(motivo || null);
+    } else {
+      // Si se desbloquea (activo = 1), limpiar motivo y fecha de bloqueo
+      query += ', motivo_bloqueo = NULL, fecha_bloqueo = NULL';
+    }
+
+    query += ' WHERE id_supervisor = ?';
+    values.push(id);
+    
+     const [result] = await db.query(query, values);
     if (result.affectedRows === 0) return res.status(404).json({ success: false, message: 'Supervisor no encontrado' });
-    res.status(200).json({ success: true, message: `Estado del supervisor actualizado a ${activo ? 'Activo (1)' : 'Inactivo (0)'}` });
+    res.status(200).json({ success: true, message: `Estado del supervisor actualizado a ${valorActivo ? 'Activo' : 'Inactivo'}` });
   } catch (error) {
     console.error('Error al cambiar estado:', error);
     res.status(500).json({ success: false, message: 'Error al actualizar estado' });
@@ -467,7 +488,7 @@ export const listarEmpleadoresAdmin = async (req, res) => {
 export const listarSupervisoresAdmin = async (req, res) => {
   try {
     const [rows] = await db.query(
-      'SELECT id_supervisor, nombre, apellido, gmail, telefono, activo, creado_en FROM supervisor ORDER BY creado_en DESC'
+'SELECT id_supervisor, nombre, apellido, gmail, telefono, activo, motivo_bloqueo, fecha_bloqueo, creado_en FROM supervisor ORDER BY creado_en DESC'
     );
     res.json({ success: true, data: rows });
   } catch (error) {

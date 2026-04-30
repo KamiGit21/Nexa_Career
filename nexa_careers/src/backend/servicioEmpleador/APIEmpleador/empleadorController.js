@@ -206,7 +206,7 @@ export const cambiarContrasena = async (req, res) => {
 // 7. PUT: Cambiar estado (activo)
 export const cambiarEstado = async (req, res) => {
   const { id } = req.params;
-  const { activo } = req.body;
+  const { activo, motivo } = req.body;
 
   if (![0, 1, '0', '1', true, false].includes(activo)) {
     return res.status(400).json({ success: false, message: 'El valor activo debe ser 0 o 1' });
@@ -215,7 +215,22 @@ export const cambiarEstado = async (req, res) => {
   const valorActivo = activo === 1 || activo === '1' || activo === true ? 1 : 0;
 
   try {
-    const [result] = await db.query('UPDATE empleador SET activo = ? WHERE id_empleador = ?', [valorActivo, id]);
+    let query = 'UPDATE empleador SET activo = ?';
+    let values = [valorActivo];
+
+    // Si se bloquea (activo = 0), agregar motivo y fecha de bloqueo
+    if (valorActivo === 0) {
+      query += ', motivo_bloqueo = ?, fecha_bloqueo = NOW()';
+      values.push(motivo || null);
+    } else {
+      // Si se desbloquea (activo = 1), limpiar motivo y fecha de bloqueo
+      query += ', motivo_bloqueo = NULL, fecha_bloqueo = NULL';
+    }
+
+    query += ' WHERE id_empleador = ?';
+    values.push(id);
+
+    const [result] = await db.query(query, values);
     if (result.affectedRows === 0) return res.status(404).json({ success: false, message: 'Empleador no encontrado' });
     res.status(200).json({ success: true, message: `Estado del empleador actualizado a ${valorActivo ? 'Activo' : 'Inactivo'}` });
   } catch (error) {
