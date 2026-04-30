@@ -3,11 +3,13 @@ import * as categoriaController from './categoriaController.js';
 
 const router = express.Router();
 
+// Rutas más específicas primero
 router.post('/registrar', categoriaController.registrarCategoria);
-router.get('/', categoriaController.listarCategorias);
 router.get('/buscar', categoriaController.buscarCategoriaPorNombre);
 router.get('/:id', categoriaController.buscarCategoriaPorId);
-// Eliminar categorías requiere eliminar primero las referencias en categoria_oferta y categoria_curso
-// router.delete('/:id', categoriaController.eliminarCategoria);
+
+router.get('/', categoriaController.listarCategorias);
+router.put('/:id/asociar-oferta', categoriaController.asociarCategoriaAOferta);
+
 
 export default router;

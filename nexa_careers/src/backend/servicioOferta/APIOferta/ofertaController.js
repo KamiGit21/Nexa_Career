@@ -1,4 +1,3 @@
-// src/backend/servicioOferta/APIOferta/ofertaController.js
 import db from '../../api-gateway/db.js';
 
 // Función para obtener una oferta laboral específica por ID
@@ -9,7 +8,20 @@ export const obtenerOfertaPorId = async (req, res) => {
     if (rows.length === 0) {
       return res.status(404).json({ success: false, message: 'Oferta no encontrada' });
     }
-    res.status(200).json({ success: true, data: rows[0] });
+
+    // Obtener las categorías asociadas a la oferta
+    const [categoriasRows] = await db.query(
+      `SELECT c.id_categoria, c.categoria 
+       FROM categoria_oferta co 
+       INNER JOIN categoria c ON co.id_categoria = c.id_categoria 
+       WHERE co.id_oferta = ?`,
+      [id]
+    );
+
+    const ofertaData = rows[0];
+    ofertaData.categorias = categoriasRows; // Array de categorías asociadas
+
+    res.status(200).json({ success: true, data: ofertaData });
   } catch (error) {
     console.error('Error al obtener oferta por ID:', error);
     res.status(500).json({ success: false, message: 'Error interno del servidor al obtener oferta' });
@@ -52,26 +64,51 @@ const validateOferta = (data) => {
 
 // 1. POST: Crear oferta (estado = 0 y rechazo = '' por defecto)
 export const crearOferta = async (req, res) => {
-  const { descripcion, fecha_apertura, oferta, id_empleador, modalidad } = req.body;
+  const { descripcion, fecha_apertura, oferta, id_empleador, modalidad, categorias } = req.body;
+
+  console.log('[crearOferta] categorias recibidas en body:', categorias);
+  console.log('[crearOferta] body completo:', req.body);
 
   const validation = validateOferta({ descripcion, fecha_apertura, oferta, id_empleador });
   if (!validation.valid) {
     return res.status(400).json({ success: false, message: validation.errors.join('; ') });
   }
 
+  const connection = await db.getConnection();
   try {
-    const estado = 0; // 0 por defecto al crearse, pero por ahora es 1
+    await connection.beginTransaction();
+
+    const estado = 0; // 0 por defecto al crearse
     const rechazo = ''; // Blanco por defecto
 
-    const [result] = await db.query(
+    const [result] = await connection.query(
       `INSERT INTO oferta (descripcion, fecha_apertura, estado, rechazo, oferta, id_empleador, modalidad) 
        VALUES (?, ?, ?, ?, ?, ?, ?)`,
       [descripcion, fecha_apertura, estado, rechazo, oferta, id_empleador, modalidad || 'Presencial']
     );
-    res.status(201).json({ success: true, id_oferta: result.insertId, message: 'Oferta creada correctamente' });
+
+    const idOferta = result.insertId;
+
+    // Insertar categorías en categoria_oferta (puede ser array de IDs)
+    if (categorias && Array.isArray(categorias) && categorias.length > 0) {
+      for (const idCategoria of categorias) {
+        if (idCategoria) {
+          await connection.query(
+            'INSERT INTO categoria_oferta (id_categoria, id_oferta) VALUES (?, ?)',
+            [idCategoria, idOferta]
+          );
+        }
+      }
+    }
+
+    await connection.commit();
+    res.status(201).json({ success: true, id_oferta: idOferta, message: 'Oferta creada correctamente' });
   } catch (error) {
+    await connection.rollback();
     console.error('Error al crear oferta:', error);
     res.status(500).json({ success: false, message: 'Error interno al crear la oferta' });
+  } finally {
+    connection.release();
   }
 };
 
@@ -135,21 +172,51 @@ export const buscarOfertasPorEmpleador = async (req, res) => {
   }
 };
 
-// 6. PUT: Editar detalles de la oferta (TODO menos el estado)
+// 6. PUT: Editar detalles de la oferta (incluye categorías)
 export const editarOferta = async (req, res) => {
   const { id } = req.params;
-  const { descripcion, fecha_apertura, rechazo, oferta, modalidad } = req.body;
+  const { descripcion, fecha_apertura, rechazo, oferta, modalidad, categorias } = req.body;
 
+  const connection = await db.getConnection();
   try {
-    const [result] = await db.query(
+    await connection.beginTransaction();
+
+    // Actualizar datos de la oferta
+    const [result] = await connection.query(
       `UPDATE oferta SET descripcion = ?, fecha_apertura = ?, rechazo = ?, oferta = ?, modalidad = ? WHERE id_oferta = ?`,
       [descripcion, fecha_apertura, rechazo, oferta, modalidad, id]
     );
-    if (result.affectedRows === 0) return res.status(404).json({ success: false, message: 'Oferta no encontrada para editar' });
+    if (result.affectedRows === 0) {
+      await connection.rollback();
+      return res.status(404).json({ success: false, message: 'Oferta no encontrada para editar' });
+    }
+
+    // Actualizar categorías si se proporcionan
+    if (categorias !== undefined) {
+      // Eliminar categorías existentes
+      await connection.query('DELETE FROM categoria_oferta WHERE id_oferta = ?', [id]);
+
+      // Insertar nuevas categorías
+      if (Array.isArray(categorias) && categorias.length > 0) {
+        for (const idCategoria of categorias) {
+          if (idCategoria) {
+            await connection.query(
+              'INSERT INTO categoria_oferta (id_categoria, id_oferta) VALUES (?, ?)',
+              [idCategoria, id]
+            );
+          }
+        }
+      }
+    }
+
+    await connection.commit();
     res.status(200).json({ success: true, message: 'Oferta actualizada correctamente' });
   } catch (error) {
+    await connection.rollback();
     console.error('Error al editar oferta:', error);
     res.status(500).json({ success: false, message: 'Error al actualizar la oferta' });
+  } finally {
+    connection.release();
   }
 };
 
