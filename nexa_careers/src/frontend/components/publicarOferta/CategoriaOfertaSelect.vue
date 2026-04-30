@@ -1,55 +1,54 @@
 <template>
   <div>
     <label class="block text-gray-700 font-medium mb-2">
-      Categoría
-      <span class="text-gray-400 text-sm font-normal ml-1">(opcional)</span>
+      Categoría(s)
+      <span class="text-gray-400 text-sm font-normal ml-1">(opcional - puedes seleccionar varias)</span>
     </label>
 
-    <div class="relative">
-      <select
-        :value="modelValue"
-        @change="$emit('update:modelValue', $event.target.value)"
-        :disabled="cargando"
-        class="w-full px-4 py-3 border rounded-xl focus:border-[#1b2a4a] outline-none bg-white
-               appearance-none pr-10 text-gray-700 disabled:opacity-50 disabled:cursor-not-allowed
-               transition-colors"
-        :class="modelValue ? 'border-[#1b2a4a]' : 'border-gray-200'"
+    <!-- Lista de checkboxes para seleccionar múltiples categorías -->
+    <div v-if="categorias.length > 0" class="space-y-2 max-h-48 overflow-y-auto border border-gray-200 rounded-xl p-3 bg-gray-50">
+      <label
+        v-for="cat in categorias"
+        :key="cat.id_categoria"
+        class="flex items-center gap-2 cursor-pointer hover:bg-white p-1 rounded transition-colors"
       >
-        <option value="">
-          {{ cargando ? 'Cargando categorías...' : '— Sin categoría —' }}
-        </option>
-        <!-- Las opciones se renderizan desde el array `categorias`.
-             Estructura esperada por ítem: { id_categoria, categoria } -->
-        <option
-          v-for="cat in categorias"
-          :key="cat.id_categoria"
-          :value="cat.id_categoria"
-        >
-          {{ cat.categoria }}
-        </option>
-      </select>
-
-      <!-- Icono flecha -->
-      <span class="pointer-events-none absolute inset-y-0 right-3 flex items-center text-gray-400">
-        <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none"
-             viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
-        </svg>
-      </span>
+        <input
+          type="checkbox"
+          :value="String(cat.id_categoria)"
+          :checked="isSelected(cat.id_categoria)"
+          @change="toggleCategoria(cat.id_categoria)"
+          class="w-4 h-4 text-[#1b2a4a] rounded border-gray-300 focus:ring-[#1b2a4a]"
+        />
+        <span class="text-sm text-gray-700">{{ cat.categoria }}</span>
+      </label>
     </div>
 
-    <!-- Badge de categoría seleccionada -->
-    <div v-if="categoriaSeleccionada" class="mt-2 flex items-center gap-2">
-      <span class="text-xs font-semibold px-3 py-1 rounded-full bg-[#1b2a4a]/10 text-[#1b2a4a]">
-        📂 {{ categoriaSeleccionada.categoria }}
-      </span>
-      <button
-        type="button"
-        @click="$emit('update:modelValue', '')"
-        class="text-xs text-gray-400 hover:text-red-500 transition-colors"
+    <!-- Estado de carga -->
+    <div v-else-if="cargando" class="text-center py-4 text-gray-400 text-sm">
+      Cargando categorías...
+    </div>
+
+    <!-- Sin categorías disponibles -->
+    <div v-else class="text-center py-4 text-gray-400 text-sm">
+      No hay categorías disponibles
+    </div>
+
+    <!-- Badges de categorías seleccionadas -->
+    <div v-if="categoriasSeleccionadas.length > 0" class="mt-3 flex flex-wrap gap-2">
+      <span
+        v-for="cat in categoriasSeleccionadas"
+        :key="cat.id_categoria"
+        class="text-xs font-semibold px-3 py-1 rounded-full bg-[#1b2a4a]/10 text-[#1b2a4a] flex items-center gap-1"
       >
-        ✕ quitar
-      </button>
+        📂 {{ cat.categoria }}
+        <button
+          type="button"
+          @click="quitarCategoria(cat.id_categoria)"
+          class="ml-1 text-gray-400 hover:text-red-500 transition-colors"
+        >
+          ✕
+        </button>
+      </span>
     </div>
 
     <p v-if="errorMsg" class="mt-1 text-xs text-red-500">{{ errorMsg }}</p>
@@ -58,25 +57,72 @@
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
-
-// TODO [INTEGRACIÓN]: importar el servicio que exponga listarCategorias()
-// import { listarCategorias } from '@/services/cursoService.js'
+import { listarCategorias } from '@/services/categoriaService.js'
 
 const props = defineProps({
-  modelValue: { type: [String, Number], default: '' }
+  modelValue: { type: [String, Number, Array], default: () => [] }
 })
-defineEmits(['update:modelValue'])
+const emit = defineEmits(['update:modelValue'])
 
 const categorias = ref([])
 const cargando   = ref(false)
 const errorMsg   = ref('')
 
-const categoriaSeleccionada = computed(() =>
-  categorias.value.find(c => String(c.id_categoria) === String(props.modelValue)) ?? null
-)
+// Adaptar modelValue a array para mantener compatibilidad
+const selectedIds = computed({
+  get: () => {
+    if (Array.isArray(props.modelValue)) return props.modelValue.map(String)
+    if (props.modelValue) return [String(props.modelValue)]
+    return []
+  },
+  set: (val) => emit('update:modelValue', val)
+})
+
+function isSelected(idCategoria) {
+  return selectedIds.value.includes(String(idCategoria))
+}
+
+const categoriasSeleccionadas = computed(() => {
+  const ids = selectedIds.value
+  return categorias.value.filter(c => ids.includes(String(c.id_categoria)))
+})
 
 onMounted(async () => {
-  //INTEGRACIÓN: llamar a listarCategorias() y asignar el resultado a categorias.value
-  
+  cargando.value = true
+  try {
+    const response = await listarCategorias()
+    if (response.success) {
+      categorias.value = response.data || []
+    } else {
+      errorMsg.value = 'Error al cargar categorías'
+    }
+  } catch (e) {
+    console.error('Error cargando categorías:', e)
+    errorMsg.value = 'Error de conexión'
+  } finally {
+    cargando.value = false
+  }
 })
+
+function toggleCategoria(id) {
+  const ids = [...selectedIds.value]
+  const strId = String(id)
+  const index = ids.indexOf(strId)
+  if (index === -1) {
+    ids.push(strId)
+  } else {
+    ids.splice(index, 1)
+  }
+  selectedIds.value = ids
+}
+
+function quitarCategoria(id) {
+  const ids = [...selectedIds.value]
+  const strId = String(id)
+  const index = ids.indexOf(strId)
+  if (index !== -1) {
+    ids.splice(index, 1)
+  }
+  selectedIds.value = ids
+}
 </script>

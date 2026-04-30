@@ -81,10 +81,24 @@
                 </span>
               </div>
 
-              <!-- Motivo de rechazo -->
+<!-- Motivo de rechazo -->
               <div v-if="oferta.rechazo" class="mt-5 p-4 bg-red-50 border border-red-100 rounded-xl">
                 <h3 class="text-sm font-bold text-red-700 mb-1">Motivo de rechazo</h3>
                 <p class="text-sm text-red-600">{{ oferta.rechazo }}</p>
+              </div>
+
+              <!-- Categorías de la oferta -->
+              <div v-if="oferta.categorias && oferta.categorias.length > 0" class="mt-5">
+                <h3 class="text-sm font-bold text-[#1b2a4a] mb-2">Categoría(s)</h3>
+                <div class="flex flex-wrap gap-2">
+                  <span
+                    v-for="cat in oferta.categorias"
+                    :key="cat.id_categoria"
+                    class="text-xs font-semibold px-3 py-1 rounded-full bg-[#1b2a4a]/10 text-[#1b2a4a]"
+                  >
+                    📂 {{ cat.categoria }}
+                  </span>
+                </div>
               </div>
             </div>
 

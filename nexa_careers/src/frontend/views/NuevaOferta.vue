@@ -28,8 +28,8 @@
           </select>
         </div>
 
-        <!-- ✅ Selector de categoría -->
-        <CategoriaOfertaSelect v-model="form.id_categoria" />
+<!-- ✅ Selector de categoría(s) -->
+        <CategoriaOfertaSelect v-model="form.categorias" />
 
         <div>
           <label class="block text-gray-700 font-medium mb-2">Fecha de apertura (opcional)</label>
@@ -66,7 +66,7 @@ const form = ref({
   descripcion: '',
   fecha_apertura: '',
   modalidad: '',
-  id_categoria: ''
+  categorias: []
 })
 
 const fechaHoyParaInput = computed(() => {
@@ -86,14 +86,18 @@ const crearOferta = async () => {
     const sesion = JSON.parse(localStorage.getItem('sesion'))
     if (!sesion || sesion.rol !== 'empleador') { router.push('/login'); return }
 
+    console.log('[NuevaOferta] categorias antes de enviar:', form.value.categorias)
+
     const payload = {
       oferta:        form.value.oferta,
       descripcion:   form.value.descripcion,
       id_empleador:  sesion.id,
       fecha_apertura:form.value.fecha_apertura || null,
       modalidad:     form.value.modalidad || 'Presencial',
-      id_categoria:  form.value.id_categoria || null
+      categorias:   form.value.categorias || []
     }
+
+    console.log('[NuevaOferta] payload enviado:', payload)
 
     const response = await crearOfertaService(payload)
     if (response.success) {

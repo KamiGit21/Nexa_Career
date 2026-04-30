@@ -33,8 +33,8 @@
           </select>
         </div>
 
-        <!-- ✅ Selector de categoría -->
-        <CategoriaOfertaSelect v-model="form.id_categoria" />
+<!-- ✅ Selector de categoría(s) -->
+        <CategoriaOfertaSelect v-model="form.categorias" />
 
         <div>
           <label class="block text-gray-700 font-medium mb-2">Fecha de apertura (opcional)</label>
@@ -76,7 +76,7 @@ const saving  = ref(false)
 
 const form = ref({
   oferta: '', descripcion: '', modalidad: '',
-  fecha_apertura: '', estado: 0, rechazo: '', id_categoria: ''
+  fecha_apertura: '', estado: 0, rechazo: '', categorias: []
 })
 
 const fechaHoyParaInput = computed(() => {
@@ -89,9 +89,11 @@ onMounted(async () => {
     const sesion = JSON.parse(localStorage.getItem('sesion'))
     if (!sesion || sesion.rol !== 'empleador') { router.push('/login'); return }
 
-    const response = await obtenerOfertaPorId(route.params.ofertaId)
+const response = await obtenerOfertaPorId(route.params.ofertaId)
     if (response.success) {
       const o = response.data
+      // Extraer los IDs de las categorías asociadas
+      const cats = o.categorias ? o.categorias.map(c => c.id_categoria) : []
       form.value = {
         oferta:         o.oferta,
         descripcion:    o.descripcion || '',
@@ -99,13 +101,19 @@ onMounted(async () => {
         fecha_apertura: o.fecha_apertura ? o.fecha_apertura.split('T')[0] : '',
         estado:         o.estado,
         rechazo:        o.rechazo || '',
-        id_categoria:   o.id_categoria ? String(o.id_categoria) : ''
+        categorias:    cats
       }
-    } else {
-      alert('No se encontró la oferta'); router.push('/mis-ofertas')
+} else {
+      alert('No se encontró la oferta')
+      router.push('/mis-ofertas')
     }
-  } catch { alert('Error al cargar los datos de la oferta'); router.push('/mis-ofertas') }
-  finally { loading.value = false }
+  } catch (e) {
+    console.error(e)
+    alert('Error al cargar los datos de la oferta')
+    router.push('/mis-ofertas')
+  } finally {
+    loading.value = false
+  }
 })
 
 const actualizarOferta = async () => {
@@ -116,13 +124,13 @@ const actualizarOferta = async () => {
   }
   saving.value = true
   try {
-    const payload = {
+const payload = {
       oferta:        form.value.oferta,
       descripcion:   form.value.descripcion,
       modalidad:     form.value.modalidad,
       fecha_apertura:form.value.fecha_apertura || null,
       rechazo:       form.value.estado === 2 ? form.value.rechazo : '',
-      id_categoria:  form.value.id_categoria || null
+      categorias:   form.value.categorias || []
     }
     const response = await editarOferta(route.params.ofertaId, payload)
     if (response.success) { alert('¡Oferta actualizada exitosamente!'); router.push('/mis-ofertas') }
