@@ -114,13 +114,29 @@ export const cambiarContrasena = async (req, res) => {
   }
 };
 
-// 7. PUT: Cambiar estado (activo: 0 o 1)
+// 7. PUT: Cambiar estado (activo: 0 o 1) - Ahora también guarda motivo_bloqueo
 export const cambiarEstado = async (req, res) => {
   const { id } = req.params;
-  const { activo } = req.body; // Aquí se espera que envíes un 0 o un 1 desde el frontend
+  const { activo, motivo } = req.body; // Aqu
 
   try {
-    const [result] = await db.query('UPDATE supervisor SET activo = ? WHERE id_supervisor = ?', [activo, id]);
+    let query, params;
+    
+    if (activo === 0 && motivo) {
+      // Bloquear: guardar activo=0 y motivo_bloqueo
+      query = 'UPDATE supervisor SET activo = 0, motivo_bloqueo = ?, fecha_bloqueo = NOW() WHERE id_supervisor = ?';
+      params = [motivo, id];
+    } else if (activo === 1) {
+      // Desbloquear:活性=1 y limpiar motivo_bloqueo
+      query = 'UPDATE supervisor SET activo = 1, motivo_bloqueo = NULL, fecha_bloqueo = NULL WHERE id_supervisor = ?';
+      params = [id];
+    } else {
+      // Solo cambiar estado sin motivo
+      query = 'UPDATE supervisor SET activo = ? WHERE id_supervisor = ?';
+      params = [activo, id];
+    }
+    
+    const [result] = await db.query(query, params);
     if (result.affectedRows === 0) return res.status(404).json({ success: false, message: 'Supervisor no encontrado' });
     res.status(200).json({ success: true, message: `Estado del supervisor actualizado a ${activo ? 'Activo (1)' : 'Inactivo (0)'}` });
   } catch (error) {
@@ -467,7 +483,7 @@ export const listarEmpleadoresAdmin = async (req, res) => {
 export const listarSupervisoresAdmin = async (req, res) => {
   try {
     const [rows] = await db.query(
-      'SELECT id_supervisor, nombre, apellido, gmail, telefono, activo, creado_en FROM supervisor ORDER BY creado_en DESC'
+'SELECT id_supervisor, nombre, apellido, gmail, telefono, activo, motivo_bloqueo, fecha_bloqueo, creado_en FROM supervisor ORDER BY creado_en DESC'
     );
     res.json({ success: true, data: rows });
   } catch (error) {

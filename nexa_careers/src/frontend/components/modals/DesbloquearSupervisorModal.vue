@@ -57,7 +57,6 @@
 <script setup>
 import { ref, watch } from 'vue'
 import DesbloquearBotones from './DesbloquearBotones.vue'
-import { desbloquearSupervisor } from '../../services/supervisorService.js'
 
 const props = defineProps({
   visible: { type: Boolean, default: false },
@@ -76,19 +75,9 @@ const obtenerIniciales = (nombre, apellido) => {
 
 const ejecutarDesbloqueo = async () => {
   desbloqueando.value = true
-  try {
-    const res = await desbloquearSupervisor(props.supervisor?.id_supervisor)
-    if (res.success) {
-      emit('desbloqueado')
-    } else {
-      alert('Error al desbloquear: ' + res.message)
-    }
-  } catch (e) {
-    alert('Error de conexión al intentar desbloquear')
-  } finally {
-    desbloqueando.value = false
-    emit('cerrar')
-  }
+  emit('desbloqueado')
+  desbloqueando.value = false
+  emit('cerrar')
 }
 
 watch(() => props.visible, (val) => {

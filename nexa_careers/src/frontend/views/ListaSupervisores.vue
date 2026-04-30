@@ -13,11 +13,15 @@
       @bloquear="abrirModalBloqueo"
       @desbloquear="abrirModalDesbloqueo"
     />
-    <!-- Modal Bloqueo -->
+
+    <!-- Modal Bloqueo con motivo -->
     <ConfirmarBloqueoModal
       :visible="modalBloqueoVisible"
-      @confirmar="confirmarBloqueo"
+      tipo-usuario="Supervisor"
+      :nombre-usuario="`${usuarioABloquear?.nombre} ${usuarioABloquear?.apellido}`"
+      :id-usuario="usuarioABloquear?.id_supervisor"
       @cerrar="modalBloqueoVisible = false"
+      @confirmar="confirmarBloqueo"
     />
 
     <!-- Modal Desbloqueo -->
