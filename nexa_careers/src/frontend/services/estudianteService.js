@@ -127,3 +127,8 @@ export const eliminarCV = async (idEstudiante) => {
     return { success: false, message: error.message };
   }
 };
+
+// Ver el CV
+export const obtenerUrlVisorCV = (idEstudiante) => {
+  return `${API_URL}/estudiantes/${idEstudiante}/cv/ver`;
+};
