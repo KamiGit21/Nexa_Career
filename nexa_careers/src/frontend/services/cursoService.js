@@ -156,3 +156,14 @@ export const listarCursosPublicosPaginadosPorFechaPorEstado = async (pagina, siz
     return { success: false, message: error.message };
   }
 };
+
+export const buscarCursosAvanzado = async (filtros) => {
+  try {
+    const params = new URLSearchParams(filtros).toString();
+    const res = await fetch(`${API_URL}/cursos/busqueda/avanzada?${params}`);
+    return await res.json();
+  } catch (error) {
+    console.error('Error en buscarCursosAvanzado:', error);
+    return { success: false, message: error.message };
+  }
+};
