@@ -119,26 +119,31 @@ export const cambiarEstado = async (req, res) => {
   const { id } = req.params;
   const { activo, motivo } = req.body; // Aqu
 
+  if (![0, 1, '0', '1', true, false].includes(activo)) {
+    return res.status(400).json({ success: false, message: 'El valor activo debe ser 0 o 1' });
+  }
+
+   const valorActivo = activo === 1 || activo === '1' || activo === true ? 1 : 0;
+
   try {
-    let query, params;
+    let query = 'UPDATE supervisor SET activo = ?';
+    let values = [valorActivo];
     
-    if (activo === 0 && motivo) {
-      // Bloquear: guardar activo=0 y motivo_bloqueo
-      query = 'UPDATE supervisor SET activo = 0, motivo_bloqueo = ?, fecha_bloqueo = NOW() WHERE id_supervisor = ?';
-      params = [motivo, id];
-    } else if (activo === 1) {
-      // Desbloquear:活性=1 y limpiar motivo_bloqueo
-      query = 'UPDATE supervisor SET activo = 1, motivo_bloqueo = NULL, fecha_bloqueo = NULL WHERE id_supervisor = ?';
-      params = [id];
+    // Si se bloquea (activo = 0), agregar motivo y fecha de bloqueo
+    if (valorActivo === 0) {
+      query += ', motivo_bloqueo = ?, fecha_bloqueo = NOW()';
+      values.push(motivo || null);
     } else {
-      // Solo cambiar estado sin motivo
-      query = 'UPDATE supervisor SET activo = ? WHERE id_supervisor = ?';
-      params = [activo, id];
+      // Si se desbloquea (activo = 1), limpiar motivo y fecha de bloqueo
+      query += ', motivo_bloqueo = NULL, fecha_bloqueo = NULL';
     }
+
+    query += ' WHERE id_supervisor = ?';
+    values.push(id);
     
-    const [result] = await db.query(query, params);
+     const [result] = await db.query(query, values);
     if (result.affectedRows === 0) return res.status(404).json({ success: false, message: 'Supervisor no encontrado' });
-    res.status(200).json({ success: true, message: `Estado del supervisor actualizado a ${activo ? 'Activo (1)' : 'Inactivo (0)'}` });
+    res.status(200).json({ success: true, message: `Estado del supervisor actualizado a ${valorActivo ? 'Activo' : 'Inactivo'}` });
   } catch (error) {
     console.error('Error al cambiar estado:', error);
     res.status(500).json({ success: false, message: 'Error al actualizar estado' });
