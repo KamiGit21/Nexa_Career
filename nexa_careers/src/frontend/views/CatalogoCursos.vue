@@ -55,7 +55,8 @@ import { ref, computed, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import {
   listarCursosPublicosPaginados,
-  listarCursosPublicosPaginadosPorFecha
+  listarCursosPublicosPaginadosPorFecha,
+  buscarCursosAvanzado
 } from '../services/cursoService.js'
 
 // Componentes
@@ -74,7 +75,7 @@ const loading = ref(true)
 // Filtros y Paginación
 const busqueda = ref('')
 const categoriaActiva = ref('Todos')
-const orden = ref('reciente') // 'reciente' o 'antiguo'
+const orden = ref('reciente')
 const CATEGORIAS = ['Todos', 'Tecnología', 'Finanzas', 'Diseño', 'Marketing', 'Redes']
 
 const itemsPorPagina = ref(15) 
@@ -90,22 +91,21 @@ const toggleOrden = () => {
 }
 
 const cargarCursos = async (pagina = 1) => {
-  loading.value = true
-  paginaActual.value = pagina
+  loading.value = true;
+  paginaActual.value = pagina;
 
   try {
-    let response;
-    if (orden.value === 'reciente') {
-      response = await listarCursosPublicosPaginadosPorFecha(pagina, itemsPorPagina.value, 'abajo');
-    } else if (orden.value === 'antiguo') {
-      response = await listarCursosPublicosPaginadosPorFecha(pagina, itemsPorPagina.value, 'arriba');
-    } else {
-      response = await listarCursosPublicosPaginados(pagina, itemsPorPagina.value);
-    }
+    const response = await buscarCursosAvanzado({
+      pagina: paginaActual.value,
+      size: itemsPorPagina.value,
+      q: busqueda.value,
+      categoria: categoriaActiva.value,
+      orden: orden.value
+    });
 
     if (response.success) {
       cursos.value = response.data;
-      totalPaginas.value = response.paginas;
+      totalPaginas.value = response.paginas || 1;
     } else {
       cursos.value = [];
       totalPaginas.value = 1;
@@ -114,35 +114,20 @@ const cargarCursos = async (pagina = 1) => {
     console.error("Error al conectar con el servidor:", err);
     cursos.value = [];
   } finally {
-    loading.value = false
+    loading.value = false;
   }
-}
+};
 
 const cursosAMostrar = computed(() => {
-  let lista = cursos.value;
-
-  if (categoriaActiva.value !== 'Todos') {
-    lista = lista.filter(c => c.categoria?.toLowerCase() === categoriaActiva.value.toLowerCase());
-  }
-
-  if (busqueda.value.trim()) {
-    const q = busqueda.value.toLowerCase().trim();
-    lista = lista.filter(c =>
-      c.curso?.toLowerCase().includes(q) //|| 
-      //c.descripcion?.toLowerCase().includes(q)
-    );
-  }
-  return lista;
+  return cursos.value;
 });
-
 
 watch([orden, itemsPorPagina], () => {
   cargarCursos(1);
 });
 
-// Resetear página si el usuario filtra
-watch([busqueda, categoriaActiva], () => {
-  paginaActual.value = 1;
+watch([busqueda, categoriaActiva, orden, itemsPorPagina], () => {
+  cargarCursos(1);
 });
 
 const cambiarPagina = (nuevaPagina) => {

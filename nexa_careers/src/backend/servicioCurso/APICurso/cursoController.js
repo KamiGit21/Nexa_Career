@@ -337,3 +337,65 @@ export const obtenerCursosPaginacionPorEstadoYFechaAscendente = async (req, res)
     res.status(500).json({ success: false, message: 'Error interno al paginar los cursos' });
   }
 };
+
+
+// buscar cursos por estudiante, empleador y titulo
+export const buscarCursosPublicosAvanzado = async (req, res) => {
+  try {
+    const { pagina = 1, size = 15, q = '', categoria = 'Todos', orden = 'reciente' } = req.query;
+    const limite = parseInt(size);
+    const offset = (parseInt(pagina) - 1) * limite;
+
+    let queryBase = `
+      FROM curso c
+      LEFT JOIN estudiante e   ON c.tipo_ofertante = 0 AND c.id_estudiante = e.id_estudiante
+      LEFT JOIN empleador emp  ON c.tipo_ofertante = 1 AND c.id_empleador  = emp.id_empleador
+      WHERE c.estado = 1
+    `;
+    const params = [];
+
+    if (q && q.trim() !== '') {
+      const searchPattern = `%${q}%`;
+      queryBase += ` AND (
+        c.curso LIKE ? OR 
+        e.nombre LIKE ? OR 
+        e.apellido LIKE ? OR 
+        emp.empresa LIKE ?
+      )`;
+      params.push(searchPattern, searchPattern, searchPattern, searchPattern);
+    }
+
+    if (categoria !== 'Todos') {
+      queryBase += " AND c.categoria = ?";
+      params.push(categoria);
+    }
+
+    const [countResult] = await db.query(`SELECT COUNT(*) as total ${queryBase}`, params);
+    const totalPaginas = Math.ceil(countResult[0].total / limite);
+    let orderBy = " ORDER BY c.fecha_creacion DESC"; 
+    if (orden === 'antiguo') orderBy = " ORDER BY c.fecha_creacion ASC";
+    if (orden === 'titulo') orderBy = " ORDER BY c.curso ASC";
+
+    const queryFinal = `
+      SELECT 
+        c.*,
+        CASE
+          WHEN c.tipo_ofertante = 0 THEN CONCAT(e.nombre, ' ', e.apellido)
+          WHEN c.tipo_ofertante = 1 THEN emp.empresa
+          ELSE 'Nexa User'
+        END AS nombre_publicador
+      ${queryBase} ${orderBy} LIMIT ? OFFSET ?
+    `;
+
+    const [rows] = await db.query(queryFinal, [...params, limite, offset]);
+
+    res.status(200).json({
+      success: true,
+      data: rows,
+      paginas: totalPaginas
+    });
+  } catch (error) {
+    console.error('Error:', error);
+    res.status(500).json({ success: false, message: 'Error en el servidor' });
+  }
+};
