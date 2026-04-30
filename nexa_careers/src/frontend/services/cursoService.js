@@ -60,6 +60,34 @@ export const listarCategorias = async () => {
   }
 }
 
+// Registrar una nueva categoría
+export const registrarCategoria = async (categoria) => {
+  try {
+    const res = await fetch(`${API_URL}/categorias/registrar`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ categoria })
+    })
+    return await res.json()
+  } catch (error) {
+    console.error('Error en registrarCategoria:', error)
+    return { success: false, message: error.message }
+  }
+}
+
+// Eliminar una categoría, por ahora no se esta usando
+export const eliminarCategoria = async (id) => {
+  try {
+    const res = await fetch(`${API_URL}/categorias/${id}`, {
+      method: 'DELETE'
+    })
+    return await res.json()
+  } catch (error) {
+    console.error('Error en eliminarCategoria:', error)
+    return { success: false, message: error.message }
+  }
+}
+
 export const listarCursosPublicos = async () => {
   try {
     const res = await fetch(`${API_URL}/cursos/listarDisponibles`)

@@ -20,7 +20,6 @@
         v-for="cat in filtradas"
         :key="cat.id_categoria"
         :categoria="cat"
-        @eliminar="$emit('eliminar', $event)"
       />
     </div>
   </div>
@@ -35,7 +34,6 @@ const props = defineProps({
   categorias: { type: Array, default: () => [] },
   cargando:   { type: Boolean, default: false },
 })
-defineEmits(['eliminar'])
 
 const busqueda = ref('')
 

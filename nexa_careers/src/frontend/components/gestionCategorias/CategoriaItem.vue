@@ -15,16 +15,19 @@
       </div>
     </div>
 
+    <!-- Eliminar deshabilitado temporalmente - requiere eliminar referencias en otras tablas -->
+    <!--
     <button
       @click="$emit('eliminar', categoria)"
       class="text-xs text-red-500 font-medium hover:text-red-700 transition-colors px-2 py-1"
     >
       Eliminar
     </button>
+    -->
   </div>
 </template>
 
 <script setup>
 defineProps({ categoria: { type: Object, required: true } })
-defineEmits(['eliminar'])
+// defineEmits(['eliminar'])
 </script>
