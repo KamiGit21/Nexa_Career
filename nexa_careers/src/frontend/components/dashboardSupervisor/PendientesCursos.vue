@@ -35,7 +35,7 @@
 <script setup>
 import { ref, onMounted, computed } from 'vue'
 import ModerarItemCard from './ModerarItemCard.vue'
-import { listarTodosCursos, cambiarEstadoCurso } from '../../services/supervisorService.js'
+import { listarCursosPendientes, cambiarEstadoCurso } from '../../services/supervisorService.js'
 
 const emit = defineEmits(['update:count'])
 
@@ -47,28 +47,8 @@ const props = defineProps({
   filtro: { type: String, default: '' }
 })
 
-const estadosFiltro = ref({
-  pendiente: true,
-  aprobado: true,
-  rechazado: true,
-  archivado: true
-})
-
-//mapea todos los estados
-const estadoAClave = {
-  0: 'pendiente',
-  1: 'aprobado',
-  2: 'rechazado',
-  3: 'archivado'
-}
-
 const cursosFiltrados = computed(() => {
   let resultado = [...cursos.value]
-  resultado = resultado.filter(curso => {
-    const clave = estadoAClave[curso.estado]
-    if (!clave) return true
-    return estadosFiltro.value[clave] === true
-  })
   resultado.sort((a, b) => new Date(b.fecha_creacion) - new Date(a.fecha_creacion))
   const search = props.filtro.toLowerCase().trim()
   if (search) {
@@ -93,10 +73,10 @@ const mapearCurso = (curso) => ({
 const cargar = async () => {
   loading.value = true
   try {
-    const res = await listarTodosCursos()
+    const res = await listarCursosPendientes()
     if (res.success) {
       cursos.value = res.data
-      emit('update:count', res.data.filter(c => c.estado === 0).length)
+      emit('update:count', res.data.length)
     }
   } catch (e) {
     console.error('Error al cargar cursos:', e)
