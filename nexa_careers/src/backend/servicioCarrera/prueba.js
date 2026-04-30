@@ -7,7 +7,7 @@ async function ejecutarPruebas() {
     console.log('⏳ Iniciando pruebas del microservicio de Carreras...\n');
 
     // 1. Registrar una nueva carrera (POST)
-   
+   /*
    console.log('➡️ Ejecutando POST: Registrando "Economia"...');
      const postResponse = await axios.post(`${API_URL}/registrar`, { 
       carrera: 'Medicina' 
@@ -16,7 +16,7 @@ async function ejecutarPruebas() {
      console.log('✅ Resultado del POST:', postResponse.data);
      console.log('--------------------------------------------------\n');
     
-      
+    */ 
     // 2. Obtener la lista de todas las carreras (GET)
     console.log('➡️ Ejecutando GET: Solicitando lista de carreras...');
     const getResponse = await fetch(API_URL);
@@ -42,6 +42,17 @@ async function ejecutarPruebas() {
       console.table(searchData.data); 
     } else {
       console.log(`No se encontraron carreras con el nombre "${terminoBusqueda}".`);
+    }
+
+    const idBusqueda = 1; // ID a buscar
+    console.log(`➡️ Ejecutando GET: Buscando carrera con ID ${idBusqueda}...`);
+    const getByIdResponse = await fetch(`${API_URL}/${idBusqueda}`);
+    const getByIdData = await getByIdResponse.json();
+    console.log(`✅ Resultado de la Búsqueda por ID ${idBusqueda}:`);
+    if (getByIdData.success && getByIdData.data) {
+      console.table(getByIdData.data); 
+    } else {
+      console.log(`No se encontró una carrera con ID ${idBusqueda}.`);
     }
     
     console.log('\n🎉 Pruebas finalizadas con éxito.');

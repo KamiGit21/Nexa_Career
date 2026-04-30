@@ -7,6 +7,7 @@
       </button>
 
       <div v-if="loading" class="text-center py-20 font-medium text-gray-600">
+        <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-[#1b2a4a] mx-auto mb-4"></div>
         Cargando perfil de empresa...
       </div>
 
@@ -15,7 +16,7 @@
         <div class="h-48 bg-[#1b2a4a] relative">
           <div class="absolute -bottom-12 left-12 w-32 h-32 bg-white rounded-2xl shadow-lg p-2 border border-gray-50 flex items-center justify-center">
              <span class="text-4xl font-bold text-[#1b2a4a]">
-               {{ perfil.empresa ? perfil.empresa[0] : 'E' }}
+               {{ perfil.empresa ? perfil.empresa[0].toUpperCase() : 'E' }}
              </span>
           </div>
         </div>
@@ -27,7 +28,7 @@
               <div class="flex flex-wrap gap-4 mt-2 text-gray-500">
                 <span class="flex items-center gap-1 text-sm">📧 {{ perfil.gmail }}</span>
                 <span class="flex items-center gap-1 text-sm">📞 {{ perfil.telefono }}</span>
-                <span class="flex items-center gap-1 text-sm">📅 Miembro desde: {{ formatearFecha(perfil.creado_en) }}</span>
+                <span v-if="perfil.creado_en" class="flex items-center gap-1 text-sm">📅 Miembro desde: {{ formatearFecha(perfil.creado_en) }}</span>
               </div>
             </div>
 
@@ -53,9 +54,40 @@
 
               <section class="pt-8 border-t border-gray-50">
                 <h3 class="text-sm font-bold text-[#1b2a4a] uppercase tracking-widest mb-4">Ofertas de Trabajo Recientes</h3>
-                <div class="bg-gray-50 rounded-2xl p-6 text-center text-gray-400 border border-dashed border-gray-200">
-                  Próximamente se mostrarán las vacantes aquí.
+                
+                <div v-if="loadingOfertas" class="text-center py-6 text-gray-400">
+                  Cargando vacantes...
                 </div>
+                
+                <div v-else-if="ofertas.length === 0" class="bg-gray-50 rounded-2xl p-6 text-center text-gray-400 border border-dashed border-gray-200">
+                  Esta empresa no tiene ofertas de trabajo publicadas actualmente.
+                </div>
+
+                <div v-else class="space-y-4">
+                  <div 
+                    v-for="oferta in ofertas" 
+                    :key="oferta.id_oferta" 
+                    @click="irAOferta(oferta.id_oferta)"
+                    class="p-5 border border-gray-100 rounded-xl hover:shadow-md transition-shadow cursor-pointer bg-white group"
+                  >
+                    <div class="flex justify-between items-start">
+                      <h4 class="font-bold text-[#1b2a4a] text-lg group-hover:text-[#b5943a] transition-colors">
+                        {{ oferta.oferta || oferta.titulo }}
+                      </h4>
+                      <span class="text-xs bg-gray-100 text-gray-500 font-semibold px-2 py-1 rounded-md whitespace-nowrap">
+                        {{ formatearFecha(oferta.fecha_apertura) }}
+                      </span>
+                    </div>
+                    <p class="text-sm text-gray-500 line-clamp-2 mt-2">{{ oferta.descripcion }}</p>
+                    <div class="mt-4 flex flex-wrap gap-2 text-xs font-semibold">
+                      <span class="bg-[#eef2f6] text-[#002855] px-3 py-1 rounded-full">Modalidad: {{ oferta.modalidad || 'Presencial' }}</span>
+                      <span :class="obtenerColorEstado(oferta.estado)" class="px-3 py-1 rounded-full border">
+                        {{ obtenerTextoEstado(oferta.estado) }}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
               </section>
             </div>
 
@@ -86,9 +118,15 @@
 import { ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 
+import { obtenerEmpleadorPorId } from '@/services/empleadorService.js'
+import { listarOfertasPorEmpleador } from '@/services/ofertaService.js'
+
 const route = useRoute()
 const router = useRouter()
 const loading = ref(true)
+
+const ofertas = ref([])
+const loadingOfertas = ref(true)
 
 const perfil = ref({
   id_empleador: null,
@@ -109,7 +147,32 @@ const formatearFecha = (fecha) => {
   })
 }
 
-// integracion
+const obtenerTextoEstado = (estado) => {
+  switch (estado) {
+    case 0: return 'Pendiente'
+    case 1: return 'Activa'
+    case 2: return 'Rechazada'
+    case 3: return 'Archivada'
+    default: return 'Desconocido'
+  }
+}
+
+const obtenerColorEstado = (estado) => {
+  switch (estado) {
+    case 0: return 'bg-yellow-50 text-yellow-600 border-yellow-200'  // Pendiente
+    case 1: return 'bg-green-50 text-green-600 border-green-200'    // Aceptado
+    case 2: return 'bg-red-50 text-red-600 border-red-200'          // Rechazado
+    case 3: return 'bg-gray-100 text-gray-600 border-gray-300'      // Archivado
+    default: return 'bg-slate-50 text-slate-600 border-slate-200'
+  }
+}
+
+const irAOferta = (idOferta) => {
+  if (idOferta) {
+    router.push(`/ofertas/${idOferta}`)
+  }
+}
+
 const irAEditar = () => {
   router.push(`/perfil-empleador/${perfil.value.id_empleador}`)
 }
@@ -117,25 +180,57 @@ const irAEditar = () => {
 const cargarDatos = async () => {
   loading.value = true
   try {
-    // Santiii aqui va la integracion
-    // Mientras simulo datos
-    setTimeout(() => {
-      perfil.value = {
-        id_empleador: route.params.id || 1,
-        empresa: "Tech Solutions Bolivia",
-        descripcion: "Somos una empresa líder en desarrollo de software con sede en La Paz, enfocada en soluciones en la nube y transformación digital para el sector financiero.",
-        telefono: 70012345,
-        gmail: "contacto@techsolutions.bo",
-        creado_en: "2026-01-15T14:30:00",
-        activo: 1
+    const id = route.params.id;
+    
+    if (!id) {
+      console.error("No se proporcionó un ID en la ruta");
+      loading.value = false;
+      return;
+    }
+
+    const respuesta = await obtenerEmpleadorPorId(id);
+
+    if (respuesta && respuesta.success && respuesta.data) {
+      const datosEmpresa = Array.isArray(respuesta.data) ? respuesta.data[0] : respuesta.data;
+      Object.assign(perfil.value, datosEmpresa);
+
+      try {
+        loadingOfertas.value = true;
+        const respuestaOfertas = await listarOfertasPorEmpleador(id);
+        
+        if (respuestaOfertas && respuestaOfertas.success && Array.isArray(respuestaOfertas.data)) {
+          ofertas.value = respuestaOfertas.data;
+        } else if (Array.isArray(respuestaOfertas)) {
+          ofertas.value = respuestaOfertas;
+        } else if (respuestaOfertas && Array.isArray(respuestaOfertas.ofertas)) {
+          ofertas.value = respuestaOfertas.ofertas;
+        } else {
+          ofertas.value = [];
+        }
+      } catch (err) {
+        console.error("Error al cargar las ofertas del empleador:", err);
+      } finally {
+        loadingOfertas.value = false;
       }
-      loading.value = false
-    }, 800)
+
+    } else {
+      console.error("Error al cargar el perfil de la empresa:", respuesta?.message);
+    }
   } catch (error) {
-    console.error("Error al cargar perfil:", error)
+    console.error("Error de conexión al cargar perfil:", error)
+  } finally {
     loading.value = false
   }
 }
 
 onMounted(cargarDatos)
 </script>
+
+<style scoped>
+.line-clamp-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+</style>

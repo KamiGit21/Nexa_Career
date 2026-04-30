@@ -20,7 +20,7 @@
 
           <div class="flex items-center gap-2 mt-2">
             <span class="text-l font-small">
-              Carrera no especificada
+              {{ estudiante.nombre_carrera || 'Carrera no especificada' }}
             </span>
           </div>
 
@@ -103,6 +103,7 @@ import { ref, onMounted, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router' // Se añadió useRouter aquí
 
 import * as estudianteService from '@/services/estudianteService'
+import { obtenerCarreraPorId } from '@/services/carreraService'
 
 const route = useRoute()
 const router = useRouter() // Ahora sí funcionará
@@ -150,6 +151,18 @@ const cargarPostulante = async () => {
 
     // Sincronizar datos reactivos
     Object.assign(estudiante.value, dataEst.data)
+
+    if (estudiante.value.id_carrera) {
+      try {
+        const dataCarrera = await obtenerCarreraPorId(estudiante.value.id_carrera);
+        if (dataCarrera && dataCarrera.success && dataCarrera.data) {
+          // Asigna el nombre de la carrera a la variable reactiva
+          estudiante.value.nombre_carrera = dataCarrera.data.carrera || dataCarrera.data.nombre;
+        }
+      } catch (err) {
+        console.error('Error al cargar la información de la carrera:', err);
+      }
+    }
 
     // 2. Si hay ofertaId, verificar estado de postulación en puerto 3004
     if (ofertaId.value) {
