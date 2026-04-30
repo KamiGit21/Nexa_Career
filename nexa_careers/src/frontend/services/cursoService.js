@@ -1,5 +1,3 @@
-// C:\xampp\htdocs\Nexa_Career\nexa_careers\src\frontend\services\cursoService.js
-// src/frontend/services/cursoService.js
 const API_URL = 'http://localhost:3000/api'
 
 export const publicarCursoPorEstudiante = async (data) => {
@@ -30,7 +28,7 @@ export const publicarCursoPorEmpleador = async (data) => {
   }
 }
 
-// NUEVA: Actualizar curso (para edición)
+//Actualizar curso (edición)
 export const actualizarCurso = async (id, data) => {
   try {
     const res = await fetch(`${API_URL}/cursos/${id}`, {
@@ -185,6 +183,7 @@ export const listarCursosPublicosPaginadosPorFechaPorEstado = async (pagina, siz
   }
 };
 
+
 export const buscarCursosAvanzado = async (filtros) => {
   try {
     const params = new URLSearchParams(filtros).toString();
@@ -195,3 +194,31 @@ export const buscarCursosAvanzado = async (filtros) => {
     return { success: false, message: error.message };
   }
 };
+
+//Integración API con opción a dar de baj
+export const archivarCurso = async (idCurso) => {
+  try {
+    const response = await fetch(`${API_URL}/cursos/${idCurso}/archivar`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' }
+    })
+    const data = await response.json()
+    return data  // Se espera { success: true } o { success: false, message: '...' }
+  } catch (error) {
+    console.error('Error en archivarCurso:', error)
+    return { success: false, message: 'Error de conexión' }
+  }
+};
+
+export const desarchivarCurso = async (idCurso) => {
+  try {
+    const response = await fetch(`${API_URL}/cursos/${idCurso}/desarchivar`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' }
+    })
+    return await response.json()
+  } catch (error) {
+    console.error('Error en desarchivarCurso:', error)
+    return { success: false, message: 'Error de conexión' }
+  }
+}

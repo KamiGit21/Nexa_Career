@@ -45,6 +45,7 @@
       </div>
 
       <div v-if="loading" class="text-center py-20 text-gray-500">
+        <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-[#1b2a4a] mx-auto mb-4"></div>
         Cargando tus cursos...
       </div>
 
@@ -68,7 +69,7 @@
         <div
           v-for="curso in cursosFiltrados"
           :key="curso.id_curso"
-          class="bg-white rounded-3xl shadow-sm p-6 hover:shadow-md transition duration-300"
+          class="bg-white rounded-3xl shadow-sm p-6 hover:shadow-md transition duration-300 flex flex-col h-full"
         >
           <!-- Estado badge -->
           <div class="flex justify-between items-start mb-3">
@@ -102,7 +103,7 @@
             <span class="text-xs text-gray-400">Sin categorías</span>
           </div>
 
-          <p class="text-gray-500 text-sm mb-4 line-clamp-3">
+          <p class="text-gray-500 text-sm mb-4 line-clamp-3 flex-grow">
             {{ curso.descripcion || 'Sin descripción' }}
           </p>
 
@@ -112,37 +113,87 @@
           </div>
 
           <!-- === BOTONES DE ACCIÓN === -->
-          <div class="flex gap-2 mt-4 pt-3 border-t border-gray-100">
+          <div class="flex flex-wrap items-center gap-4 mt-auto pt-4 border-t border-gray-100">
             <button
               @click="verDetalle(curso)"
-              class="text-sm text-blue-600 hover:text-blue-800 font-medium"
+              class="text-sm text-blue-600 hover:text-blue-800 font-medium transition"
             >
               Ver detalles
             </button>
             <button
               @click="editarCurso(curso)"
-              class="text-sm text-green-600 hover:text-green-800 font-medium"
+              class="text-sm text-green-600 hover:text-green-800 font-medium transition"
             >
               Editar
+            </button>
+            
+            <div class="flex-grow"></div> <!-- Espaciador -->
+
+            <!-- Botones de Acción de Estado -->
+            <button
+              v-if="curso.estado !== 3"
+              @click="abrirModalBaja(curso)"
+              class="text-sm text-red-500 hover:text-red-700 font-medium transition"
+            >
+              Dar de baja
+            </button>
+            <button
+              v-if="curso.estado === 3"
+              @click="abrirModalDesarchivar(curso)"
+              class="text-sm text-yellow-600 hover:text-yellow-800 font-medium transition"
+            >
+              Desarchivar
             </button>
           </div>
         </div>
       </div>
 
     </div>
+
+    <!-- Modales para Confirmación -->
+    <ConfirmarBajaCursoModal
+      :visible="modalBajaVisible"
+      :nombre-curso="cursoSeleccionado?.curso || ''"
+      :cargando="procesando"
+      @cancelar="cerrarModales"
+      @confirmar="confirmarBaja"
+    />
+
+    <DesarchivarCursoModal
+      :visible="modalDesarchivarVisible"
+      :nombre-curso="cursoSeleccionado?.curso || ''"
+      :cargando="procesando"
+      @cancelar="cerrarModales"
+      @confirmar="confirmarDesarchivar"
+    />
   </div>
 </template>
 
 <script setup>
 import { ref, onMounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
-import { listarCursosPorEstudiante, listarCategorias } from '../services/cursoService.js'
+
+// Importaciones de modales y servicios
+import ConfirmarBajaCursoModal from '../components/misCursos/ConfirmarBajaCursoModal.vue'
+import DesarchivarCursoModal from '../components/misCursos/DesarchivarCursoModal.vue'
+import { 
+  listarCursosPorEstudiante, 
+  listarCategorias,
+  archivarCurso,
+  desarchivarCurso 
+} from '../services/cursoService.js'
 
 const router = useRouter()
 const cursos = ref([])
 const categorias = ref([])
 const categoriaFiltro = ref(null)
 const loading = ref(true)
+
+// Variables para modales
+const modalBajaVisible = ref(false)
+const modalDesarchivarVisible = ref(false)
+const cursoSeleccionado = ref(null)
+const procesando = ref(false)
 
 const cursosFiltrados = computed(() => {
   if (!categoriaFiltro.value) {
@@ -202,8 +253,70 @@ const editarCurso = (curso) => {
   router.push(`/editar-curso/${curso.id_curso}`)
 }
 
+// === Lógica de Modales ===
+const cerrarModales = () => { 
+  modalBajaVisible.value = false
+  modalDesarchivarVisible.value = false
+  cursoSeleccionado.value = null 
+}
+
+const abrirModalBaja = (curso) => { 
+  cursoSeleccionado.value = curso
+  modalBajaVisible.value = true 
+}
+
+const abrirModalDesarchivar = (curso) => { 
+  cursoSeleccionado.value = curso
+  modalDesarchivarVisible.value = true 
+}
+
+const confirmarBaja = async () => {
+  procesando.value = true
+  try {
+    const res = await archivarCurso(cursoSeleccionado.value.id_curso)
+    if (res.success) {
+      const idx = cursos.value.findIndex(c => c.id_curso === cursoSeleccionado.value.id_curso)
+      if (idx !== -1) cursos.value[idx].estado = 3
+      cerrarModales()
+    } else { 
+      alert(res.message || 'No se pudo dar de baja el curso.') 
+    }
+  } catch { 
+    alert('Error de conexión.') 
+  } finally { 
+    procesando.value = false 
+  }
+}
+
+const confirmarDesarchivar = async () => {
+  procesando.value = true
+  try {
+    const res = await desarchivarCurso(cursoSeleccionado.value.id_curso)
+    if (res.success) {
+      const idx = cursos.value.findIndex(c => c.id_curso === cursoSeleccionado.value.id_curso)
+      if (idx !== -1) cursos.value[idx].estado = 0
+      cerrarModales()
+    } else { 
+      alert(res.message || 'No se pudo desarchivar el curso.') 
+    }
+  } catch { 
+    alert('Error de conexión.') 
+  } finally { 
+    procesando.value = false 
+  }
+}
+
 onMounted(() => {
   cargarCursos()
   cargarCategorias()
 })
 </script>
+
+<style scoped>
+.line-clamp-3 {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+</style>

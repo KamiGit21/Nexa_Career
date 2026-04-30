@@ -1,4 +1,3 @@
-<!-- C:\xampp\htdocs\Nexa_Career\nexa_careers\src\frontend\views\EmpleadorCursos.vue -->
 <template>
   <div class="min-h-screen bg-[#f8f5f0]">
 
@@ -19,12 +18,11 @@
         </router-link>
       </div>
 
-      <!-- === NUEVO: FILTRO POR CATEGORÍAS === -->
+      <!-- Filtro por categorías -->
       <div class="mb-6 bg-white rounded-2xl p-4 shadow-sm">
         <div class="flex items-center gap-3 flex-wrap">
           <span class="text-sm font-medium text-gray-600">Filtrar por categoría:</span>
           
-          <!-- Select / Combo box de categorías -->
           <select 
             v-model="categoriaFiltro"
             class="px-4 py-2 border border-gray-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#1b2a4a] focus:border-transparent bg-white"
@@ -39,7 +37,6 @@
             </option>
           </select>
 
-          <!-- Mostrar categorías seleccionadas del curso actual (si el curso tiene categorías) -->
           <div v-if="categoriaFiltro" class="flex items-center gap-2">
             <span class="text-xs text-gray-500">Filtrando por:</span>
             <span class="bg-blue-100 text-blue-700 px-2 py-1 rounded-full text-xs flex items-center gap-1">
@@ -51,6 +48,7 @@
       </div>
 
       <div v-if="loading" class="text-center py-20 text-gray-500">
+        <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-[#1b2a4a] mx-auto mb-4"></div>
         Cargando tus cursos...
       </div>
 
@@ -75,7 +73,7 @@
         <div
           v-for="curso in cursosFiltrados"
           :key="curso.id_curso"
-          class="bg-white rounded-3xl shadow-sm p-6 hover:shadow-md transition duration-300">
+          class="bg-white rounded-3xl shadow-sm p-6 hover:shadow-md transition duration-300 flex flex-col h-full">
 
           <!-- Estado badge -->
           <div class="flex justify-between items-start mb-3">
@@ -95,7 +93,7 @@
             </span>
           </div>
 
-          <!-- Mostrar categorías del curso -->
+          <!-- Categorías del curso -->
           <div v-if="curso.categorias && curso.categorias.length > 0" class="flex flex-wrap gap-1 mb-3">
             <span
               v-for="cat in curso.categorias"
@@ -109,7 +107,7 @@
             <span class="text-xs text-gray-400">Sin categorías</span>
           </div>
 
-          <p class="text-gray-500 text-sm mb-4 line-clamp-3">
+          <p class="text-gray-500 text-sm mb-4 line-clamp-3 flex-grow">
             {{ curso.descripcion || 'Sin descripción' }}
           </p>
 
@@ -118,19 +116,37 @@
             <p><span class="font-medium">Fecha:</span> {{ formatearFecha(curso.fecha_creacion) }}</p>
           </div>
 
-          <!-- === NUEVO: BOTONES DE ACCIÓN === -->
-          <div class="flex gap-2 mt-4 pt-3 border-t border-gray-100">
+          <!-- 👇 AQUÍ ESTÁN LOS BOTONES INTEGRADOS 👇 -->
+          <div class="flex flex-wrap items-center gap-4 mt-auto pt-4 border-t border-gray-100">
             <button
               @click="verDetalle(curso)"
-              class="text-sm text-blue-600 hover:text-blue-800 font-medium"
+              class="text-sm text-blue-600 hover:text-blue-800 font-medium transition"
             >
               Ver detalles
             </button>
             <button
               @click="editarCurso(curso)"
-              class="text-sm text-green-600 hover:text-green-800 font-medium"
+              class="text-sm text-green-600 hover:text-green-800 font-medium transition"
             >
               Editar
+            </button>
+            
+            <div class="flex-grow"></div> <!-- Espaciador para empujar los botones a la derecha -->
+
+            <!-- Botones de Acción de Estado -->
+            <button
+              v-if="curso.estado !== 3"
+              @click="abrirModalBaja(curso)"
+              class="text-sm text-red-500 hover:text-red-700 font-medium transition"
+            >
+              Dar de baja
+            </button>
+            <button
+              v-if="curso.estado === 3"
+              @click="abrirModalDesarchivar(curso)"
+              class="text-sm text-yellow-600 hover:text-yellow-800 font-medium transition"
+            >
+              Desarchivar
             </button>
           </div>
 
@@ -138,13 +154,40 @@
       </div>
 
     </div>
+
+    <!-- 👇 AQUÍ ESTÁN LOS MODALES INTEGRADOS 👇 -->
+    <ConfirmarBajaCursoModal
+      :visible="modalBajaVisible"
+      :nombre-curso="cursoSeleccionado?.curso || ''"
+      :cargando="procesando"
+      @cancelar="cerrarModales"
+      @confirmar="confirmarBaja"
+    />
+
+    <DesarchivarCursoModal
+      :visible="modalDesarchivarVisible"
+      :nombre-curso="cursoSeleccionado?.curso || ''"
+      :cargando="procesando"
+      @cancelar="cerrarModales"
+      @confirmar="confirmarDesarchivar"
+    />
+
   </div>
 </template>
 
 <script setup>
 import { ref, onMounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
-import { listarCursosPorEmpleador, listarCategorias } from '../services/cursoService.js'
+
+// 👇 AQUÍ SE AGREGAN LAS NUEVAS IMPORTACIONES 👇
+import ConfirmarBajaCursoModal from '../components/misCursos/ConfirmarBajaCursoModal.vue'
+import DesarchivarCursoModal from '../components/misCursos/DesarchivarCursoModal.vue'
+import { 
+  listarCursosPorEmpleador, 
+  listarCategorias,
+  archivarCurso,
+  desarchivarCurso 
+} from '../services/cursoService.js'
 
 const router = useRouter()
 const cursos = ref([])
@@ -152,18 +195,21 @@ const categorias = ref([])
 const categoriaFiltro = ref(null)
 const loading = ref(true)
 
-// Cursos filtrados por categoría
+// 👇 AQUÍ ESTÁN LAS NUEVAS VARIABLES PARA LOS MODALES 👇
+const modalBajaVisible = ref(false)
+const modalDesarchivarVisible = ref(false)
+const cursoSeleccionado = ref(null)
+const procesando = ref(false)
+
 const cursosFiltrados = computed(() => {
   if (!categoriaFiltro.value) {
     return cursos.value
   }
   return cursos.value.filter(curso => {
-    // Verificar si el curso tiene la categoría seleccionada
     return curso.categorias && curso.categorias.some(cat => cat.id_categoria === categoriaFiltro.value)
   })
 })
 
-// Nombre de la categoría seleccionada para mostrar
 const nombreCategoriaSeleccionada = computed(() => {
   if (!categoriaFiltro.value) return ''
   const cat = categorias.value.find(c => c.id_categoria === categoriaFiltro.value)
@@ -205,13 +251,65 @@ const cargarCategorias = async () => {
   }
 }
 
-// === NUEVAS FUNCIONES ===
 const verDetalle = (curso) => {
-  router.push(`/detalle-curso/${curso.id_curso}`)
+  router.push(`/cursos/${curso.id_curso}`)
 }
 
 const editarCurso = (curso) => {
   router.push(`/editar-curso/${curso.id_curso}`)
+}
+
+// 👇 AQUÍ ESTÁ TODA LA LÓGICA DE LOS MODALES Y SERVICIOS 👇
+const cerrarModales = () => { 
+  modalBajaVisible.value = false
+  modalDesarchivarVisible.value = false
+  cursoSeleccionado.value = null 
+}
+
+const abrirModalBaja = (curso) => { 
+  cursoSeleccionado.value = curso
+  modalBajaVisible.value = true 
+}
+
+const abrirModalDesarchivar = (curso) => { 
+  cursoSeleccionado.value = curso
+  modalDesarchivarVisible.value = true 
+}
+
+const confirmarBaja = async () => {
+  procesando.value = true
+  try {
+    const res = await archivarCurso(cursoSeleccionado.value.id_curso)
+    if (res.success) {
+      const idx = cursos.value.findIndex(c => c.id_curso === cursoSeleccionado.value.id_curso)
+      if (idx !== -1) cursos.value[idx].estado = 3 // Cambia a archivado visualmente sin recargar
+      cerrarModales()
+    } else { 
+      alert(res.message || 'No se pudo dar de baja el curso.') 
+    }
+  } catch { 
+    alert('Error de conexión.') 
+  } finally { 
+    procesando.value = false 
+  }
+}
+
+const confirmarDesarchivar = async () => {
+  procesando.value = true
+  try {
+    const res = await desarchivarCurso(cursoSeleccionado.value.id_curso)
+    if (res.success) {
+      const idx = cursos.value.findIndex(c => c.id_curso === cursoSeleccionado.value.id_curso)
+      if (idx !== -1) cursos.value[idx].estado = 0 // Cambia a pendiente visualmente sin recargar
+      cerrarModales()
+    } else { 
+      alert(res.message || 'No se pudo desarchivar el curso.') 
+    }
+  } catch { 
+    alert('Error de conexión.') 
+  } finally { 
+    procesando.value = false 
+  }
 }
 
 onMounted(() => {
@@ -219,3 +317,12 @@ onMounted(() => {
   cargarCategorias()
 })
 </script>
+
+<style scoped>
+.line-clamp-3 {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+</style>

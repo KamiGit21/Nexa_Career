@@ -595,3 +595,67 @@ export const buscarCursosPublicosAvanzado = async (req, res) => {
     res.status(500).json({ success: false, message: 'Error en el servidor' });
   }
 };
+
+// PATCH: Archivar un curso específico (estado = 3) y Dar de baja un Curso.
+export const archivarCurso = async (req, res) => {
+  const { id_curso } = req.params;
+  try {
+    const [rows] = await db.query(
+      'SELECT id_curso, estado FROM curso WHERE id_curso = ?',
+      [id_curso]
+    );
+
+    if (rows.length === 0) {
+      return res.status(404).json({ success: false, message: 'Curso no encontrado' });
+    }
+
+    if (rows[0].estado === 3) {
+      return res.status(400).json({ success: false, message: 'El curso ya está archivado' });
+    }
+
+    await db.query(
+      'UPDATE curso SET estado = 3 WHERE id_curso = ?',
+      [id_curso]
+    );
+
+    return res.status(200).json({
+      success: true,
+      message: 'Curso archivado correctamente',
+      data: { id_curso: parseInt(id_curso), estado: 3 }
+    });
+  } catch (error) {
+    console.error('Error al archivar curso:', error);
+    return res.status(500).json({ success: false, message: 'Error interno al archivar el curso' });
+  }
+};
+
+// PATCH: Desarchivar un curso (estado 3 → 0 Pendiente)
+export const desarchivarCurso = async (req, res) => {
+  const { id_curso } = req.params;
+  try {
+    const [rows] = await db.query(
+      'SELECT id_curso, estado FROM curso WHERE id_curso = ?',
+      [id_curso]
+    );
+
+    if (rows.length === 0)
+      return res.status(404).json({ success: false, message: 'Curso no encontrado' });
+
+    if (rows[0].estado !== 3)
+      return res.status(400).json({ success: false, message: 'El curso no está archivado' });
+
+    await db.query(
+      'UPDATE curso SET estado = 0 WHERE id_curso = ?',
+      [id_curso]
+    );
+
+    return res.status(200).json({
+      success: true,
+      message: 'Curso desarchivado correctamente. Queda pendiente de revisión.',
+      data: { id_curso: parseInt(id_curso), estado: 0 }
+    });
+  } catch (error) {
+    console.error('Error al desarchivar curso:', error);
+    return res.status(500).json({ success: false, message: 'Error interno al desarchivar el curso' });
+  }
+};
