@@ -5,7 +5,7 @@
   >
     <div class="flex justify-between items-start mb-2">
       <span class="text-xs font-semibold px-3 py-1 rounded-full" :class="colorCategoria">
-        {{ curso.categoria || 'General' }}
+        {{ categoriaPrincipal || 'General' }}
       </span>
       <span class="text-xs text-gray-400">{{ formatearFecha(curso.fecha_creacion) }}</span>
     </div>
@@ -64,8 +64,13 @@ const COLORES_AVATAR = [
 ]
 
 const colorCategoria = computed(() => {
-  const idx = (props.curso.categoria || '').charCodeAt(0) % COLORES_CAT.length
+  const idx = (categoriaPrincipal.value || '').charCodeAt(0) % COLORES_CAT.length
   return COLORES_CAT[idx]
+})
+
+const categoriaPrincipal = computed(() => {
+  if (!props.curso.categorias || props.curso.categorias.length === 0) return null
+  return props.curso.categorias[0].categoria
 })
 
 const colorAvatar = computed(() => {
