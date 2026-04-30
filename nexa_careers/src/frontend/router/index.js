@@ -37,14 +37,14 @@ import ListaEstudiantes from '@/views/ListaEstudiantes.vue'
 import ListaEmpleadores from '@/views/ListaEmpleadores.vue'
 import ListaSupervisores from '@/views/ListaSupervisores.vue'
 
-
 // Recuperar contrasenia
 import SolicitarRecuperacion from '@/views/SolicitarRecuperacion.vue'
 import VerificarCodigo from '@/views/VerificarCodigo.vue'
 import NuevaPassword from '@/views/NuevaPassword.vue'
-
 import GestionCursos from '@/views/GestionCursos.vue'
 
+//Categorias ofertas laborales
+import GestionCategorias from '@/views/GestionCategorias.vue'
 
 const routes = [
   { path: '/', redirect: '/home' },
@@ -215,7 +215,14 @@ const routes = [
   { path: '/verificar-codigo', name: 'VerificarCodigo', component: VerificarCodigo, meta: { soloPublico: true } },
   { path: '/nueva-password', name: 'NuevaPassword', component: NuevaPassword, meta: { soloPublico: true } },
 
-  { path: '/:pathMatch(.*)*', redirect: '/home' },
+  //Categorias ofertas laborales
+  {
+  path: '/supervisor/categorias',
+  name: 'GestionCategorias',
+  component: GestionCategorias,
+  meta: { requiereRol: ['supervisor'] }
+},
+  { path: '/:pathMatch(.*)*', redirect: '/home' }
 ]
 
 const router = createRouter({

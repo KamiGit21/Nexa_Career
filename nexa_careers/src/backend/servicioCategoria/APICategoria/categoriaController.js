@@ -2,15 +2,31 @@ import db from '../../api-gateway/db.js';
 
 export const registrarCategoria = async (req, res) => {
   const { categoria } = req.body;
-  if (!categoria) return res.status(400).json({ success: false, message: 'El nombre de la categoría es requerido' });
+  const categoriaNormalizada = categoria?.trim();
+
+  if (!categoriaNormalizada) {
+    return res.status(400).json({ success: false, message: 'El nombre de la categoría es requerido' });
+  }
 
   try {
-    const [result] = await db.query('INSERT INTO categoria (categoria) VALUES (?)', [categoria]);
+    const [categorias] = await db.query('SELECT categoria FROM categoria');
+
+    const yaExiste = categorias.some(
+      (cat) => cat.categoria.trim().toLowerCase() === categoriaNormalizada.trim().toLowerCase()
+    );
+
+    if (yaExiste) {
+      return res.status(409).json({ success: false, message: 'Ya existe una categoría con ese nombre' });
+    }
+
+    const [result] = await db.query('INSERT INTO categoria (categoria) VALUES (?)', [categoriaNormalizada]);
     res.status(201).json({ success: true, id_categoria: result.insertId, message: 'Categoría registrada correctamente' });
+
   } catch (error) {
     console.error('Error al registrar categoría:', error);
     res.status(500).json({ success: false, message: 'Error interno del servidor al registrar' });
   }
+  
 };
 
 export const listarCategorias = async (req, res) => {
@@ -48,3 +64,7 @@ export const buscarCategoriaPorId = async (req, res) => {
     res.status(500).json({ success: false, message: 'Error interno del servidor al buscar por ID' });
   }
 };
+
+// Eliminar categoría deshabilitado temporalmente
+// Requiere eliminar primero las referencias en categoria_oferta y categoria_curso
+// export const eliminarCategoria = async (req, res) => { ... }
