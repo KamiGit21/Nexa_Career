@@ -10,11 +10,11 @@
       <h3 class="text-sm font-bold text-[#1b2a4a] mb-2">Categorías</h3>
       <div class="flex flex-wrap gap-2">
         <span
-          v-for="tag in tags"
-          :key="tag"
+          v-for="cat in tags"
+          :key="cat.id"
           class="text-xs font-semibold px-3 py-1 rounded-full bg-blue-50 text-blue-700"
         >
-          {{ tag }}
+          {{ cat.categoria }}
         </span>
       </div>
     </div>
@@ -47,8 +47,8 @@ const props = defineProps({
 })
 
 const tags = computed(() => {
-  if (!props.curso.categoria) return []
-  return props.curso.categoria.split(',').map(t => t.trim()).filter(Boolean)
+  if (!props.curso.categorias || !props.curso.categorias.length) return []
+  return props.curso.categorias
 })
 
 const COLORES_AVATAR = [

@@ -20,9 +20,17 @@
         <span class="text-gray-400">Creación:</span>
         <span class="font-semibold text-gray-700">{{ formatearFecha(curso.fecha_creacion) }}</span>
       </li>
-      <li v-if="curso.categoria" class="flex justify-between items-start text-sm gap-2">
+      <li v-if="categorias.length > 0" class="flex justify-between items-start text-sm gap-2">
         <span class="text-gray-400 flex-shrink-0">Categorías:</span>
-        <span class="font-semibold text-gray-700 text-right">{{ curso.categoria }}</span>
+        <div class="flex flex-wrap gap-1 justify-end">
+          <span 
+            v-for="cat in categorias" 
+            :key="cat.id_categoria"
+            class="text-xs px-2 py-0.5 bg-gray-100 text-gray-600 rounded"
+          >
+            {{ cat.categoria }}
+          </span>
+        </div>
       </li>
       <li v-if="curso.contacto" class="flex justify-between items-center text-sm">
         <span class="text-gray-400">Contacto:</span>
@@ -34,10 +42,15 @@
 </template>
 
 <script setup>
+import { computed } from 'vue'
 import CursoEstadoBadge from '../misCursos/CursoEstadoBadge.vue'
 
-defineProps({
+const props = defineProps({
   curso: { type: Object, required: true }
+})
+
+const categorias = computed(() => {
+  return props.curso.categorias || []
 })
 
 const formatearFecha = (fecha) => {

@@ -12,11 +12,17 @@ router.get('/empleador/:id_empleador', cursoController.listarCursosPorEmpleador)
 router.get('/pendientes', cursoController.listarCursosPendientes);
 router.get('/busqueda/avanzada', cursoController.buscarCursosPublicosAvanzado);
 
+// Rutas para categorías de cursos
+router.post('/:id_curso/categorias', cursoController.agregarCategoriaACurso);
+router.delete('/:id_curso/categorias/:id_categoria', cursoController.quitarCategoriaDeCurso);
+router.get('/:id_curso/categorias', cursoController.listarCategoriasDeCurso);
+
 // Rutas generales
 router.get('/', cursoController.listarCursos);
 
 // Rutas con parámetros AL FINAL
 router.patch('/:id_curso/estado', cursoController.cambiarEstadoCurso);
+router.put('/:id_curso', cursoController.actualizarCurso);
 router.get('/:id_curso', cursoController.obtenerCursoPorId);
 
 router.get('/pagina/:pagina/size/:size', cursoController.obtenerCursosPaginacion);
@@ -27,3 +33,4 @@ router.get('/pagina/:pagina/size/:size/fecha/abajo/estado/:estado', cursoControl
 router.get('/pagina/:pagina/size/:size/fecha/arriba/estado/:estado', cursoController.obtenerCursosPaginacionPorEstadoYFechaAscendente);
 
 export default router;
+
