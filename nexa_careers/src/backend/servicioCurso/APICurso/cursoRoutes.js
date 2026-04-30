@@ -15,9 +15,12 @@ router.get('/pendientes', cursoController.listarCursosPendientes); // ← NUEVO
 router.get('/', cursoController.listarCursos);
 
 // Rutas con parámetros AL FINAL
+router.patch('/:id_curso/archivar', cursoController.archivarCurso);
+router.patch('/:id_curso/desarchivar', cursoController.desarchivarCurso); 
 router.patch('/:id_curso/estado', cursoController.cambiarEstadoCurso);
 router.get('/:id_curso', cursoController.obtenerCursoPorId);
 
+//Paginación
 router.get('/pagina/:pagina/size/:size', cursoController.obtenerCursosPaginacion);
 router.get('/pagina/:pagina/size/:size/estado/:estado', cursoController.obtenerCursosPaginacionPorEstado);
 router.get('/pagina/:pagina/size/:size/fecha/abajo', cursoController.obtenerCursosPaginacionPorFechaDesendente);

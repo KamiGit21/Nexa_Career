@@ -54,20 +54,22 @@ const estadosFiltro = ref({
   archivado: true
 })
 
+//mapea todos los estados
 const estadoAClave = {
-  0: 'pendiente'
+  0: 'pendiente',
+  1: 'aprobado',
+  2: 'rechazado',
+  3: 'archivado'
 }
 
 const cursosFiltrados = computed(() => {
   let resultado = [...cursos.value]
-
   resultado = resultado.filter(curso => {
     const clave = estadoAClave[curso.estado]
+    if (!clave) return true
     return estadosFiltro.value[clave] === true
   })
-
   resultado.sort((a, b) => new Date(b.fecha_creacion) - new Date(a.fecha_creacion))
-
   const search = props.filtro.toLowerCase().trim()
   if (search) {
     resultado = resultado.filter(c =>
@@ -75,7 +77,6 @@ const cursosFiltrados = computed(() => {
       c.nombre_publicador?.toLowerCase().includes(search)
     )
   }
-
   return resultado
 })
 
