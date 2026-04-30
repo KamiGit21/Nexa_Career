@@ -46,6 +46,7 @@ import OfertasHeader from '../components/catalogoOfertas/OfertasHeader.vue'
 import OfertaGrid from '../components/catalogoOfertas/OfertaGrid.vue'
 import CatalogoOfertasPaginacion from '../components/catalogoOfertas/CatalogoOfertasPaginacion.vue'
 import BotonScroll from '../components/comunes/BotonScroll.vue'
+import { obtenerEmpleadorPorId } from '../services/empleadorService.js'
 
 const limite = ref(15)
 const opcionesPagina = [9, 12, 15, 18, 21, 24, 27, 30]
@@ -92,9 +93,30 @@ const cargarOfertas = async (pagina = 1) => {
       orden: ordenadoPorFecha.value ? 'desc' : 'asc'
     })
 
-    if (response.success) {
-      ofertas.value = response.data
-      totalPaginas.value = response.paginas || 1
+   if (response.success && response.data) {
+      
+      const ofertasEnriquecidas = await Promise.all(
+        response.data.map(async (oferta) => {
+          let nombreEmpleador = 'Empresa Confidencial'; // Valor por defecto
+          
+          if (oferta.id_empleador) {
+            try {
+              const empRes = await obtenerEmpleadorPorId(oferta.id_empleador);
+              if (empRes && empRes.success && empRes.data) {
+                // A prueba de Arrays u Objetos directos
+                const datosEmpresa = Array.isArray(empRes.data) ? empRes.data[0] : empRes.data;
+                nombreEmpleador = datosEmpresa.empresa || datosEmpresa.nombre || 'Empresa';
+              }
+            } catch (e) {
+              console.error('Error buscando datos del empleador:', e);
+            }
+          }
+          return { ...oferta, nombre_empleador: nombreEmpleador };
+        })
+      );
+
+      ofertas.value = ofertasEnriquecidas;
+      totalPaginas.value = response.paginas || 1;
     } else {
       ofertas.value = []
       error.value = 'No se encontraron ofertas con esos criterios.'
