@@ -21,6 +21,7 @@ router.get('/', cursoController.listarCursos);
 
 // Rutas con parámetros AL FINAL
 router.patch('/:id_curso/estado', cursoController.cambiarEstadoCurso);
+router.put('/:id_curso', cursoController.actualizarCurso);
 router.get('/:id_curso', cursoController.obtenerCursoPorId);
 
 router.get('/pagina/:pagina/size/:size', cursoController.obtenerCursosPaginacion);
