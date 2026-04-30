@@ -13,12 +13,15 @@ router.get('/admin/supervisores', supervisorController.listarSupervisoresAdmin);
 router.get('/admin/logs/estudiante/:id', supervisorController.obtenerLogsEstudiante);
 router.get('/admin/logs/empleador/:id', supervisorController.obtenerLogsEmpleador);
 
-//Rutas con parámetros
+//Rutas con parámetros - MÁS ESPECÍFICAS PRIMERO
 router.get('/gmail/:gmail', supervisorController.buscarSupervisorPorGmail);
-router.get('/:id', supervisorController.buscarSupervisorPorId);
+router.put('/:id_supervisor/bloquear', supervisorController.bloquearUsuario);
+router.put('/:id_supervisor/desbloquear', supervisorController.desbloquearUsuario);
 router.put('/:id/perfil', supervisorController.actualizarPerfil);
 router.put('/:id/contrasena', supervisorController.cambiarContrasena);
 router.put('/:id/estado', supervisorController.cambiarEstado);
-router.put('/:id_supervisor/bloquear', supervisorController.bloquearUsuario);
+router.get('/:id', supervisorController.buscarSupervisorPorId);
+
+router.post('/enviarCodigo', supervisorController.enviarCodigoSupervisor);
 
 export default router;

@@ -1,10 +1,7 @@
 <template>
   <Transition name="fade">
-    <div
-      v-if="estudiante"
-      class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 px-4"
-      @click.self="$emit('cerrar')"
-    >
+    <div v-if="estudiante" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 px-4"
+      @click.self="$emit('cerrar')">
       <div class="bg-white rounded-3xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
 
         <!-- Header -->
@@ -41,6 +38,21 @@
             <p class="text-sm text-gray-600">{{ estudiante.educacion }}</p>
           </div>
 
+          <div v-if="estudiante && !estudiante.activo"
+            class="bg-red-50 border-l-4 border-red-500 p-4 mb-6 rounded-r-xl">
+            <div class="flex items-center mb-2">
+              <span class="text-red-600 mr-2">🚫</span>
+              <h3 class="text-red-800 font-bold text-sm uppercase">Cuenta Inhabilitada</h3>
+            </div>
+            <p class="text-gray-700 text-sm">
+              <span class="font-semibold">Motivo del bloqueo:</span>
+              {{ estudiante.motivo_bloqueo || 'No se especificó un motivo.' }}
+            </p>
+            <p class="text-gray-500 text-xs mt-2 italic">
+              Bloqueado el: {{ formatearFecha(estudiante.fecha_bloqueo) }}
+            </p>
+          </div>
+
           <!-- Logs -->
           <LogsActividadPanel :logs="logs" :cargando="cargandoLogs" />
 
@@ -56,9 +68,9 @@ import LogsActividadPanel from '../adminUsuarios/LogsActividadPanel.vue'
 import UsuarioEstadoBadge from '../adminUsuarios/UsuarioEstadoBadge.vue'
 
 const props = defineProps({
-  estudiante:  { type: Object,  default: null },
-  logs:        { type: Array,   default: () => [] },
-  cargandoLogs:{ type: Boolean, default: false }
+  estudiante: { type: Object, default: null },
+  logs: { type: Array, default: () => [] },
+  cargandoLogs: { type: Boolean, default: false }
 })
 defineEmits(['cerrar'])
 
@@ -70,17 +82,24 @@ const formatearFecha = (f) => {
 const campos = computed(() => {
   if (!props.estudiante) return []
   return [
-    { label: 'Correo',        valor: props.estudiante.gmail || '—' },
-    { label: 'Teléfono',      valor: props.estudiante.telefono || '—' },
-    { label: 'Estado',        valor: props.estudiante.activo ? 'Activo' : 'Inactivo' },
-    { label: 'Registro',      valor: formatearFecha(props.estudiante.creado_en) },
-    { label: 'CV',            valor: props.estudiante.cv || 'No cargado' },
+    { label: 'Correo', valor: props.estudiante.gmail || '—' },
+    { label: 'Teléfono', valor: props.estudiante.telefono || '—' },
+    { label: 'Estado', valor: props.estudiante.activo ? 'Activo' : 'Inactivo' },
+    { label: 'Registro', valor: formatearFecha(props.estudiante.creado_en) },
+    { label: 'CV', valor: props.estudiante.cv || 'No cargado' },
     { label: 'Postulaciones', valor: String(props.estudiante.total_postulaciones) },
   ]
 })
 </script>
 
 <style scoped>
-.fade-enter-active, .fade-leave-active { transition: opacity 0.2s ease; }
-.fade-enter-from, .fade-leave-to       { opacity: 0; }
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.2s ease;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}
 </style>

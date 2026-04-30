@@ -13,9 +13,10 @@ import DetalleOferta from '@/views/DetalleOferta.vue'
 import MisOfertas from '@/views/MisOfertas.vue'
 import NuevaOferta from '@/views/NuevaOferta.vue'
 import ListaPostulantes from '@/views/ListaPostulantes.vue'
-import DetallePostulante from '@/views/DetallePostulante.vue'
+import PerfilEstudianteView from '@/views/PerfilEstudiante.vue'
 import EditarOferta from '@/views/EditarOferta.vue'
 import MisPostulaciones from '@/views/MisPostulaciones.vue'
+import GestionOfertas from '@/views/GestionOfertas.vue'
 
 // Perfiles
 import PerfilEstudiante from '@/views/EditarPerfilEstudiante.vue'
@@ -35,6 +36,15 @@ import EstudianteCursos from '@/views/EstudianteCursos.vue'
 import ListaEstudiantes from '@/views/ListaEstudiantes.vue'
 import ListaEmpleadores from '@/views/ListaEmpleadores.vue'
 import ListaSupervisores from '@/views/ListaSupervisores.vue'
+
+// Recuperar contrasenia
+import SolicitarRecuperacion from '@/views/SolicitarRecuperacion.vue'
+import VerificarCodigo from '@/views/VerificarCodigo.vue'
+import NuevaPassword from '@/views/NuevaPassword.vue'
+import GestionCursos from '@/views/GestionCursos.vue'
+
+//Categorias ofertas laborales
+import GestionCategorias from '@/views/GestionCategorias.vue'
 
 const routes = [
   { path: '/', redirect: '/home' },
@@ -70,6 +80,13 @@ const routes = [
     meta: { requiereRol: ['supervisor'] }
   },
 
+  {
+    path: '/supervisor/oferta/:id',
+    name: 'SupervisorDetalleOferta',
+    component: () => import('@/views/DetalleOferta.vue'),
+    meta: { requiereRol: ['supervisor'] }
+  },
+
   // Ofertas
   {
     path: '/ofertas',
@@ -83,11 +100,25 @@ const routes = [
     component: DetalleOferta
   },
 
-  
+
   { path: '/mis-ofertas', name: 'MisOfertas', component: MisOfertas, meta: { requiereRol: ['empleador'] } },
   { path: '/mis-ofertas/nueva', name: 'NuevaOferta', component: NuevaOferta, meta: { requiereRol: ['empleador'] } },
   { path: '/mis-ofertas/:ofertaId/postulantes', name: 'ListaPostulantes', component: ListaPostulantes, meta: { requiereRol: ['empleador'] } },
-  { path: '/postulante/:id', name: 'DetallePostulante', component: DetallePostulante, meta: { requiereRol: ['empleador'] } },
+
+  //Ver Perfiles
+  {
+    path: '/postulante/:id',
+    name: 'PerfilEstudianteView',
+    component: PerfilEstudianteView,
+    meta: { requiereRol: ['empleador', 'supervisor'] }
+  },
+  {
+    path: '/empleador/:id',
+    name: 'PerfilEmpleadorView',
+    component: () => import('@/views/PerfilEmpleador.vue'), // O el nombre que le des al archivo
+    meta: { requiereRol: ['estudiante', 'empleador', 'supervisor'] }
+  },
+
   { path: '/mis-ofertas/:ofertaId/editar', name: 'EditarOferta', component: EditarOferta, meta: { requiereRol: ['empleador'] } },
   { path: '/mis-postulaciones', name: 'MisPostulaciones', component: MisPostulaciones, meta: { requiereRol: ['estudiante'] } },
 
@@ -107,6 +138,22 @@ const routes = [
     name: 'EstudianteCursos',
     component: EstudianteCursos,
     meta: { requiereRol: ['estudiante'] }
+  },
+
+  // Editar curso - ambos roles (de GPA-29/53)
+  {
+    path: '/editar-curso/:id',
+    name: 'EditarCurso',
+    component: () => import('@/views/EditarCurso.vue'),
+    meta: { requiereRol: ['estudiante', 'empleador'] }
+  },
+
+  // Supervisor - Ver detalle curso (de GPA-37)
+  {
+    path: '/supervisor/curso/:id',
+    name: 'SupervisorDetalleCurso',
+    component: () => import('@/views/DetalleCurso.vue'),
+    meta: { requiereRol: ['supervisor'] }
   },
 
   // Perfiles
@@ -150,8 +197,32 @@ const routes = [
     component: ListaSupervisores,
     meta: { requiereRol: ['supervisor'] }
   },
+  {
+    path: '/supervisor/gestion-cursos',
+    name: 'GestionCursos',
+    component: GestionCursos,
+    meta: { requiereRol: ['supervisor'] }
+  },
+  {
+    path: '/supervisor/gestion-ofertas',
+    name: 'GestionOfertas',
+    component: GestionOfertas,
+    meta: { requiereRol: ['supervisor'] }
+  },
 
-  { path: '/:pathMatch(.*)*', redirect: '/home' },
+  // Recuperar contrasenia
+  { path: '/recuperar-password', name: 'SolicitarRecuperacion', component: SolicitarRecuperacion, meta: { soloPublico: true } },
+  { path: '/verificar-codigo', name: 'VerificarCodigo', component: VerificarCodigo, meta: { soloPublico: true } },
+  { path: '/nueva-password', name: 'NuevaPassword', component: NuevaPassword, meta: { soloPublico: true } },
+
+  //Categorias ofertas laborales
+  {
+  path: '/supervisor/categorias',
+  name: 'GestionCategorias',
+  component: GestionCategorias,
+  meta: { requiereRol: ['supervisor'] }
+},
+  { path: '/:pathMatch(.*)*', redirect: '/home' }
 ]
 
 const router = createRouter({

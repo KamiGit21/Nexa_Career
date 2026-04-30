@@ -72,6 +72,8 @@ const confirmar = async () => {
   cerrar()
 }
 
+
+
 watch(() => props.visible, (val) => {
   if (!val) {
     motivo.value = ''

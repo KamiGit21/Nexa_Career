@@ -16,7 +16,8 @@
         <tr v-for="emp in empleadores" :key="emp.id_empleador" class="hover:bg-gray-50 transition-colors">
           <td class="p-4">
             <div class="flex items-center gap-3">
-              <div class="w-9 h-9 rounded-full bg-amber-100 text-amber-700 flex items-center justify-center font-bold text-xs flex-shrink-0">
+              <div
+                class="w-9 h-9 rounded-full bg-amber-100 text-amber-700 flex items-center justify-center font-bold text-xs flex-shrink-0">
                 {{ (emp.empresa || '?')[0].toUpperCase() }}
               </div>
               <div>
@@ -28,13 +29,22 @@
           <td class="p-4 text-xs text-gray-600">{{ emp.gmail }}</td>
           <td class="p-4 text-center font-semibold text-green-600">{{ emp.total_ofertas }}</td>
           <td class="p-4 text-center font-semibold text-amber-600">{{ emp.total_cursos }}</td>
-          <td class="p-4 text-center"><UsuarioEstadoBadge :activo="emp.activo" /></td>
+          <td class="p-4 text-center">
+            <UsuarioEstadoBadge :activo="emp.activo" />
+          </td>
           <td class="p-4 text-center text-xs text-gray-400">{{ formatearFecha(emp.creado_en) }}</td>
           <td class="p-4 text-center">
             <div class="flex justify-center gap-2">
-              <button @click="$emit('ver', emp)" class="px-3 py-1.5 bg-[#1b2a4a] text-white rounded-lg text-xs hover:bg-[#0f1a2e] transition">
+              <button @click="irAlPerfil(emp)"
+                class="px-2 py-1.5 text-xs border border-gray-300 rounded-lg font-medium hover:bg-gray-100 transition-colors">
+                Perfil
+              </button>
+              <button @click="$emit('ver', emp)"
+                class="px-3 py-1.5 bg-[#1b2a4a] text-white rounded-lg text-xs hover:bg-[#0f1a2e] transition">
                 Ver detalle
               </button>
+
+               <!-- Activo: mostrar Bloquear -->
               <button
                 v-if="emp.activo === 1"
                 @click="$emit('bloquear', emp)"
@@ -42,9 +52,15 @@
               >
                 Bloquear
               </button>
-              <span v-else class="px-3 py-1.5 bg-gray-300 text-gray-500 rounded-lg text-xs">
-                Bloqueado
-              </span>
+
+              <!-- Inactivo: mostrar Desbloquear (verde, reemplaza el span gris anterior) -->
+              <button
+                v-else
+                @click="$emit('desbloquear', emp)"
+                class="px-3 py-1.5 bg-green-600 text-white rounded-lg text-xs hover:bg-green-700 transition"
+              >
+                Desbloquear
+              </button>
             </div>
           </td>
         </tr>
@@ -55,11 +71,22 @@
 </template>
 
 <script setup>
+import { useRouter } from 'vue-router'
 import UsuarioEstadoBadge from '../adminUsuarios/UsuarioEstadoBadge.vue'
+
+const router = useRouter()
+
 defineProps({ empleadores: { type: Array, required: true } })
-defineEmits(['ver', 'bloquear'])
+defineEmits(['ver', 'bloquear', 'desbloquear'])
 const formatearFecha = (f) => {
   if (!f) return '—'
   return new Date(f).toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' })
+}
+
+const irAlPerfil = (empleador) => {
+  router.push({
+    name: 'PerfilEmpleadorView',
+    params: { id: empleador.id_empleador }
+  })
 }
 </script>

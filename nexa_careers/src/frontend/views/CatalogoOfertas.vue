@@ -1,212 +1,150 @@
 <template>
-  <div class="min-h-screen bg-[#f8f5f0]">
+  <div class="h-auto pb-20 bg-[#f8f5f0] overflow-hidden">
+    <OfertasHeader :filtros="filtros" :ordenado-por-fecha="ordenadoPorFecha" @update:filtros="val => filtros = val"
+      @buscar="cargarOfertas(1)" @toggle-orden="toggleOrden" />
 
-    <header class="bg-[#1b2a4a] text-white py-16 px-8 text-center">
-      <h1 class="text-4xl font-extrabold mb-4">Encuentra tu próximo desafío profesional</h1>
-      <p class="text-[#d0b06d] max-w-2xl mx-auto mb-8">
-        Explora las mejores oportunidades laborales dentro de la red Nexa.
-      </p>
+    <main class="max-w-7xl mx-auto pt-12 pb-4 px-6">
+      <div v-if="!loading && !error && ofertas.length > 0"
+        class="flex flex-col sm:flex-row justify-between items-center mb-6 gap-4">
+        <p class="text-sm text-gray-500">
+          Página <span class="font-semibold text-[#1b2a4a]">{{ paginaActual }}</span> de <span
+            class="font-semibold text-[#1b2a4a]">{{ totalPaginas }}</span>
+        </p>
 
-      <div class="max-w-3xl mx-auto flex flex-col md:flex-row gap-4 items-center">
-        <div class="flex-1 w-full bg-white p-2 rounded-xl shadow-2xl flex gap-2">
-          <div class="flex-1 flex items-center px-4 gap-2">
-            <span class="text-gray-400">🔍</span>
-            <input
-              v-model="busqueda"
-              type="text"
-              placeholder="Buscar por título en esta página..."
-              class="w-full py-3 text-slate-800 outline-none text-sm rounded-lg"
-            />
-          </div>
-          <button
-            @click="cargarOfertas(1)"
-            class="bg-[#1b2a4a] text-white px-8 py-3 rounded-lg font-bold hover:bg-[#0f1a2e] transition-colors"
-          >
-            Buscar
-          </button>
+        <div class="flex items-center gap-3">
+          <label for="pageSize" class="text-[#002855] font-semibold text-sm">
+            Ofertas por página:
+          </label>
+          <select id="pageSize" v-model="limite"
+            class="border-2 border-gray-300 rounded-lg px-3 py-1.5 bg-white text-gray-700 focus:outline-none focus:border-[#b5943a] transition-colors cursor-pointer">
+            <option v-for="n in opcionesPagina" :key="n" :value="n">
+              {{ n }}
+            </option>
+          </select>
         </div>
-        
-        <button
-          @click="toggleOrden"
-          :class="ordenadoPorFecha ? 'bg-[#d0b06d] text-[#1b2a4a]' : 'bg-transparent border border-[#d0b06d] text-[#d0b06d]'"
-          class="px-6 py-4 rounded-xl font-bold transition-colors whitespace-nowrap flex items-center gap-2 hover:brightness-110"
-        >
-          📅 {{ ordenadoPorFecha ? 'Más recientes primero' : 'Ordenar por fecha' }}
-        </button>
-      </div>
-    </header>
-
-    <main class="max-w-7xl mx-auto py-12 px-6">
-
-      <div v-if="loading" class="text-center py-20 text-gray-500">
-        Cargando ofertas...
       </div>
 
-      <div v-else-if="error" class="text-center py-12">
-        <p class="text-red-600 mb-4">{{ error }}</p>
-        <button @click="cargarOfertas(1)" class="bg-[#1b2a4a] text-white px-6 py-3 rounded-lg">
-          Reintentar
-        </button>
-      </div>
+      <OfertaGrid :ofertas="ofertas" :loading="loading" :error="error" @reintentar="cargarOfertas(paginaActual)"
+        @ver-detalle="verDetalle" />
 
-      <template v-else>
-
-        <div v-if="ofertasFiltradas.length === 0" class="text-center py-20 text-gray-500">
-          No se encontraron ofertas.
-        </div>
-
-        <template v-else>
-
-          <p class="text-sm text-gray-500 mb-6">
-            Página <span class="font-semibold text-[#1b2a4a]">{{ paginaActual }}</span> de <span class="font-semibold text-[#1b2a4a]">{{ totalPaginas }}</span>
-            <span v-if="totalOfertasBackend > 0">
-              (Total en el sistema: {{ totalOfertasBackend }} ofertas)
-            </span>
-          </p>
-
-          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            <div
-              v-for="oferta in ofertasFiltradas"
-              :key="oferta.id_oferta"
-              class="bg-white rounded-2xl border border-gray-200 p-6 hover:shadow-xl hover:-translate-y-1 transition-all cursor-pointer"
-              @click="verDetalle(oferta.id_oferta)"
-            >
-              <div class="flex justify-between items-start mb-4">
-                <div class="w-12 h-12 bg-[#1b2a4a]/10 rounded-lg flex items-center justify-center text-2xl">
-                  💼
-                </div>
-                <span
-                  v-if="esNueva(oferta.fecha_apertura)"
-                  class="bg-green-100 text-green-700 text-[10px] font-bold px-2 py-1 rounded-full"
-                >
-                  Nueva
-                </span>
-              </div>
-
-              <h2 class="text-lg font-bold text-[#1b2a4a] hover:text-[#b89b4d] transition-colors">
-                {{ oferta.oferta }}
-              </h2>
-
-              <p class="text-sm text-gray-500 line-clamp-3 my-3">
-                {{ oferta.descripcion || 'Sin descripción' }}
-              </p>
-
-              <div class="flex justify-between items-center pt-4 border-t border-gray-100">
-                <span class="text-xs text-gray-400">
-                  {{ formatearFecha(oferta.fecha_apertura) }}
-                </span>
-                <span class="text-[#1b2a4a] font-bold text-sm hover:underline">
-                  Ver detalle →
-                </span>
-              </div>
-            </div>
-          </div>
-
-          <CatalogoCursosPaginacion
-            :pagina-actual="paginaActual"
-            :total-paginas="totalPaginas"
-            @cambiar="cambiarPagina"
-          />
-
-        </template>
-      </template>
+      <CatalogoOfertasPaginacion v-if="!loading && !error && ofertas.length > 0" :pagina-actual="paginaActual"
+        :total-paginas="totalPaginas" @cambiar="cambiarPagina" />
     </main>
+
+    <BotonScroll />
   </div>
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
-import { listarOfertasPaginadasPorEstado, obtenerOfertasPaginacionPorEstadoYFecha } from '../services/ofertaService.js'
-import CatalogoCursosPaginacion from '../components/catalogoCursos/CatalogoCursosPaginacion.vue'
+import {
+  buscarOfertasAvanzado
+} from '../services/ofertaService.js'
 
-const router   = useRouter()
-const loading  = ref(true)
-const error    = ref(null)
-const ofertas  = ref([])
+import OfertasHeader from '../components/catalogoOfertas/OfertasHeader.vue'
+import OfertaGrid from '../components/catalogoOfertas/OfertaGrid.vue'
+import CatalogoOfertasPaginacion from '../components/catalogoOfertas/CatalogoOfertasPaginacion.vue'
+import BotonScroll from '../components/comunes/BotonScroll.vue'
+import { obtenerEmpleadorPorId } from '../services/empleadorService.js'
+
+const limite = ref(15)
+const opcionesPagina = [9, 12, 15, 18, 21, 24, 27, 30]
+const router = useRouter()
+const loading = ref(true)
+const error = ref(null)
+const ofertas = ref([])
 const busqueda = ref('')
-
-// Variables de Paginación controladas por el Backend
 const paginaActual = ref(1)
 const totalPaginas = ref(1)
-const totalOfertasBackend = ref(0)
-
-// Estado del nuevo botón de orden
 const ordenadoPorFecha = ref(false)
 
-// Filtro de búsqueda local para las 15 ofertas en pantalla
-const ofertasFiltradas = computed(() =>
-  ofertas.value.filter(o => {
-    return !busqueda.value || o.oferta.toLowerCase().includes(busqueda.value.toLowerCase())
-  })
-)
-
-// NUEVO: Función que alterna el orden y recarga desde la página 1
 const toggleOrden = () => {
   ordenadoPorFecha.value = !ordenadoPorFecha.value
   cargarOfertas(1)
 }
 
-// CORRECCIÓN: Ahora sí pide los datos nuevos al backend al cambiar de página
 const cambiarPagina = (nuevaPagina) => {
   if (nuevaPagina < 1 || nuevaPagina > totalPaginas.value) return
-  cargarOfertas(nuevaPagina) // Llama al servidor con el nuevo número de página
+  cargarOfertas(nuevaPagina)
   window.scrollTo({ top: 0, behavior: 'smooth' })
 }
 
 const verDetalle = (id) => router.push(`/ofertas/${id}`)
 
-// ─── Helpers ───────────────────────────────────────────────────────────────
+const filtros = ref({
+  titulo: '',
+  empleador: '',
+  modalidad: ''
+})
 
-const formatearFecha = (fecha) => {
-  if (!fecha) return 'Fecha no especificada'
-  return new Date(fecha).toLocaleDateString('es-ES')
-}
-
-const esNueva = (fecha) => {
-  if (!fecha) return false
-  const diffDias = Math.floor((new Date() - new Date(fecha)) / (1000 * 60 * 60 * 24))
-  return diffDias <= 7
-}
-
-// Lógica principal de conexión
 const cargarOfertas = async (pagina = 1) => {
   loading.value = true
-  error.value   = null
+  error.value = null
   paginaActual.value = pagina
 
   try {
-    let response;
-    
-    // Decidimos a qué API llamar dependiendo de si el botón está apretado
-    if (ordenadoPorFecha.value) {
-      response = await obtenerOfertasPaginacionPorEstadoYFecha(paginaActual.value, 1)
-    } else {
-      response = await listarOfertasPaginadasPorEstado(paginaActual.value, 1) 
-    }
+    const response = await buscarOfertasAvanzado({
+      pagina,
+      size: limite.value,
+      titulo: filtros.value.titulo,
+      empleador: filtros.value.empleador,
+      modalidad: filtros.value.modalidad,
+      orden: ordenadoPorFecha.value ? 'desc' : 'asc'
+    })
 
-    if (response.success) {
-      ofertas.value = response.data || []
+   if (response.success && response.data) {
       
-      // Si tu backend devuelve la meta-data de paginación (como configuramos antes), la guardamos
-      if (response.paginacion) {
-        totalPaginas.value = response.paginacion.totalPaginas
-        totalOfertasBackend.value = response.paginacion.totalOfertas
-      } else {
-        // Respaldo por si el backend aún no envía la meta-data
-        totalPaginas.value = ofertas.value.length === 15 ? paginaActual.value + 1 : paginaActual.value
-      }
+      const ofertasEnriquecidas = await Promise.all(
+        response.data.map(async (oferta) => {
+          let nombreEmpleador = 'Empresa Confidencial'; // Valor por defecto
+          
+          if (oferta.id_empleador) {
+            try {
+              const empRes = await obtenerEmpleadorPorId(oferta.id_empleador);
+              if (empRes && empRes.success && empRes.data) {
+                // A prueba de Arrays u Objetos directos
+                const datosEmpresa = Array.isArray(empRes.data) ? empRes.data[0] : empRes.data;
+                nombreEmpleador = datosEmpresa.empresa || datosEmpresa.nombre || 'Empresa';
+              }
+            } catch (e) {
+              console.error('Error buscando datos del empleador:', e);
+            }
+          }
+          return { ...oferta, nombre_empleador: nombreEmpleador };
+        })
+      );
 
+      ofertas.value = ofertasEnriquecidas;
+      totalPaginas.value = response.paginas || 1;
     } else {
-      error.value = response.message || 'Error al cargar ofertas'
+      ofertas.value = []
+      error.value = 'No se encontraron ofertas con esos criterios.'
     }
   } catch (err) {
-    console.error('Error:', err)
     error.value = 'Error de conexión con el servidor'
+    console.error(err)
   } finally {
     loading.value = false
   }
 }
+
+watch(filtros, (nuevosFiltros) => {
+  const estaVacio = Object.values(nuevosFiltros).every(v => v === '')
+  if (estaVacio) {
+    cargarOfertas(1)
+  }
+}, { deep: true })
+
+watch(busqueda, (nuevoValor) => {
+  if (nuevoValor.trim() === '') {
+    cargarOfertas(1)
+  }
+})
+
+watch(limite, () => {
+  cargarOfertas(1)
+})
 
 onMounted(() => cargarOfertas(1))
 </script>

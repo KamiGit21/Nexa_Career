@@ -1,4 +1,5 @@
 import db from '../../api-gateway/db.js';
+import { enviarCodigo } from '../../servicioNotificacion/correoService.js';
 
 const isValidEmail = (email) => {
   if (!email || typeof email !== 'string') return false;
@@ -184,8 +185,17 @@ export const cambiarContrasena = async (req, res) => {
   }
 
   try {
+    const [rows] = await db.query('SELECT contrasena FROM empleador WHERE id_empleador = ?', [id]);
+    if (rows.length === 0) {
+      return res.status(404).json({ success: false, message: 'Empleador no encontrado' });
+    }
+    const contrasenaActual = rows[0].contrasena;
+    if (contrasena === contrasenaActual) {
+      return res.status(400).json({ success: false, message: 'La nueva contraseña no puede ser igual a la anterior' });
+    }
+
     const [result] = await db.query('UPDATE empleador SET contrasena = ? WHERE id_empleador = ?', [contrasena, id]);
-    if (result.affectedRows === 0) return res.status(404).json({ success: false, message: 'Empleador no encontrado' });
+    //if (result.affectedRows === 0) return res.status(404).json({ success: false, message: 'Empleador no encontrado' });
     res.status(200).json({ success: true, message: 'Contraseña actualizada correctamente' });
   } catch (error) {
     console.error('Error al cambiar contraseña:', error);
@@ -196,7 +206,7 @@ export const cambiarContrasena = async (req, res) => {
 // 7. PUT: Cambiar estado (activo)
 export const cambiarEstado = async (req, res) => {
   const { id } = req.params;
-  const { activo } = req.body;
+  const { activo, motivo } = req.body;
 
   if (![0, 1, '0', '1', true, false].includes(activo)) {
     return res.status(400).json({ success: false, message: 'El valor activo debe ser 0 o 1' });
@@ -205,11 +215,52 @@ export const cambiarEstado = async (req, res) => {
   const valorActivo = activo === 1 || activo === '1' || activo === true ? 1 : 0;
 
   try {
-    const [result] = await db.query('UPDATE empleador SET activo = ? WHERE id_empleador = ?', [valorActivo, id]);
+    let query = 'UPDATE empleador SET activo = ?';
+    let values = [valorActivo];
+
+    // Si se bloquea (activo = 0), agregar motivo y fecha de bloqueo
+    if (valorActivo === 0) {
+      query += ', motivo_bloqueo = ?, fecha_bloqueo = NOW()';
+      values.push(motivo || null);
+    } else {
+      // Si se desbloquea (activo = 1), limpiar motivo y fecha de bloqueo
+      query += ', motivo_bloqueo = NULL, fecha_bloqueo = NULL';
+    }
+
+    query += ' WHERE id_empleador = ?';
+    values.push(id);
+
+    const [result] = await db.query(query, values);
     if (result.affectedRows === 0) return res.status(404).json({ success: false, message: 'Empleador no encontrado' });
     res.status(200).json({ success: true, message: `Estado del empleador actualizado a ${valorActivo ? 'Activo' : 'Inactivo'}` });
   } catch (error) {
     console.error('Error al cambiar estado:', error);
     res.status(500).json({ success: false, message: 'Error al actualizar estado' });
+  }
+};
+
+export const enviarCodigoEmpleador = async (req, res) => {
+  const { correo, codigo } = req.body;
+
+  if (!correo || !codigo) {
+    return res.status(400).json({ success: false, message: 'El correo y el código son obligatorios' });
+  }
+
+  try {
+    const [rows] = await db.query('SELECT * FROM empleador WHERE gmail = ?', [correo]);
+    if (rows.length === 0) {
+      return res.status(404).json({ success: false, message: 'Empleador no encontrado' });
+    }
+
+    const resultado = await enviarCodigo(correo, codigo);
+
+    if (resultado.success) {
+      res.status(200).json({ success: true, message: `Código enviado a ${correo}` });
+    } else {
+      res.status(500).json({ success: false, message: 'Error al enviar el correo' });
+    }
+  } catch (error) {
+    console.error('Error en enviarCodigoEmpleador:', error);
+    res.status(500).json({ success: false, message: 'Error interno del servidor' });
   }
 };
