@@ -333,23 +333,16 @@ export const obtenerOfertasPaginacionPorFechaDescendente = async (req, res) => {
   const offset = (pagina - 1) * limite;
 
   try {
-    const [countResult] = await db.query('SELECT COUNT(*) as total FROM oferta WHERE estado = ?', [estado]);
-    const totalOfertas = countResult[0].total;
-    const totalPaginas = Math.ceil(totalOfertas / limite);
+    const [countResult] = await db.query('SELECT COUNT(*) as total FROM oferta');
+    const totalPaginas = Math.ceil(countResult[0].total / limite);
 
     const [rows] = await db.query(
       'SELECT * FROM oferta ORDER BY fecha_apertura DESC LIMIT ? OFFSET ?',
       [limite, offset]
     );
-    res.status(200).json({
-      success: true,
-      data: rows,
-      paginas: totalPaginas
-    });
-
+    res.status(200).json({ success: true, data: rows, paginas: totalPaginas });
   } catch (error) {
-    console.error('Error al obtener ofertas paginadas:', error);
-    res.status(500).json({ success: false, message: 'Error interno al paginar las ofertas' });
+    res.status(500).json({ success: false, message: 'Error interno al paginar' });
   }
 }
 
@@ -408,3 +401,52 @@ export const obtenerOfertasPaginacionPorEstadoYFechaDescendente = async (req, re
     res.status(500).json({ success: false, message: 'Error interno al paginar las ofertas' });
   }
 }
+
+//15. Busqueda avanzada de ofertas con filtros (titulo, estado, modalidad y empleador)
+export const buscarOfertasAvanzado = async (req, res) => {
+  try {
+    const { q, empresa, modalidad, pagina = 1, size = 15, sort = 'desc' } = req.query;
+    const limite = parseInt(size);
+    const offset = (parseInt(pagina) - 1) * limite;
+
+    console.log("Palabra clave (q):", q);
+    console.log("Empresa:", empresa);
+    console.log("Modalidad:", modalidad);
+
+    let queryBase = `
+      FROM oferta o
+      INNER JOIN empleador e ON o.id_empleador = e.id_empleador
+      WHERE o.estado = 1
+    `;
+    const params = [];
+
+    if (q) {
+      queryBase += " AND o.oferta LIKE ?";
+      params.push(`%${q}%`);
+    }
+    if (empresa) {
+      queryBase += " AND e.empresa LIKE ?";
+      params.push(`%${empresa}%`);
+    }
+    if (modalidad) {
+      queryBase += " AND o.modalidad = ?";
+      params.push(modalidad);
+    }
+    const [countResult] = await db.query(`SELECT COUNT(*) as total ${queryBase}`, params);
+    const totalPaginas = Math.ceil(countResult[0].total / limite);
+
+    const orderDir = sort.toLowerCase() === 'asc' ? 'ASC' : 'DESC';
+    const queryFinal = `SELECT o.*, e.empresa ${queryBase} ORDER BY o.fecha_apertura ${orderDir} LIMIT ? OFFSET ?`;
+
+    const [rows] = await db.query(queryFinal, [...params, limite, offset]);
+
+    res.status(200).json({
+      success: true,
+      data: rows,
+      paginas: totalPaginas
+    });
+  } catch (error) {
+    console.error('Error en búsqueda avanzada:', error);
+    res.status(500).json({ success: false, message: 'Error interno en la búsqueda' });
+  }
+};
