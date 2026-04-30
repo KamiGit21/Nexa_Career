@@ -1,4 +1,5 @@
 import db from '../../api-gateway/db.js';
+import { enviarCodigo } from '../../servicioNotificacion/correoService.js';
 
 // 1. POST: Registrar supervisor (activo = 1 por defecto)
 export const registrarSupervisor = async (req, res) => {
@@ -89,10 +90,23 @@ export const cambiarContrasena = async (req, res) => {
   const { contrasena } = req.body;
 
   if (!contrasena) return res.status(400).json({ success: false, message: 'La nueva contraseña es obligatoria' });
+   if (typeof contrasena !== 'string' || contrasena.length < 8 || contrasena.length > 60) {
+    return res.status(400).json({ success: false, message: 'La contraseña debe tener entre 8 y 60 caracteres' });
+  }
 
   try {
+    const [rows] = await db.query('SELECT contrasena FROM supervisor WHERE id_supervisor = ?', [id]);
+    if (rows.length === 0) {
+      return res.status(404).json({ success: false, message: 'Supervisor no encontrado' });
+    }
+    const contrasenaActual = rows[0].contrasena;
+
+    if (contrasena === contrasenaActual) {
+      return res.status(400).json({ success: false, message: 'La nueva contraseña no puede ser igual a la anterior' });
+    }
+
     const [result] = await db.query('UPDATE supervisor SET contrasena = ? WHERE id_supervisor = ?', [contrasena, id]);
-    if (result.affectedRows === 0) return res.status(404).json({ success: false, message: 'Supervisor no encontrado' });
+    //if (result.affectedRows === 0) return res.status(404).json({ success: false, message: 'Supervisor no encontrado' });
     res.status(200).json({ success: true, message: 'Contraseña actualizada correctamente' });
   } catch (error) {
     console.error('Error al cambiar contraseña:', error);
@@ -551,5 +565,32 @@ export const obtenerLogsEmpleador = async (req, res) => {
   } catch (error) {
     console.error('Error en obtenerLogsEmpleador:', error);
     res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+
+export const enviarCodigoSupervisor = async (req, res) => {
+  const { correo, codigo } = req.body;
+
+  if (!correo || !codigo) {
+    return res.status(400).json({ success: false, message: 'El correo y el código son obligatorios' });
+  }
+
+  try {
+    const [rows] = await db.query('SELECT * FROM supervisor WHERE gmail = ?', [correo]);
+    if (rows.length === 0) {
+      return res.status(404).json({ success: false, message: 'Supervisor no encontrado' });
+    }
+
+    const resultado = await enviarCodigo(correo, codigo);
+
+    if (resultado.success) {
+      res.status(200).json({ success: true, message: `Código enviado a ${correo}` });
+    } else {
+      res.status(500).json({ success: false, message: 'Error al enviar el correo' });
+    }
+  } catch (error) {
+    console.error('Error en enviarCodigoSupervisor:', error);
+    res.status(500).json({ success: false, message: 'Error interno del servidor' });
   }
 };

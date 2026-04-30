@@ -8,41 +8,38 @@
 
     <main class="max-w-7xl mx-auto pt-12 pb-4 px-6">
 
-    <div v-if="loading" class="text-center py-20 text-gray-500">
-      Cargando cursos...
-    </div>
-
-    <template v-else>
-      <div v-if="cursosAMostrar.length === 0" class="text-center py-20 text-gray-400">
-        <p class="text-5xl mb-4">🔍</p>
-        <p class="text-lg font-medium">No encontramos resultados para tu búsqueda</p>
-        <button @click="restablecerFiltros" class="mt-4 text-[#1b2a4a] font-bold hover:underline">
-          Limpiar todos los filtros
-        </button>
+      <div v-if="loading" class="text-center py-20 text-gray-500">
+        Cargando cursos...
       </div>
 
       <template v-else>
-        <div class="flex justify-end items-center mb-6 gap-3">
-          <label for="pageSize" class="text-[#002855] font-semibold text-sm">
-            Cursos por página:
-          </label>
-          <select 
-            id="pageSize" 
-            v-model="itemsPorPagina"
-            class="border-2 border-gray-300 rounded-lg px-3 py-1.5 bg-white text-gray-700 focus:outline-none focus:border-[#b5943a] transition-colors cursor-pointer"
-          >
-            <option v-for="n in opcionesPagina" :key="n" :value="n">
-              {{ n }}
-            </option>
-          </select>
+        <div v-if="cursosAMostrar.length === 0" class="text-center py-20 text-gray-400">
+          <p class="text-5xl mb-4">🔍</p>
+          <p class="text-lg font-medium">No encontramos resultados para tu búsqueda</p>
+          <button @click="restablecerFiltros" class="mt-4 text-[#1b2a4a] font-bold hover:underline">
+            Limpiar todos los filtros
+          </button>
         </div>
 
-        <CursoPublicoGrid :cursos="cursosAMostrar" @ver="irDetalle" />
+        <template v-else>
+          <div class="flex justify-end items-center mb-6 gap-3">
+            <label for="pageSize" class="text-[#002855] font-semibold text-sm">
+              Cursos por página:
+            </label>
+            <select id="pageSize" v-model="itemsPorPagina"
+              class="border-2 border-gray-300 rounded-lg px-3 py-1.5 bg-white text-gray-700 focus:outline-none focus:border-[#b5943a] transition-colors cursor-pointer">
+              <option v-for="n in opcionesPagina" :key="n" :value="n">
+                {{ n }}
+              </option>
+            </select>
+          </div>
 
-        <CatalogoCursosPaginacion id="punto-final" v-if="totalPaginas > 1" :pagina-actual="paginaActual" :total-paginas="totalPaginas"
-          @cambiar="cambiarPagina" />
+          <CursoPublicoGrid :cursos="cursosAMostrar" @ver="irDetalle" />
+
+          <CatalogoCursosPaginacion id="punto-final" v-if="totalPaginas > 1" :pagina-actual="paginaActual"
+            :total-paginas="totalPaginas" @cambiar="cambiarPagina" />
+        </template>
       </template>
-    </template>
     </main>
     <div class="min-h-screen bg-[#f8f5f0]">
       <BotonScroll />
@@ -55,7 +52,8 @@ import { ref, computed, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import {
   listarCursosPublicosPaginados,
-  listarCursosPublicosPaginadosPorFecha
+  listarCursosPublicosPaginadosPorFecha,
+  buscarCursosAvanzado
 } from '../services/cursoService.js'
 
 // Componentes
@@ -67,6 +65,10 @@ import CatalogoCursosPaginacion from '../components/catalogoCursos/CatalogoCurso
 // importar componente de botonscroll
 import BotonScroll from '../components/comunes/BotonScroll.vue'
 
+import { obtenerEstudiantePorId } from '@/services/estudianteService.js'
+import { obtenerEmpleadorPorId } from '@/services/empleadorService.js'
+
+
 const router = useRouter()
 const cursos = ref([])
 const loading = ref(true)
@@ -74,10 +76,10 @@ const loading = ref(true)
 // Filtros y Paginación
 const busqueda = ref('')
 const categoriaActiva = ref('Todos')
-const orden = ref('reciente') // 'reciente' o 'antiguo'
+const orden = ref('reciente')
 const CATEGORIAS = ['Todos', 'Tecnología', 'Finanzas', 'Diseño', 'Marketing', 'Redes']
 
-const itemsPorPagina = ref(15) 
+const itemsPorPagina = ref(15)
 const opcionesPagina = [9, 12, 15, 18, 21, 24, 27, 30]
 
 const paginaActual = ref(1)
@@ -90,22 +92,21 @@ const toggleOrden = () => {
 }
 
 const cargarCursos = async (pagina = 1) => {
-  loading.value = true
-  paginaActual.value = pagina
+  loading.value = true;
+  paginaActual.value = pagina;
 
   try {
-    let response;
-    if (orden.value === 'reciente') {
-      response = await listarCursosPublicosPaginadosPorFecha(pagina, itemsPorPagina.value, 'abajo');
-    } else if (orden.value === 'antiguo') {
-      response = await listarCursosPublicosPaginadosPorFecha(pagina, itemsPorPagina.value, 'arriba');
-    } else {
-      response = await listarCursosPublicosPaginados(pagina, itemsPorPagina.value);
-    }
+    const response = await buscarCursosAvanzado({
+      pagina: paginaActual.value,
+      size: itemsPorPagina.value,
+      q: busqueda.value,
+      categoria: categoriaActiva.value,
+      orden: orden.value
+    });
 
     if (response.success) {
       cursos.value = response.data;
-      totalPaginas.value = response.paginas;
+      totalPaginas.value = response.paginas || 1;
     } else {
       cursos.value = [];
       totalPaginas.value = 1;
@@ -114,35 +115,20 @@ const cargarCursos = async (pagina = 1) => {
     console.error("Error al conectar con el servidor:", err);
     cursos.value = [];
   } finally {
-    loading.value = false
+    loading.value = false;
   }
-}
+};
 
 const cursosAMostrar = computed(() => {
-  let lista = cursos.value;
-
-  if (categoriaActiva.value !== 'Todos') {
-    lista = lista.filter(c => c.categoria?.toLowerCase() === categoriaActiva.value.toLowerCase());
-  }
-
-  if (busqueda.value.trim()) {
-    const q = busqueda.value.toLowerCase().trim();
-    lista = lista.filter(c =>
-      c.curso?.toLowerCase().includes(q) //|| 
-      //c.descripcion?.toLowerCase().includes(q)
-    );
-  }
-  return lista;
+  return cursos.value;
 });
-
 
 watch([orden, itemsPorPagina], () => {
   cargarCursos(1);
 });
 
-// Resetear página si el usuario filtra
-watch([busqueda, categoriaActiva], () => {
-  paginaActual.value = 1;
+watch([busqueda, categoriaActiva, orden, itemsPorPagina], () => {
+  cargarCursos(1);
 });
 
 const cambiarPagina = (nuevaPagina) => {

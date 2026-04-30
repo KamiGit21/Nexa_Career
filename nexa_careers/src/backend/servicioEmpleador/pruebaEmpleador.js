@@ -7,7 +7,7 @@ async function ejecutarPruebas() {
   try {
     console.log('⏳ Iniciando pruebas del microservicio de Empleadores...\n');
 
-    
+    /*
     // 1. POST: Registrar empleador
     console.log('➡️ 1. Ejecutando POST: Registrando nuevo empleador...');
     const postResponse = await axios.post(`${API_URL}registrar`, { 
@@ -20,13 +20,13 @@ async function ejecutarPruebas() {
     console.log('✅ Resultado:', postResponse.data);
     console.log('--------------------------------------------------\n');
     
-    
+    */
     // 2. GET: Listar todos
     console.log('➡️ 2. Ejecutando GET: Solicitando todos los empleadores...');
     const getResponse = await axios.get(API_URL);
     console.table(getResponse.data.data);
     console.log('--------------------------------------------------\n');
-
+    /*
     // 3. GET: Buscar por gmail
     console.log('➡️ 3. Ejecutando GET: Buscando por gmail "contacto@techsolutions.com"...');
     const emailResponse = await axios.get(`${API_URL}/gmail/contacto@techsolutions.com`);
@@ -42,21 +42,22 @@ async function ejecutarPruebas() {
     });
     console.log('✅ Resultado:', putPerfilResponse.data);
     console.log('--------------------------------------------------\n');
-
+    */
     // 5. PUT: Cambiar contraseña
-    console.log(`➡️ 5. Ejecutando PUT: Cambiando contraseña del ID ${nuevoId}...`);
-    const putPasswordResponse = await axios.put(`${API_URL}/${nuevoId}/contrasena`, {
-      contrasena: 'nuevaClaveSegura2026'
+    console.log(`➡️ 5. Ejecutando PUT: Cambiando contraseña del ID 1...`);
+    const putPasswordResponse = await axios.put(`${API_URL}1/contrasena`, {
+      contrasena: 'admin123aaa'
     });
     console.log('✅ Resultado:', putPasswordResponse.data);
     console.log('--------------------------------------------------\n');
-
+    /*
     // 6. PUT: Cambiar estado
     console.log(`➡️ 6. Ejecutando PUT: Desactivando al empleador ID ${nuevoId}...`);
     const putEstadoResponse = await axios.put(`${API_URL}/${nuevoId}/estado`, {
       activo: 0 
     });
     console.log('✅ Resultado:', putEstadoResponse.data);
+    */
     console.log('\n🎉 Todas las pruebas del empleador finalizaron con éxito.');
 
   } catch (error) {

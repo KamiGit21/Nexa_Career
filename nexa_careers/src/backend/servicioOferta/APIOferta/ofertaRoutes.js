@@ -11,6 +11,7 @@ router.get('/titulo/:oferta', ofertaController.buscarOfertaPorTitulo);
 router.get('/empleador/:id_empleador', ofertaController.buscarOfertasPorEmpleador);
 
 router.get('/:id/postulantes', ofertaController.obtenerPostulantesPorOferta);
+router.get('/busqueda', ofertaController.buscarOfertasAvanzado);
 
 
 //  DESPUÉS rutas con parámetros

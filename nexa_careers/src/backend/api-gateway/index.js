@@ -115,6 +115,7 @@ app.put('/api/estudiantes/:id/perfil', proxyTo('http://localhost:3003'));
 app.put('/api/estudiantes/:id/contrasena', proxyTo('http://localhost:3003'));
 app.put('/api/estudiantes/:id/estado', proxyTo('http://localhost:3003'));
 app.get('/api/estudiantes/:id/postulaciones', proxyTo('http://localhost:3003'));
+app.post('/api/estudiantes/enviarCodigo', proxyTo('http://localhost:3003'));
 
 // Rutas de CV (manejo especial)
 app.post('/api/estudiantes/:id/cv/upload', proxyFileTo('http://localhost:3003'));
@@ -140,6 +141,7 @@ app.put('/api/supervisores/:id/contrasena', proxyTo('http://localhost:3005'));
 app.put('/api/supervisores/:id/estado', proxyTo('http://localhost:3005'));
 app.put('/api/supervisores/:id_supervisor/bloquear', proxyTo('http://localhost:3005'));
 app.get('/api/supervisores/dashboard/stats', proxyTo('http://localhost:3005'));
+app.post('/api/supervisores/enviarCodigo', proxyTo('http://localhost:3005'));
 
 // Servicio de Ofertas (puerto 3006)
 app.use('/api/ofertas', proxyTo('http://localhost:3006'));

@@ -33,9 +33,11 @@
 </template>
 
 <script setup>
-import { ref, onMounted, computed, watch } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import ModerarItemCard from './ModerarItemCard.vue'
 import { listarTodosCursos, cambiarEstadoCurso } from '../../services/supervisorService.js'
+
+const emit = defineEmits(['update:count'])
 
 const cursos = ref([])
 const loading = ref(true)
@@ -56,29 +58,26 @@ const estadoAClave = {
   0: 'pendiente'
 }
 
-const contarPorEstado = (estado) => {
-  return cursos.value.filter(c => c.estado === estado).length
-}
-
 const cursosFiltrados = computed(() => {
   let resultado = [...cursos.value]
-  
+
   resultado = resultado.filter(curso => {
     const clave = estadoAClave[curso.estado]
     return estadosFiltro.value[clave] === true
   })
-  
+
+  resultado.sort((a, b) => new Date(b.fecha_creacion) - new Date(a.fecha_creacion))
+
   const search = props.filtro.toLowerCase().trim()
   if (search) {
-    resultado = resultado.filter(c => 
-      c.curso?.toLowerCase().includes(search) || 
+    resultado = resultado.filter(c =>
+      c.curso?.toLowerCase().includes(search) ||
       c.nombre_publicador?.toLowerCase().includes(search)
     )
   }
-  
+
   return resultado
 })
-
 
 const mapearCurso = (curso) => ({
   id:          curso.id_curso,
@@ -96,6 +95,7 @@ const cargar = async () => {
     const res = await listarTodosCursos()
     if (res.success) {
       cursos.value = res.data
+      emit('update:count', res.data.filter(c => c.estado === 0).length)
     }
   } catch (e) {
     console.error('Error al cargar cursos:', e)

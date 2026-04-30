@@ -9,7 +9,8 @@ router.post('/registrarPorEmpleador', cursoController.registrarCursoEmpleador);
 router.get('/listarDisponibles', cursoController.listarCursosDisponibles);
 router.get('/estudiante/:id_estudiante', cursoController.listarCursosPorEstudiante);
 router.get('/empleador/:id_empleador', cursoController.listarCursosPorEmpleador);
-router.get('/pendientes', cursoController.listarCursosPendientes); // ← NUEVO
+router.get('/pendientes', cursoController.listarCursosPendientes);
+router.get('/busqueda/avanzada', cursoController.buscarCursosPublicosAvanzado);
 
 // Rutas generales
 router.get('/', cursoController.listarCursos);
