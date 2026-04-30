@@ -35,7 +35,23 @@ export const registrarCategoria = async (req, res) => {
 // GET /api/categorias - Listar todas las categorías
 export const listarCategorias = async (req, res) => {
   try {
-    const [rows] = await db.query('SELECT * FROM categoria');
+    const [rows] = await db.query(`
+      SELECT 
+        c.id_categoria,
+        c.categoria,
+        COALESCE((
+          SELECT COUNT(*) 
+          FROM categoria_oferta co 
+          WHERE co.id_categoria = c.id_categoria
+        ), 0) AS total_ofertas,
+        COALESCE((
+          SELECT COUNT(*) 
+          FROM categoria_curso cc 
+          WHERE cc.id_categoria = c.id_categoria
+        ), 0) AS total_cursos
+      FROM categoria c
+      ORDER BY c.categoria ASC
+    `);
     res.status(200).json({ success: true, data: rows });
   } catch (error) {
     console.error('Error al listar categorías:', error);
