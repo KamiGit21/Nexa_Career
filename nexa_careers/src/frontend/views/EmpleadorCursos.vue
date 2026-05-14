@@ -6,11 +6,8 @@
       <div class="flex justify-between items-end mb-8">
         <div>
           <h1 class="text-4xl font-bold text-[#1b2a4a]">Mis Cursos</h1>
-          <p class="text-gray-500 mt-1">
-            Gestiona cursos que has publicado
-          </p>
+          <p class="text-gray-500 mt-1">Gestiona cursos que has publicado</p>
         </div>
-
         <router-link
           to="/publicar-curso"
           class="px-6 py-3 bg-[#1b2a4a] text-white rounded-2xl font-medium hover:bg-[#0f1a2e] transition">
@@ -18,34 +15,13 @@
         </router-link>
       </div>
 
-      <!-- Filtro por categorías -->
-      <div class="mb-6 bg-white rounded-2xl p-4 shadow-sm">
-        <div class="flex items-center gap-3 flex-wrap">
-          <span class="text-sm font-medium text-gray-600">Filtrar por categoría:</span>
-          
-          <select 
-            v-model="categoriaFiltro"
-            class="px-4 py-2 border border-gray-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#1b2a4a] focus:border-transparent bg-white"
-          >
-            <option :value="null">Todas las categorías</option>
-            <option 
-              v-for="cat in categorias" 
-              :key="cat.id_categoria" 
-              :value="cat.id_categoria"
-            >
-              {{ cat.categoria }}
-            </option>
-          </select>
-
-          <div v-if="categoriaFiltro" class="flex items-center gap-2">
-            <span class="text-xs text-gray-500">Filtrando por:</span>
-            <span class="bg-blue-100 text-blue-700 px-2 py-1 rounded-full text-xs flex items-center gap-1">
-              {{ nombreCategoriaSeleccionada }}
-              <button @click="categoriaFiltro = null" class="hover:text-blue-900">✕</button>
-            </span>
-          </div>
-        </div>
-      </div>
+      <!-- Filtros por búsqueda, categoría y estado -->
+      <MisCursosFiltros
+        v-model:busqueda="busqueda"
+        v-model:categoriaFiltro="categoriaFiltro"
+        v-model:estadoFiltro="estadoFiltro"
+        :categorias="categorias"
+      />
 
       <div v-if="loading" class="text-center py-20 text-gray-500">
         <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-[#1b2a4a] mx-auto mb-4"></div>
@@ -55,13 +31,13 @@
       <div v-else-if="cursosFiltrados.length === 0" class="text-center py-20 text-gray-400">
         <p class="text-5xl mb-4">📭</p>
         <p class="text-lg font-medium">
-          {{ categoriaFiltro ? 'No hay cursos en esta categoría' : 'Aún no has publicado ningún curso' }}
+          {{ hayFiltrosActivos ? 'No hay cursos con estos filtros' : 'Aún no has publicado ningún curso' }}
         </p>
         <p class="text-sm mt-1">
-          {{ categoriaFiltro ? 'Prueba con otra categoría' : 'Cuando publiques uno aparecerá aquí' }}
+          {{ hayFiltrosActivos ? 'Prueba con otros filtros' : 'Cuando publiques uno aparecerá aquí' }}
         </p>
-        <router-link 
-          v-if="!categoriaFiltro"
+        <router-link
+          v-if="!hayFiltrosActivos"
           to="/publicar-curso"
           class="inline-block mt-6 px-6 py-3 bg-[#1b2a4a] text-white rounded-2xl font-medium hover:bg-[#0f1a2e] transition-colors">
           + Publicar Curso
@@ -116,7 +92,7 @@
             <p><span class="font-medium">Fecha:</span> {{ formatearFecha(curso.fecha_creacion) }}</p>
           </div>
 
-          <!-- 👇 AQUÍ ESTÁN LOS BOTONES INTEGRADOS 👇 -->
+          <!-- Botones de acción -->
           <div class="flex flex-wrap items-center gap-4 mt-auto pt-4 border-t border-gray-100">
             <button
               @click="verDetalle(curso)"
@@ -130,10 +106,9 @@
             >
               Editar
             </button>
-            
-            <div class="flex-grow"></div> <!-- Espaciador para empujar los botones a la derecha -->
 
-            <!-- Botones de Acción de Estado -->
+            <div class="flex-grow"></div>
+
             <button
               v-if="curso.estado !== 3"
               @click="abrirModalBaja(curso)"
@@ -155,7 +130,6 @@
 
     </div>
 
-    <!-- 👇 AQUÍ ESTÁN LOS MODALES INTEGRADOS 👇 -->
     <ConfirmarBajaCursoModal
       :visible="modalBajaVisible"
       :nombre-curso="cursoSeleccionado?.curso || ''"
@@ -179,41 +153,44 @@
 import { ref, onMounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
 
-// 👇 AQUÍ SE AGREGAN LAS NUEVAS IMPORTACIONES 👇
 import ConfirmarBajaCursoModal from '../components/misCursos/ConfirmarBajaCursoModal.vue'
 import DesarchivarCursoModal from '../components/misCursos/DesarchivarCursoModal.vue'
-import { 
-  listarCursosPorEmpleador, 
+import MisCursosFiltros from '../components/misCursos/MisCursosFiltros.vue'
+import {
+  listarCursosPorEmpleador,
   listarCategorias,
   archivarCurso,
-  desarchivarCurso 
+  desarchivarCurso
 } from '../services/cursoService.js'
 
 const router = useRouter()
 const cursos = ref([])
 const categorias = ref([])
+const busqueda = ref('')
 const categoriaFiltro = ref(null)
+const estadoFiltro = ref(null)
 const loading = ref(true)
 
-// 👇 AQUÍ ESTÁN LAS NUEVAS VARIABLES PARA LOS MODALES 👇
 const modalBajaVisible = ref(false)
 const modalDesarchivarVisible = ref(false)
 const cursoSeleccionado = ref(null)
 const procesando = ref(false)
 
-const cursosFiltrados = computed(() => {
-  if (!categoriaFiltro.value) {
-    return cursos.value
-  }
-  return cursos.value.filter(curso => {
-    return curso.categorias && curso.categorias.some(cat => cat.id_categoria === categoriaFiltro.value)
-  })
-})
+const hayFiltrosActivos = computed(() =>
+  !!busqueda.value || !!categoriaFiltro.value || estadoFiltro.value !== null
+)
 
-const nombreCategoriaSeleccionada = computed(() => {
-  if (!categoriaFiltro.value) return ''
-  const cat = categorias.value.find(c => c.id_categoria === categoriaFiltro.value)
-  return cat ? cat.categoria : ''
+const cursosFiltrados = computed(() => {
+  const texto = busqueda.value.toLowerCase().trim()
+  return cursos.value.filter(curso => {
+    const porTexto = !texto ||
+      curso.curso?.toLowerCase().includes(texto) ||
+      curso.descripcion?.toLowerCase().includes(texto)
+    const porCategoria = !categoriaFiltro.value ||
+      (curso.categorias && curso.categorias.some(cat => cat.id_categoria === categoriaFiltro.value))
+    const porEstado = estadoFiltro.value === null || curso.estado === estadoFiltro.value
+    return porTexto && porCategoria && porEstado
+  })
 })
 
 const formatearFecha = (fecha) => {
@@ -251,29 +228,23 @@ const cargarCategorias = async () => {
   }
 }
 
-const verDetalle = (curso) => {
-  router.push(`/cursos/${curso.id_curso}`)
-}
+const verDetalle = (curso) => router.push(`/cursos/${curso.id_curso}`)
+const editarCurso = (curso) => router.push(`/editar-curso/${curso.id_curso}`)
 
-const editarCurso = (curso) => {
-  router.push(`/editar-curso/${curso.id_curso}`)
-}
-
-// 👇 AQUÍ ESTÁ TODA LA LÓGICA DE LOS MODALES Y SERVICIOS 👇
-const cerrarModales = () => { 
+const cerrarModales = () => {
   modalBajaVisible.value = false
   modalDesarchivarVisible.value = false
-  cursoSeleccionado.value = null 
+  cursoSeleccionado.value = null
 }
 
-const abrirModalBaja = (curso) => { 
+const abrirModalBaja = (curso) => {
   cursoSeleccionado.value = curso
-  modalBajaVisible.value = true 
+  modalBajaVisible.value = true
 }
 
-const abrirModalDesarchivar = (curso) => { 
+const abrirModalDesarchivar = (curso) => {
   cursoSeleccionado.value = curso
-  modalDesarchivarVisible.value = true 
+  modalDesarchivarVisible.value = true
 }
 
 const confirmarBaja = async () => {
@@ -282,15 +253,15 @@ const confirmarBaja = async () => {
     const res = await archivarCurso(cursoSeleccionado.value.id_curso)
     if (res.success) {
       const idx = cursos.value.findIndex(c => c.id_curso === cursoSeleccionado.value.id_curso)
-      if (idx !== -1) cursos.value[idx].estado = 3 // Cambia a archivado visualmente sin recargar
+      if (idx !== -1) cursos.value[idx].estado = 3
       cerrarModales()
-    } else { 
-      alert(res.message || 'No se pudo dar de baja el curso.') 
+    } else {
+      alert(res.message || 'No se pudo dar de baja el curso.')
     }
-  } catch { 
-    alert('Error de conexión.') 
-  } finally { 
-    procesando.value = false 
+  } catch {
+    alert('Error de conexión.')
+  } finally {
+    procesando.value = false
   }
 }
 
@@ -300,15 +271,15 @@ const confirmarDesarchivar = async () => {
     const res = await desarchivarCurso(cursoSeleccionado.value.id_curso)
     if (res.success) {
       const idx = cursos.value.findIndex(c => c.id_curso === cursoSeleccionado.value.id_curso)
-      if (idx !== -1) cursos.value[idx].estado = 0 // Cambia a pendiente visualmente sin recargar
+      if (idx !== -1) cursos.value[idx].estado = 0
       cerrarModales()
-    } else { 
-      alert(res.message || 'No se pudo desarchivar el curso.') 
+    } else {
+      alert(res.message || 'No se pudo desarchivar el curso.')
     }
-  } catch { 
-    alert('Error de conexión.') 
-  } finally { 
-    procesando.value = false 
+  } catch {
+    alert('Error de conexión.')
+  } finally {
+    procesando.value = false
   }
 }
 
