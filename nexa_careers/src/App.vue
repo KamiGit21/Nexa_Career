@@ -7,6 +7,7 @@
 
       <main :class="esSupervisor ? 'flex-1 bg-gray-100 p-6' : 'flex-1'">
         <router-view />
+        <BotonNormas />
       </main>
     </div>
   </div>
@@ -18,6 +19,7 @@ import { useRoute } from 'vue-router';
 import { authState } from './frontend/auth.js'; 
 import Navbar from './frontend/components/layout/Navbar.vue';
 import Sidebar from './frontend/components/layout/Sidebar.vue';
+import BotonNormas from './frontend/components/comunes/BotonNormas.vue';
 
 const route = useRoute();
 
