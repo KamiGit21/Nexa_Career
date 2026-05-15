@@ -232,41 +232,12 @@
     </Transition>
 
     <!-- Modal de rechazo para supervisor -->
-    <Transition name="fade">
-      <div v-if="mostrarModalRechazo"
-        class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4 backdrop-blur-sm"
-        @click.self="cerrarModalRechazo">
-        <div class="relative bg-white rounded-3xl shadow-2xl w-full max-w-sm p-8 text-center space-y-4">
-          <div class="mx-auto w-16 h-16 rounded-full bg-red-100 flex items-center justify-center text-3xl">
-            ❌
-          </div>
-          <div>
-            <h2 class="text-xl font-bold text-[#1b2a4a]">Rechazar oferta</h2>
-            <p class="text-sm text-gray-500 mt-1">
-              Ingresa el motivo del rechazo para "{{ oferta?.oferta }}"
-            </p>
-          </div>
-          <div class="text-left">
-            <input 
-              v-model="motivoRechazo" 
-              type="text" 
-              placeholder="Ej. Información incompleta, requisitos poco claros..."
-              class="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-red-200 focus:border-red-400 outline-none transition-all" 
-            />
-          </div>
-          <div class="flex gap-3 pt-1">
-            <button @click="cerrarModalRechazo"
-              class="flex-1 py-2.5 border border-gray-200 rounded-xl text-sm font-semibold text-gray-600 hover:bg-gray-50 transition-colors">
-              Cancelar
-            </button>
-            <button @click="confirmarRechazo" :disabled="!motivoRechazo.trim()"
-              class="flex-1 py-2.5 bg-red-500 rounded-xl text-sm font-semibold text-white hover:bg-red-600 transition-colors disabled:opacity-50">
-              Rechazar
-            </button>
-          </div>
-        </div>
-      </div>
-    </Transition>
+    <RechazoOfertaModal
+  :visible="mostrarModalRechazo"
+  :nombre-oferta="oferta?.oferta || ''"
+  @cancelar="cerrarModalRechazo"
+  @confirmar="confirmarRechazo"
+/>
   </div>
 </template>
 
@@ -277,6 +248,7 @@ import { obtenerOfertaPorId } from '@/services/ofertaService.js'
 import { cambiarEstadoOferta } from '@/services/supervisorService.js'
 import { obtenerEmpleadorPorId } from '@/services/empleadorService.js'
 import { obtenerPostulaciones, postularAOferta } from '@/services/postulacionService.js'
+import RechazoOfertaModal from '../components/misOfertas/RechazoOfertaModal.vue'
 
 const route  = useRoute()
 const router = useRouter()
@@ -382,11 +354,10 @@ const cerrarModalRechazo = () => {
   mostrarModalRechazo.value = false
 }
 
-const confirmarRechazo = async () => {
-  if (!motivoRechazo.value.trim() || !oferta.value) return
-  
+const confirmarRechazo = async (motivo) => {
+  if (!oferta.value) return
   try {
-    const response = await cambiarEstadoOferta(oferta.value.id_oferta, 2, motivoRechazo.value)
+    const response = await cambiarEstadoOferta(oferta.value.id_oferta, 2, motivo)
     if (response.success) {
       router.push('/dashboard-supervisor')
     } else {
