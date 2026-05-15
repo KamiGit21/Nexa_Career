@@ -1,7 +1,7 @@
 <template>
   <div
-    class="bg-white rounded-2xl border border-gray-200 p-6 hover:shadow-lg transition-shadow cursor-pointer"
-    @click="$emit('ver', curso.id_curso)"
+    class="bg-white rounded-2xl border border-gray-200 p-6 hover:shadow-lg transition-shadow"
+    :class="{ 'opacity-75 bg-gray-50': curso.estado === 3 }"
   >
     <div class="flex justify-between items-start mb-2">
       <span class="text-xs font-semibold px-3 py-1 rounded-full" :class="colorCategoria">
@@ -10,33 +10,52 @@
       <span class="text-xs text-gray-400">{{ formatearFecha(curso.fecha_creacion) }}</span>
     </div>
 
-    <h3 class="font-bold text-[#1b2a4a] text-lg leading-tight mt-3 mb-2">
-      {{ curso.curso }}
-    </h3>
+    <div @click="$emit('ver', curso.id_curso)">
+      <h3 class="font-bold text-[#1b2a4a] text-lg leading-tight mt-3 mb-2">
+        {{ curso.curso }}
+      </h3>
 
-    <p class="text-sm text-gray-500 line-clamp-2 mb-5">
-      {{ curso.descripcion || 'Sin descripción' }}
-    </p>
+      <p class="text-sm text-gray-500 line-clamp-2 mb-5">
+        {{ curso.descripcion || 'Sin descripción' }}
+      </p>
 
-    <div class="flex justify-between items-center">
-      <div class="flex items-center gap-2">
-        <div
-          class="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0"
-          :class="colorAvatar"
+      <div class="flex justify-between items-center">
+        <div class="flex items-center gap-2">
+          <div
+            class="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0"
+            :class="colorAvatar"
+          >
+            {{ iniciales(curso.nombre_publicador) }}
+          </div>
+          <div class="flex flex-col">
+            <span class="text-xs font-semibold text-gray-700 leading-tight">{{ curso.nombre_publicador || '—' }}</span>
+            <span class="text-xs text-gray-400 leading-tight capitalize">{{ curso.tipo_publicador }}</span>
+          </div>
+        </div>
+        <button
+          class="text-xs font-medium text-white bg-[#1b2a4a] px-4 py-2 rounded-xl hover:bg-[#0f1a2e] transition-colors"
+          @click.stop="$emit('ver', curso.id_curso)"
         >
-          {{ iniciales(curso.nombre_publicador) }}
-        </div>
-        <div class="flex flex-col">
-          <span class="text-xs font-semibold text-gray-700 leading-tight">{{ curso.nombre_publicador || '—' }}</span>
-          <span class="text-xs text-gray-400 leading-tight capitalize">{{ curso.tipo_publicador }}</span>
-        </div>
+          Ver curso →
+        </button>
       </div>
-      <button
-        class="text-xs font-medium text-white bg-[#1b2a4a] px-4 py-2 rounded-xl hover:bg-[#0f1a2e] transition-colors"
-        @click.stop="$emit('ver', curso.id_curso)"
-      >
-        Ver curso →
-      </button>
+    </div>
+
+    <!-- Botón Dar de Baja - Solo para supervisor y si el curso no está ya archivado -->
+    <button
+      v-if="mostrarBotonBaja && curso.estado !== 3"
+      @click.stop="abrirModalBaja"
+      class="mt-4 w-full py-2 bg-red-50 hover:bg-red-100 text-red-600 font-semibold text-sm rounded-lg transition-colors flex items-center justify-center gap-2 border border-red-200"
+    >
+      🚫 Dar de Baja
+    </button>
+
+    <!-- Mensaje si ya está archivado -->
+    <div
+      v-if="mostrarBotonBaja && curso.estado === 3"
+      class="mt-4 w-full py-2 bg-gray-50 text-gray-400 font-semibold text-sm rounded-lg text-center border border-gray-200"
+    >
+      📦 Curso archivado
     </div>
   </div>
 </template>
@@ -45,10 +64,11 @@
 import { computed } from 'vue'
 
 const props = defineProps({
-  curso: { type: Object, required: true }
+  curso: { type: Object, required: true },
+  mostrarBotonBaja: { type: Boolean, default: false }
 })
 
-defineEmits(['ver'])
+const emit = defineEmits(['ver', 'dar-baja'])
 
 const COLORES_CAT = [
   'bg-purple-100 text-purple-700',
@@ -78,13 +98,15 @@ const colorAvatar = computed(() => {
   return COLORES_AVATAR[idx]
 })
 
-// Fix: (nombre || '') cubre tanto null como undefined; filter(Boolean) evita
-// que palabras vacías generen p[0] = undefined al hacer split en espacios múltiples.
 const iniciales = (nombre) =>
   (nombre || '').split(' ').map(p => p[0]).filter(Boolean).join('').slice(0, 2).toUpperCase() || '?'
 
 const formatearFecha = (fecha) => {
   if (!fecha) return ''
   return new Date(fecha).toLocaleDateString('es-ES', { day: 'numeric', month: 'short' })
+}
+
+const abrirModalBaja = () => {
+  emit('dar-baja', props.curso)
 }
 </script>

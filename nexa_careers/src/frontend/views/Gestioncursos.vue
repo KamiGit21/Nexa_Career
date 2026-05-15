@@ -63,10 +63,16 @@
             Página <span class="text-[#1b2a4a]">{{ paginaActual }}</span> de <span class="text-[#1b2a4a]">{{ totalPaginas }}</span>
           </p>
 
-          <CursoPublicoGrid
-            :cursos="cursos"
-            @ver="irDetalle"
-          />
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <CursoPublicoCard
+              v-for="curso in cursos"
+              :key="curso.id_curso"
+              :curso="curso"
+              :mostrar-boton-baja="true"
+              @ver="irDetalle"
+              @dar-baja="abrirModalDarBaja"
+            />
+          </div>
 
           <CatalogoCursosPaginacion
             id="punto-final"
@@ -81,6 +87,14 @@
     </main>
     
     <BotonScroll />
+
+    <!-- Modal para dar de baja curso -->
+    <ConfirmarBajaCursoModal
+      :visible="mostrarModalBaja"
+      :curso="cursoSeleccionado"
+      @cerrar="mostrarModalBaja = false"
+      @confirmar="confirmarDarBajaLocal"
+    />
   </div>
 </template>
 
@@ -92,16 +106,16 @@ import {
   listarCursosPublicosPaginadosPorFechaPorEstado 
 } from '../services/cursoService.js'
 
-import CursoPublicoGrid from '@/components/catalogoCursos/CursoPublicoGrid.vue'
+import CursoPublicoCard from '@/components/catalogoCursos/CursoPublicoCard.vue'
 import CatalogoCursosPaginacion from '@/components/catalogoCursos/CatalogoCursosPaginacion.vue'
 import BotonScroll from '@/components/comunes/BotonScroll.vue'
+import ConfirmarBajaCursoModal from '@/components/modals/ConfirmarBajaCursoModal.vue'
 import { obtenerEstudiantePorId } from '@/services/estudianteService.js'
 import { obtenerEmpleadorPorId } from '@/services/empleadorService.js'
 
 const router = useRouter()
 const cursos = ref([]) 
 const loading = ref(true)
-
 
 const estadoFiltro = ref('Todos') 
 const orden = ref('reciente') 
@@ -111,8 +125,39 @@ const opcionesPagina = [9, 12, 15, 18, 21, 24, 27, 30]
 const paginaActual = ref(1)
 const totalPaginas = ref(1)
 
+// Modal dar de baja
+const mostrarModalBaja = ref(false)
+const cursoSeleccionado = ref(null)
+
 const toggleOrden = () => {
   orden.value = orden.value === 'reciente' ? 'antiguo' : 'reciente';
+}
+
+const abrirModalDarBaja = (curso) => {
+  cursoSeleccionado.value = curso
+  mostrarModalBaja.value = true
+}
+
+// Función 100% frontend - solo simula la baja
+const confirmarDarBajaLocal = ({ idCurso, motivo }) => {
+  // Buscar el curso en el array local y cambiar su estado a 3 (Archivado)
+  const index = cursos.value.findIndex(c => c.id_curso === idCurso)
+  if (index !== -1) {
+    cursos.value[index] = {
+      ...cursos.value[index],
+      estado: 3,
+      motivo_baja: motivo,
+      fecha_baja: new Date().toISOString()
+    }
+  }
+  
+  // Mostrar mensaje de éxito
+  alert(`✅ Curso dado de baja correctamente\nMotivo: ${motivo}`)
+  
+  // Si el filtro actual NO es "Archivados" ni "Todos", recargar para que desaparezca
+  if (estadoFiltro.value !== 'Todos' && estadoFiltro.value !== '3') {
+    cargarCursos(paginaActual.value)
+  }
 }
 
 const cargarCursos = async (pagina = 1) => {
@@ -123,16 +168,13 @@ const cargarCursos = async (pagina = 1) => {
     let response;
     const direccion = orden.value === 'reciente' ? 'abajo' : 'arriba';
 
-    // Determinar qué endpoint llamar basado en el filtro de estado
     if (estadoFiltro.value === 'Todos') {
       response = await listarCursosPaginadosPorFecha(pagina, itemsPorPagina.value, direccion);
     } else {
-      // Usamos el servicio que filtra por estado y fecha
       response = await listarCursosPublicosPaginadosPorFechaPorEstado(pagina, itemsPorPagina.value, direccion, estadoFiltro.value);
     }
 
     if (response && response.success && response.data) {
-      // MAGIA: Enriquecer los cursos con el nombre del publicador
       const cursosEnriquecidos = await Promise.all(
         response.data.map(async (curso) => {
           let nombrePublicador = 'Usuario Desconocido';
@@ -177,7 +219,6 @@ const cargarCursos = async (pagina = 1) => {
   }
 }
 
-
 watch([estadoFiltro, orden, itemsPorPagina], () => {
   cargarCursos(1);
 });
@@ -194,7 +235,6 @@ const restablecerFiltros = () => {
   itemsPorPagina.value = 15;
 }
 
-// NUEVO: Redirección exclusiva de supervisor
 const irDetalle = (id) => {
   router.push(`/supervisor/curso/${id}`)
 }
