@@ -35,7 +35,9 @@
             :key="oferta.id_oferta"
             :oferta="oferta"
             :mostrar-estado="true"
+            :mostrar-boton-baja="true"
             @click-detalle="irDetalle"
+            @dar-baja="abrirModalDarBaja"
           />
         </div>
         <CatalogoCursosPaginacion
@@ -47,6 +49,14 @@
       </template>
 
     </main>
+
+    <!-- Modal para dar de baja oferta -->
+    <ConfirmarBajaOfertaModal
+      :visible="mostrarModalBaja"
+      :oferta="ofertaSeleccionada"
+      @cerrar="mostrarModalBaja = false"
+      @confirmar="confirmarDarBajaLocal"
+    />
   </div>
 </template>
 
@@ -56,6 +66,7 @@ import { useRouter, useRoute } from 'vue-router'
 import OfertaFiltros from '@/components/gestionOfertas/OfertaFiltros.vue'
 import OfertaCard from '@/components/catalogoOfertas/OfertaCard.vue'
 import CatalogoCursosPaginacion from '@/components/catalogoCursos/CatalogoCursosPaginacion.vue'
+import ConfirmarBajaOfertaModal from '@/components/modals/ConfirmarBajaOfertaModal.vue'
 import { listarOfertasPaginadas, listarOfertasPaginadasPorEstado } from '@/services/supervisorService.js'
 import { obtenerEmpleadorPorId } from '@/services/empleadorService.js'
 
@@ -69,7 +80,40 @@ const totalPaginas   = ref(1)
 const ofertas        = ref([])
 const loading        = ref(true)
 
+// Modal dar de baja
+const mostrarModalBaja = ref(false)
+const ofertaSeleccionada = ref(null)
+
 const irDetalle = (id) => router.push(`/supervisor/oferta/${id}`)
+
+const abrirModalDarBaja = (oferta) => {
+  ofertaSeleccionada.value = oferta
+  mostrarModalBaja.value = true
+}
+
+// Función 100% frontend - solo simula la baja
+const confirmarDarBajaLocal = ({ idOferta, motivo }) => {
+  // Buscar la oferta en el array local y cambiar su estado a 3 (Archivada)
+  const index = ofertas.value.findIndex(o => o.id_oferta === idOferta)
+  if (index !== -1) {
+    ofertas.value[index] = {
+      ...ofertas.value[index],
+      estado: 3,
+      motivo_baja: motivo,
+      fecha_baja: new Date().toISOString()
+    }
+  }
+  
+  // Mostrar mensaje de éxito
+  alert(`✅ Oferta dada de baja correctamente\nMotivo: ${motivo}`)
+  
+  // Si el filtro actual NO es "Archivadas" ni "Todos", la oferta desaparecerá
+  // porque ya no coincide con el filtro
+  if (estadoFiltro.value !== 'Todos' && estadoFiltro.value !== '3') {
+    // Recargar para que desaparezca la oferta del listado actual
+    cargarOfertas(paginaActual.value)
+  }
+}
 
 const cargarOfertas = async (pagina = 1) => {
   loading.value = true

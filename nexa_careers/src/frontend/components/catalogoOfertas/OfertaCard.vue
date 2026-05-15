@@ -1,7 +1,6 @@
 <template>
   <div
-    class="bg-white rounded-2xl border border-gray-200 p-6 hover:shadow-xl hover:-translate-y-1 transition-all cursor-pointer"
-    @click="$emit('click-detalle', oferta.id_oferta)"
+    class="bg-white rounded-2xl border border-gray-200 p-6 hover:shadow-xl hover:-translate-y-1 transition-all"
   >
     <div class="flex justify-between items-start mb-4">
       <div class="w-12 h-12 bg-[#1b2a4a]/10 rounded-lg flex items-center justify-center text-2xl">
@@ -19,21 +18,40 @@
       </div>
     </div>
 
-    <h2 class="text-lg font-bold text-[#1b2a4a] hover:text-[#b89b4d] transition-colors">
-      {{ oferta.oferta }}
-    </h2>
+    <div @click="$emit('click-detalle', oferta.id_oferta)">
+      <h2 class="text-lg font-bold text-[#1b2a4a] hover:text-[#b89b4d] transition-colors">
+        {{ oferta.oferta }}
+      </h2>
 
-    <p v-if="oferta.nombre_empleador || oferta.nombre_empresa" class="text-xs text-[#b5943a] font-semibold mt-1">
-      🏢 {{ oferta.nombre_empleador || oferta.nombre_empresa }}
-    </p>
+      <p v-if="oferta.nombre_empleador || oferta.nombre_empresa" class="text-xs text-[#b5943a] font-semibold mt-1">
+        🏢 {{ oferta.nombre_empleador || oferta.nombre_empresa }}
+      </p>
 
-    <p class="text-sm text-gray-500 line-clamp-3 my-3">
-      {{ oferta.descripcion || 'Sin descripción' }}
-    </p>
+      <p class="text-sm text-gray-500 line-clamp-3 my-3">
+        {{ oferta.descripcion || 'Sin descripción' }}
+      </p>
 
-    <div class="flex justify-between items-center pt-4 border-t border-gray-100">
-      <span class="text-xs text-gray-400">{{ fechaFormateada }}</span>
-      <span class="text-[#1b2a4a] font-bold text-sm hover:underline">Ver detalle →</span>
+      <div class="flex justify-between items-center pt-4 border-t border-gray-100">
+        <span class="text-xs text-gray-400">{{ fechaFormateada }}</span>
+        <span class="text-[#1b2a4a] font-bold text-sm hover:underline">Ver detalle →</span>
+      </div>
+    </div>
+
+    <!-- bn dar de baja -->
+    <button
+      v-if="mostrarBotonBaja && oferta.estado !== 3"
+      @click.stop="abrirModalBaja"
+      class="mt-4 w-full py-2 bg-red-50 hover:bg-red-100 text-red-600 font-semibold text-sm rounded-lg transition-colors flex items-center justify-center gap-2 border border-red-200"
+    >
+      🚫 Dar de Baja
+    </button>
+
+    <!-- Mensaje si ya está archivada -->
+    <div
+      v-if="mostrarBotonBaja && oferta.estado === 3"
+      class="mt-4 w-full py-2 bg-gray-50 text-gray-400 font-semibold text-sm rounded-lg text-center border border-gray-200"
+    >
+      📦 Oferta archivada
     </div>
   </div>
 </template>
@@ -43,8 +61,11 @@ import { computed } from 'vue'
 
 const props = defineProps({
   oferta: Object,
-  mostrarEstado: { type: Boolean, default: false }
+  mostrarEstado: { type: Boolean, default: false },
+  mostrarBotonBaja: { type: Boolean, default: false }
 })
+
+const emit = defineEmits(['click-detalle', 'dar-baja'])
 
 const ESTADOS = {
   0: { label: 'Pendiente', bg: 'bg-yellow-100', text: 'text-yellow-800' },
@@ -71,4 +92,8 @@ const esNueva = computed(() => {
   const diffDias = Math.floor((new Date() - new Date(props.oferta.fecha_apertura)) / (1000 * 60 * 60 * 24))
   return diffDias <= 7
 })
+
+const abrirModalBaja = () => {
+  emit('dar-baja', props.oferta)
+}
 </script>
