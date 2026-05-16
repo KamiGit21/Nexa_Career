@@ -1,5 +1,11 @@
 import db from './db.js';
 
+// se normaliza el objeto oferta para asegurar que siempre tenga el campo motivo_rechazo, incluso si se llama rechazo en la base de datos
+const normalizarOferta = (oferta) => ({
+  ...oferta,
+  motivo_rechazo: oferta.rechazo || oferta.motivo_rechazo || ''
+});
+
 export const obtenerOfertaPorId = async (req, res) => {
   const { id } = req.params;
   try {
@@ -16,7 +22,7 @@ export const obtenerOfertaPorId = async (req, res) => {
       [id]
     );
 
-    const ofertaData = rows[0];
+    const ofertaData = normalizarOferta(rows[0]);
     ofertaData.categorias = categoriasRows; 
 
     res.status(200).json({ success: true, data: ofertaData });
@@ -107,7 +113,7 @@ export const crearOferta = async (req, res) => {
 export const listarOfertas = async (req, res) => {
   try {
     const [rows] = await db.query('SELECT * FROM oferta.oferta');
-    res.status(200).json({ success: true, data: rows });
+    res.status(200).json({ success: true, data: rows.map(normalizarOferta) });
   } catch (error) {
     console.error('Error al listar ofertas:', error);
     res.status(500).json({ success: false, message: 'Error al listar ofertas' });
@@ -117,7 +123,7 @@ export const listarOfertas = async (req, res) => {
 export const listarOfertasPendientes = async (req, res) => {
   try {
     const [rows] = await db.query('SELECT * FROM oferta.oferta WHERE estado = 0');
-    res.status(200).json({ success: true, data: rows });
+    res.status(200).json({ success: true, data: rows.map(normalizarOferta) });
   } catch (error) {
     console.error('Error al listar ofertas pendientes:', error);
     res.status(500).json({ success: false, message: 'Error al listar ofertas pendientes' });
@@ -141,7 +147,7 @@ export const buscarOfertaPorTitulo = async (req, res) => {
   try {
     const [rows] = await db.query('SELECT * FROM oferta.oferta WHERE oferta LIKE ?', [`%${oferta}%`]);
     if (rows.length === 0) return res.status(404).json({ success: false, message: 'No se encontraron ofertas con ese título' });
-    res.status(200).json({ success: true, data: rows });
+    res.status(200).json({ success: true, data: rows.map(normalizarOferta) });
   } catch (error) {
     console.error('Error al buscar por título:', error);
     res.status(500).json({ success: false, message: 'Error al buscar ofertas' });
@@ -152,7 +158,7 @@ export const buscarOfertasPorEmpleador = async (req, res) => {
   const { id_empleador } = req.params;
   try {
     const [rows] = await db.query('SELECT * FROM oferta.oferta WHERE id_empleador = ?', [id_empleador]);
-    res.status(200).json({ success: true, data: rows || [] });
+    res.status(200).json({ success: true, data: (rows || []).map(normalizarOferta) });
   } catch (error) {
     console.error('Error al buscar por empleador:', error);
     res.status(500).json({ success: false, message: 'Error al buscar ofertas del empleador' });
@@ -305,7 +311,7 @@ export const obtenerOfertasPaginacion = async (req, res) => {
     );
     res.status(200).json({
       success: true,
-      data: rows,
+      data: rows.map(normalizarOferta),
       paginas: totalPaginas
     });
 
