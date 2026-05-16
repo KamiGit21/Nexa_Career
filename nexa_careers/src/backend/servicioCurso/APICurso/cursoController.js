@@ -1,7 +1,5 @@
-// src/backend/servicioCurso/APICurso/cursoController.js
-import db from '../../api-gateway/db.js';
+import db from './db.js';
 
-// 3. GET: Listar todas los cursos — con nombre del publicador para el catálogo
 export const listarCursos = async (req, res) => {
   try {
     const [rows] = await db.query(`
@@ -17,19 +15,18 @@ export const listarCursos = async (req, res) => {
           WHEN c.tipo_ofertante = 1 THEN 'empleador'
           ELSE 'desconocido'
         END AS tipo_publicador
-      FROM curso c
-      LEFT JOIN estudiante e   ON c.tipo_ofertante = 0 AND c.id_estudiante = e.id_estudiante
-      LEFT JOIN empleador emp  ON c.tipo_ofertante = 1 AND c.id_empleador  = emp.id_empleador
+      FROM curso.curso c
+      LEFT JOIN estudiante.estudiante e   ON c.tipo_ofertante = 0 AND c.id_estudiante = e.id_estudiante
+      LEFT JOIN empleador.empleador emp  ON c.tipo_ofertante = 1 AND c.id_empleador  = emp.id_empleador
     `);
 
-    // Obtener categorías para cada curso
     for (const curso of rows) {
       const [categoriasRows] = await db.query(`
-        SELECT cc.id_categoria_curso, cc.id_categoria, c.categoria 
-        FROM categoria_curso cc 
-        JOIN categoria c ON cc.id_categoria = c.id_categoria 
+        SELECT cc.id_categoria_curso, cc.id_categoria, cat.categoria 
+        FROM categoria_curso.categoria_curso cc 
+        JOIN categoria.categoria cat ON cc.id_categoria = cat.id_categoria 
         WHERE cc.id_curso = ?
-        ORDER BY c.categoria
+        ORDER BY cat.categoria
       `, [curso.id_curso]);
       curso.categorias = categoriasRows;
     }
@@ -41,7 +38,6 @@ export const listarCursos = async (req, res) => {
   }
 };
 
-// 4. GET: Listar solo los cursos disponibles (estado = 1) — con nombre del publicador
 export const listarCursosDisponibles = async (req, res) => {
   try {
     const [rows] = await db.query(`
@@ -57,20 +53,19 @@ export const listarCursosDisponibles = async (req, res) => {
           WHEN c.tipo_ofertante = 1 THEN 'empleador'
           ELSE 'desconocido'
         END AS tipo_publicador
-      FROM curso c
-      LEFT JOIN estudiante e   ON c.tipo_ofertante = 0 AND c.id_estudiante = e.id_estudiante
-      LEFT JOIN empleador emp  ON c.tipo_ofertante = 1 AND c.id_empleador  = emp.id_empleador
+      FROM curso.curso c
+      LEFT JOIN estudiante.estudiante e   ON c.tipo_ofertante = 0 AND c.id_estudiante = e.id_estudiante
+      LEFT JOIN empleador.empleador emp  ON c.tipo_ofertante = 1 AND c.id_empleador  = emp.id_empleador
       WHERE c.estado = 1
     `);
 
-    // Obtener categorías para cada curso
     for (const curso of rows) {
       const [categoriasRows] = await db.query(`
-        SELECT cc.id_categoria_curso, cc.id_categoria, c.categoria 
-        FROM categoria_curso cc 
-        JOIN categoria c ON cc.id_categoria = c.id_categoria 
+        SELECT cc.id_categoria_curso, cc.id_categoria, cat.categoria 
+        FROM categoria_curso.categoria_curso cc 
+        JOIN categoria.categoria cat ON cc.id_categoria = cat.id_categoria 
         WHERE cc.id_curso = ?
-        ORDER BY c.categoria
+        ORDER BY cat.categoria
       `, [curso.id_curso]);
       curso.categorias = categoriasRows;
     }
@@ -82,23 +77,21 @@ export const listarCursosDisponibles = async (req, res) => {
   }
 };
 
-// 5. GET: Listar cursos publicados por un estudiante específico
 export const listarCursosPorEstudiante = async (req, res) => {
   const { id_estudiante } = req.params;
   try {
     const [rows] = await db.query(
-      'SELECT * FROM curso WHERE tipo_ofertante = 0 AND id_estudiante = ?',
+      'SELECT * FROM curso.curso WHERE tipo_ofertante = 0 AND id_estudiante = ?',
       [id_estudiante]
     );
 
-    // Obtener categorías para cada curso
     for (const curso of rows) {
       const [categoriasRows] = await db.query(`
-        SELECT cc.id_categoria_curso, cc.id_categoria, c.categoria 
-        FROM categoria_curso cc 
-        JOIN categoria c ON cc.id_categoria = c.id_categoria 
+        SELECT cc.id_categoria_curso, cc.id_categoria, cat.categoria 
+        FROM categoria_curso.categoria_curso cc 
+        JOIN categoria.categoria cat ON cc.id_categoria = cat.id_categoria 
         WHERE cc.id_curso = ?
-        ORDER BY c.categoria
+        ORDER BY cat.categoria
       `, [curso.id_curso]);
       curso.categorias = categoriasRows;
     }
@@ -110,23 +103,21 @@ export const listarCursosPorEstudiante = async (req, res) => {
   }
 };
 
-// 6. GET: Listar cursos publicados por un empleador específico
 export const listarCursosPorEmpleador = async (req, res) => {
   const { id_empleador } = req.params;
   try {
     const [rows] = await db.query(
-      'SELECT * FROM curso WHERE tipo_ofertante = 1 AND id_empleador = ?',
+      'SELECT * FROM curso.curso WHERE tipo_ofertante = 1 AND id_empleador = ?',
       [id_empleador]
     );
 
-    // Obtener categorías para cada curso
     for (const curso of rows) {
       const [categoriasRows] = await db.query(`
-        SELECT cc.id_categoria_curso, cc.id_categoria, c.categoria 
-        FROM categoria_curso cc 
-        JOIN categoria c ON cc.id_categoria = c.id_categoria 
+        SELECT cc.id_categoria_curso, cc.id_categoria, cat.categoria 
+        FROM categoria_curso.categoria_curso cc 
+        JOIN categoria.categoria cat ON cc.id_categoria = cat.id_categoria 
         WHERE cc.id_curso = ?
-        ORDER BY c.categoria
+        ORDER BY cat.categoria
       `, [curso.id_curso]);
       curso.categorias = categoriasRows;
     }
@@ -138,21 +129,17 @@ export const listarCursosPorEmpleador = async (req, res) => {
   }
 };
 
-
-
-// PATCH: Cambiar estado de un curso
 export const cambiarEstadoCurso = async (req, res) => {
   const { id_curso } = req.params;
-  const { estado } = req.body; // 1=aceptado, 2=rechazado, 3=archivado
+  const { estado } = req.body; 
   try {
-    await db.query('UPDATE curso SET estado = ? WHERE id_curso = ?', [estado, id_curso]);
+    await db.query('UPDATE curso.curso SET estado = ? WHERE id_curso = ?', [estado, id_curso]);
     res.status(200).json({ success: true, message: 'Estado actualizado' });
   } catch (error) {
     res.status(500).json({ success: false, message: 'Error al actualizar estado' });
   }
 };
 
-// GET: Cursos pendientes (estado = 0) con nombre del publicador
 export const listarCursosPendientes = async (req, res) => {
   try {
     const [rows] = await db.query(`
@@ -169,9 +156,9 @@ export const listarCursosPendientes = async (req, res) => {
           WHEN c.tipo_ofertante = 1 THEN emp.empresa
           ELSE '—'
         END AS nombre_publicador
-      FROM curso c
-      LEFT JOIN estudiante e   ON c.tipo_ofertante = 0 AND c.id_estudiante = e.id_estudiante
-      LEFT JOIN empleador emp  ON c.tipo_ofertante = 1 AND c.id_empleador  = emp.id_empleador
+      FROM curso.curso c
+      LEFT JOIN estudiante.estudiante e   ON c.tipo_ofertante = 0 AND c.id_estudiante = e.id_estudiante
+      LEFT JOIN empleador.empleador emp  ON c.tipo_ofertante = 1 AND c.id_empleador  = emp.id_empleador
       WHERE c.estado = 0
       ORDER BY c.fecha_creacion DESC
     `);
@@ -182,30 +169,28 @@ export const listarCursosPendientes = async (req, res) => {
   }
 };
 
-// Obtener curso por paginación
 export const obtenerCursosPaginacion = async (req, res) => {
   const pagina = parseInt(req.params.pagina) || 1;
   const limite = parseInt(req.params.size) || 15;
   const offset = (pagina - 1) * limite;
 
   try {
-    const [countResult] = await db.query('SELECT COUNT(*) as total FROM curso');
+    const [countResult] = await db.query('SELECT COUNT(*) as total FROM curso.curso');
     const totalCursos = countResult[0].total;
     const totalPaginas = Math.ceil(totalCursos / limite);
 
     const [rows] = await db.query(
-      'SELECT * FROM curso LIMIT ? OFFSET ?',
+      'SELECT * FROM curso.curso LIMIT ? OFFSET ?',
       [limite, offset]
     );
 
-    // Obtener categorías para cada curso
     for (const curso of rows) {
       const [categoriasRows] = await db.query(`
-        SELECT cc.id_categoria_curso, cc.id_categoria, c.categoria 
-        FROM categoria_curso cc 
-        JOIN categoria c ON cc.id_categoria = c.id_categoria 
+        SELECT cc.id_categoria_curso, cc.id_categoria, cat.categoria 
+        FROM categoria_curso.categoria_curso cc 
+        JOIN categoria.categoria cat ON cc.id_categoria = cat.id_categoria 
         WHERE cc.id_curso = ?
-        ORDER BY c.categoria
+        ORDER BY cat.categoria
       `, [curso.id_curso]);
       curso.categorias = categoriasRows;
     }
@@ -217,7 +202,6 @@ export const obtenerCursosPaginacion = async (req, res) => {
   }
 };
 
-// Obtener curso por paginación por estado
 export const obtenerCursosPaginacionPorEstado = async (req, res) => {
   const pagina = parseInt(req.params.pagina) || 1;
   const limite = parseInt(req.params.size);
@@ -225,12 +209,12 @@ export const obtenerCursosPaginacionPorEstado = async (req, res) => {
   const estado = req.params.estado;
 
   try {
-    const [countResult] = await db.query('SELECT COUNT(*) as total FROM curso WHERE estado = ?', [estado]);
+    const [countResult] = await db.query('SELECT COUNT(*) as total FROM curso.curso WHERE estado = ?', [estado]);
     const totalCursos = countResult[0].total;
     const totalPaginas = Math.ceil(totalCursos / limite);
 
     const [rows] = await db.query(
-      'SELECT * FROM curso WHERE estado = ? LIMIT ? OFFSET ?',
+      'SELECT * FROM curso.curso WHERE estado = ? LIMIT ? OFFSET ?',
       [estado, limite, offset]
     );
     res.status(200).json({ success: true, data: rows, paginas: totalPaginas });
@@ -240,19 +224,18 @@ export const obtenerCursosPaginacionPorEstado = async (req, res) => {
   }
 };
 
-// Obtener curso por paginación filtrado por fecha_creacion descendente
 export const obtenerCursosPaginacionPorFechaDesendente = async (req, res) => {
   const pagina = parseInt(req.params.pagina) || 1;
   const limite = parseInt(req.params.size) || 15; 
   const offset = (pagina - 1) * limite;
 
   try {
-    const [countResult] = await db.query('SELECT COUNT(*) as total FROM curso');
+    const [countResult] = await db.query('SELECT COUNT(*) as total FROM curso.curso');
     const totalCursos = countResult[0].total;
     const totalPaginas = Math.ceil(totalCursos / limite);
 
     const [rows] = await db.query(
-      'SELECT * FROM curso ORDER BY fecha_creacion DESC LIMIT ? OFFSET ?',
+      'SELECT * FROM curso.curso ORDER BY fecha_creacion DESC LIMIT ? OFFSET ?',
       [limite, offset]
     );
     res.status(200).json({ success: true, data: rows, paginas: totalPaginas});
@@ -262,19 +245,18 @@ export const obtenerCursosPaginacionPorFechaDesendente = async (req, res) => {
   }
 };
 
-// Obtener curso por paginación filtrado por fecha_creacion ascendente
 export const obtenerCursosPaginacionPorFechaAscendente = async (req, res) => {
   const pagina = parseInt(req.params.pagina) || 1;
   const limite = 15;
   const offset = (pagina - 1) * limite;
 
   try {
-    const [countResult] = await db.query('SELECT COUNT(*) as total FROM curso');
+    const [countResult] = await db.query('SELECT COUNT(*) as total FROM curso.curso');
     const totalCursos = countResult[0].total;
     const totalPaginas = Math.ceil(totalCursos / limite);
 
     const [rows] = await db.query(
-      'SELECT * FROM curso ORDER BY fecha_creacion ASC LIMIT ? OFFSET ?',
+      'SELECT * FROM curso.curso ORDER BY fecha_creacion ASC LIMIT ? OFFSET ?',
       [limite, offset]
     );
     res.status(200).json({ success: true, data: rows, paginas: totalPaginas });
@@ -284,7 +266,6 @@ export const obtenerCursosPaginacionPorFechaAscendente = async (req, res) => {
   }
 };
 
-// Obtener curso por paginación filtrado por fecha_creacion y estado descendente
 export const obtenerCursosPaginacionPorEstadoYFechaDescendente = async (req, res) => {
   const pagina = parseInt(req.params.pagina) || 1;
   const limite = parseInt(req.params.size) || 15;
@@ -292,12 +273,12 @@ export const obtenerCursosPaginacionPorEstadoYFechaDescendente = async (req, res
   const estado = req.params.estado;
 
   try {
-    const [countResult] = await db.query('SELECT COUNT(*) as total FROM curso WHERE estado = ?', [estado]);
+    const [countResult] = await db.query('SELECT COUNT(*) as total FROM curso.curso WHERE estado = ?', [estado]);
     const totalCursos = countResult[0].total;
     const totalPaginas = Math.ceil(totalCursos / limite);
 
     const [rows] = await db.query(
-      'SELECT * FROM curso WHERE estado = ? ORDER BY fecha_creacion DESC LIMIT ? OFFSET ?',
+      'SELECT * FROM curso.curso WHERE estado = ? ORDER BY fecha_creacion DESC LIMIT ? OFFSET ?',
       [estado, limite, offset]
     );
     res.status(200).json({ success: true, data: rows, paginas: totalPaginas });
@@ -307,7 +288,6 @@ export const obtenerCursosPaginacionPorEstadoYFechaDescendente = async (req, res
   }
 };
 
-// Obtener curso por paginación filtrado por fecha_creacion y estado ascendente
 export const obtenerCursosPaginacionPorEstadoYFechaAscendente = async (req, res) => {
   const pagina = parseInt(req.params.pagina) || 1;
   const limite = parseInt(req.params.size) || 15;
@@ -315,12 +295,12 @@ export const obtenerCursosPaginacionPorEstadoYFechaAscendente = async (req, res)
   const estado = req.params.estado;
 
   try {
-    const [countResult] = await db.query('SELECT COUNT(*) as total FROM curso WHERE estado = ?', [estado]);
+    const [countResult] = await db.query('SELECT COUNT(*) as total FROM curso.curso WHERE estado = ?', [estado]);
     const totalCursos = countResult[0].total;
     const totalPaginas = Math.ceil(totalCursos / limite);
 
     const [rows] = await db.query(
-      'SELECT * FROM curso WHERE estado = ? ORDER BY fecha_creacion ASC LIMIT ? OFFSET ?',
+      'SELECT * FROM curso.curso WHERE estado = ? ORDER BY fecha_creacion ASC LIMIT ? OFFSET ?',
       [estado, limite, offset]
     );
     res.status(200).json({ success: true, data: rows, paginas: totalPaginas });
@@ -330,17 +310,16 @@ export const obtenerCursosPaginacionPorEstadoYFechaAscendente = async (req, res)
   }
 };
 
-// POST: Agregar categoría a curso (ademas evita duplicados)
 export const agregarCategoriaACurso = async (req, res) => {
   const { id_curso } = req.params;
   const { id_categoria } = req.body;
   if (!id_categoria) return res.status(400).json({ success: false, message: 'id_categoria requerido' });
   try {
-    const [exists] = await db.query('SELECT 1 FROM categoria_curso WHERE id_curso = ? AND id_categoria = ?', [id_curso, id_categoria]);
+    const [exists] = await db.query('SELECT 1 FROM categoria_curso.categoria_curso WHERE id_curso = ? AND id_categoria = ?', [id_curso, id_categoria]);
     if (exists.length > 0) {
       return res.status(409).json({ success: false, message: 'Relación ya existe' });
     }
-    const [result] = await db.query('INSERT INTO categoria_curso (id_categoria, id_curso) VALUES (?, ?)', [id_categoria, id_curso]);
+    const [result] = await db.query('INSERT INTO categoria_curso.categoria_curso (id_categoria, id_curso) VALUES (?, ?)', [id_categoria, id_curso]);
     res.status(201).json({ success: true, id_categoria_curso: result.insertId, message: 'Categoría agregada correctamente' });
   } catch (error) {
     console.error('Error al agregar categoría a curso:', error);
@@ -348,11 +327,10 @@ export const agregarCategoriaACurso = async (req, res) => {
   }
 };
 
-// DELETE: Quitar categoría de curso
 export const quitarCategoriaDeCurso = async (req, res) => {
   const { id_curso, id_categoria } = req.params;
   try {
-    const [result] = await db.query('DELETE FROM categoria_curso WHERE id_curso = ? AND id_categoria = ?', [id_curso, id_categoria]);
+    const [result] = await db.query('DELETE FROM categoria_curso.categoria_curso WHERE id_curso = ? AND id_categoria = ?', [id_curso, id_categoria]);
     if (result.affectedRows === 0) {
       return res.status(404).json({ success: false, message: 'Relación no encontrada' });
     }
@@ -363,16 +341,15 @@ export const quitarCategoriaDeCurso = async (req, res) => {
   }
 };
 
-// GET: Listar categorías de un curso con nombres
 export const listarCategoriasDeCurso = async (req, res) => {
   const { id_curso } = req.params;
   try {
     const [rows] = await db.query(`
-      SELECT cc.id_categoria_curso, cc.id_categoria, c.categoria 
-      FROM categoria_curso cc 
-      JOIN categoria c ON cc.id_categoria = c.id_categoria 
+      SELECT cc.id_categoria_curso, cc.id_categoria, cat.categoria 
+      FROM categoria_curso.categoria_curso cc 
+      JOIN categoria.categoria cat ON cc.id_categoria = cat.id_categoria 
       WHERE cc.id_curso = ?
-      ORDER BY c.categoria
+      ORDER BY cat.categoria
     `, [id_curso]);
     res.status(200).json({ success: true, data: rows });
   } catch (error) {
@@ -381,28 +358,20 @@ export const listarCategoriasDeCurso = async (req, res) => {
   }
 };
 
-
-// FUNCIONES PARA INTEGRACIÓN DE CATEGORÍAS
-
-// Función helper para sincronizar categorías de un curso
 const syncCategoriasCurso = async (id_curso, categorias) => {
   if (!categorias || !Array.isArray(categorias) || categorias.length === 0) {
     return;
   }
+  await db.query('DELETE FROM categoria_curso.categoria_curso WHERE id_curso = ?', [id_curso]);
   
-  // Eliminar categorías existentes
-  await db.query('DELETE FROM categoria_curso WHERE id_curso = ?', [id_curso]);
-  
-  // Agregar las nuevas categorías
   for (const id_categoria of categorias) {
     await db.query(
-      'INSERT INTO categoria_curso (id_categoria, id_curso) VALUES (?, ?)',
+      'INSERT INTO categoria_curso.categoria_curso (id_categoria, id_curso) VALUES (?, ?)',
       [id_categoria, id_curso]
     );
   }
 };
 
-// 1. Crear Curso por estudiante CON categorías
 export const registrarCursoEstudiante = async (req, res) => {
   const { curso, descripcion, id_estudiante, contacto, categorias } = req.body;
 
@@ -412,14 +381,13 @@ export const registrarCursoEstudiante = async (req, res) => {
     const fechaSQL = new Date().toISOString().slice(0, 10);
 
     const [result] = await db.query(
-      `INSERT INTO curso (curso, descripcion, id_estudiante, contacto, estado, tipo_ofertante, fecha_creacion) 
+      `INSERT INTO curso.curso (curso, descripcion, id_estudiante, contacto, estado, tipo_ofertante, fecha_creacion) 
        VALUES (?, ?, ?, ?, ?, ?, ?)`,
       [curso, descripcion, id_estudiante, contacto, estado, tipoOfertante, fechaSQL]
     );
 
     const id_curso = result.insertId;
 
-    // Sincronizar categorías si se enviaron
     if (categorias && Array.isArray(categorias) && categorias.length > 0) {
       await syncCategoriasCurso(id_curso, categorias);
     }
@@ -431,7 +399,6 @@ export const registrarCursoEstudiante = async (req, res) => {
   }
 };
 
-// 2. Crear Curso por empleador CON categorías
 export const registrarCursoEmpleador = async (req, res) => {
   const { curso, descripcion, id_empleador, contacto, categorias } = req.body;
 
@@ -441,14 +408,13 @@ export const registrarCursoEmpleador = async (req, res) => {
     const fechaSQL = new Date().toISOString().slice(0, 10);
 
     const [result] = await db.query(
-      `INSERT INTO curso (curso, descripcion, id_empleador, contacto, estado, tipo_ofertante, fecha_creacion) 
+      `INSERT INTO curso.curso (curso, descripcion, id_empleador, contacto, estado, tipo_ofertante, fecha_creacion) 
        VALUES (?, ?, ?, ?, ?, ?, ?)`,
       [curso, descripcion, id_empleador, contacto, estado, tipoOfertante, fechaSQL]
     );
 
     const id_curso = result.insertId;
 
-    // Sincronizar categorías si se enviaron
     if (categorias && Array.isArray(categorias) && categorias.length > 0) {
       await syncCategoriasCurso(id_curso, categorias);
     }
@@ -460,15 +426,13 @@ export const registrarCursoEmpleador = async (req, res) => {
   }
 };
 
-// 3. PUT: Actualizar un curso (edición)
 export const actualizarCurso = async (req, res) => {
   const { id_curso } = req.params;
   const { curso, descripcion, contacto, categorias } = req.body;
 
   try {
-    // Actualizar datos del curso
     const [result] = await db.query(
-      `UPDATE curso SET curso = ?, descripcion = ?, contacto = ? WHERE id_curso = ?`,
+      `UPDATE curso.curso SET curso = ?, descripcion = ?, contacto = ? WHERE id_curso = ?`,
       [curso, descripcion, contacto, id_curso]
     );
 
@@ -476,7 +440,6 @@ export const actualizarCurso = async (req, res) => {
       return res.status(404).json({ success: false, message: 'Curso no encontrado' });
     }
 
-    // Sincronizar categorías si se enviaron
     if (categorias !== undefined) {
       await syncCategoriasCurso(id_curso, categorias);
     }
@@ -488,7 +451,6 @@ export const actualizarCurso = async (req, res) => {
   }
 };
 
-// 4. GET: Obtener un curso por su ID CON categorías
 export const obtenerCursoPorId = async (req, res) => {
   const { id_curso } = req.params;
   try {
@@ -505,9 +467,9 @@ export const obtenerCursoPorId = async (req, res) => {
           WHEN c.tipo_ofertante = 1 THEN 'empleador'
           ELSE 'desconocido'
         END AS tipo_publicador
-      FROM curso c
-      LEFT JOIN estudiante e   ON c.tipo_ofertante = 0 AND c.id_estudiante = e.id_estudiante
-      LEFT JOIN empleador emp  ON c.tipo_ofertante = 1 AND c.id_empleador  = emp.id_empleador
+      FROM curso.curso c
+      LEFT JOIN estudiante.estudiante e   ON c.tipo_ofertante = 0 AND c.id_estudiante = e.id_estudiante
+      LEFT JOIN empleador.empleador emp  ON c.tipo_ofertante = 1 AND c.id_empleador  = emp.id_empleador
       WHERE c.id_curso = ?`,
       [id_curso]
     );
@@ -515,16 +477,14 @@ export const obtenerCursoPorId = async (req, res) => {
       return res.status(404).json({ success: false, message: 'Curso no encontrado' });
     }
 
-    // Obtener categorías del curso
     const [categoriasRows] = await db.query(`
-      SELECT cc.id_categoria_curso, cc.id_categoria, c.categoria 
-      FROM categoria_curso cc 
-      JOIN categoria c ON cc.id_categoria = c.id_categoria 
+      SELECT cc.id_categoria_curso, cc.id_categoria, cat.categoria 
+      FROM categoria_curso.categoria_curso cc 
+      JOIN categoria.categoria cat ON cc.id_categoria = cat.id_categoria 
       WHERE cc.id_curso = ?
-      ORDER BY c.categoria
+      ORDER BY cat.categoria
     `, [id_curso]);
 
-    // Agregar categorías al resultado
     const cursoData = rows[0];
     cursoData.categorias = categoriasRows;
 
@@ -535,7 +495,6 @@ export const obtenerCursoPorId = async (req, res) => {
   }
 };
 
-// buscar cursos por estudiante, empleador y titulo
 export const buscarCursosPublicosAvanzado = async (req, res) => {
   try {
     const { pagina = 1, size = 15, q = '', categoria = 'Todos', orden = 'reciente' } = req.query;
@@ -543,9 +502,9 @@ export const buscarCursosPublicosAvanzado = async (req, res) => {
     const offset = (parseInt(pagina) - 1) * limite;
 
     let queryBase = `
-      FROM curso c
-      LEFT JOIN estudiante e   ON c.tipo_ofertante = 0 AND c.id_estudiante = e.id_estudiante
-      LEFT JOIN empleador emp  ON c.tipo_ofertante = 1 AND c.id_empleador  = emp.id_empleador
+      FROM curso.curso c
+      LEFT JOIN estudiante.estudiante e   ON c.tipo_ofertante = 0 AND c.id_estudiante = e.id_estudiante
+      LEFT JOIN empleador.empleador emp  ON c.tipo_ofertante = 1 AND c.id_empleador  = emp.id_empleador
       WHERE c.estado = 1
     `;
     const params = [];
@@ -596,12 +555,11 @@ export const buscarCursosPublicosAvanzado = async (req, res) => {
   }
 };
 
-// PATCH: Archivar un curso específico (estado = 3) y Dar de baja un Curso.
 export const archivarCurso = async (req, res) => {
   const { id_curso } = req.params;
   try {
     const [rows] = await db.query(
-      'SELECT id_curso, estado FROM curso WHERE id_curso = ?',
+      'SELECT id_curso, estado FROM curso.curso WHERE id_curso = ?',
       [id_curso]
     );
 
@@ -614,7 +572,7 @@ export const archivarCurso = async (req, res) => {
     }
 
     await db.query(
-      'UPDATE curso SET estado = 3 WHERE id_curso = ?',
+      'UPDATE curso.curso SET estado = 3 WHERE id_curso = ?',
       [id_curso]
     );
 
@@ -629,12 +587,11 @@ export const archivarCurso = async (req, res) => {
   }
 };
 
-// PATCH: Desarchivar un curso (estado 3 → 0 Pendiente)
 export const desarchivarCurso = async (req, res) => {
   const { id_curso } = req.params;
   try {
     const [rows] = await db.query(
-      'SELECT id_curso, estado FROM curso WHERE id_curso = ?',
+      'SELECT id_curso, estado FROM curso.curso WHERE id_curso = ?',
       [id_curso]
     );
 
@@ -645,7 +602,7 @@ export const desarchivarCurso = async (req, res) => {
       return res.status(400).json({ success: false, message: 'El curso no está archivado' });
 
     await db.query(
-      'UPDATE curso SET estado = 0 WHERE id_curso = ?',
+      'UPDATE curso.curso SET estado = 0 WHERE id_curso = ?',
       [id_curso]
     );
 
