@@ -106,9 +106,9 @@
               </div>
 
 <!-- Motivo de rechazo -->
-              <div v-if="oferta.rechazo" class="mt-5 p-4 bg-red-50 border border-red-100 rounded-xl">
+              <div v-if="oferta.rechazo || oferta.motivo_rechazo" class="mt-5 p-4 bg-red-50 border border-red-100 rounded-xl">
                 <h3 class="text-sm font-bold text-red-700 mb-1">Motivo de rechazo</h3>
-                <p class="text-sm text-red-600">{{ oferta.rechazo }}</p>
+                <p class="text-sm text-red-600">{{ oferta.rechazo || oferta.motivo_rechazo }}</p>
               </div>
 
               <!-- Categorías de la oferta -->
