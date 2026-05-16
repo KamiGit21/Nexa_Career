@@ -127,3 +127,5 @@ CREATE TABLE `categoria_curso`.`categoria_curso` (
   `id_curso`           INT NOT NULL,
   PRIMARY KEY (`id_categoria_curso`)
 );
+
+ALTER TABLE curso ADD COLUMN rechazo TEXT DEFAULT NULL;
