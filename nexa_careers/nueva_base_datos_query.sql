@@ -126,3 +126,5 @@ CREATE TABLE `categoria_curso`.`categoria_curso` (
   `id_curso`           INT NOT NULL,
   PRIMARY KEY (`id_categoria_curso`)
 );
+
+ALTER TABLE supervisor ADD COLUMN fecha_bloqueo DATETIME DEFAULT NULL;

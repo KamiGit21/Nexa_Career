@@ -484,3 +484,22 @@ export const buscarOfertasAvanzado = async (req, res) => {
     res.status(500).json({ success: false, message: 'Error interno en la búsqueda' });
   }
 };
+
+export const actualizarOfertasVencidas = async (req, res) => {
+  try {
+    const [result] = await db.query(
+      `UPDATE oferta.oferta 
+       SET estado = 4 
+       WHERE estado = 1 AND fecha_cierre < CURDATE()`
+    );
+
+    res.status(200).json({ 
+      success: true, 
+      message: 'Revisión de ofertas vencidas completada',
+      actualizadas: result.affectedRows 
+    });
+  } catch (error) {
+    console.error('Error al actualizar ofertas vencidas:', error);
+    res.status(500).json({ success: false, message: 'Error interno del servidor al actualizar vencimientos' });
+  }
+};
