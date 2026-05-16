@@ -1,7 +1,6 @@
-import db from '../../api-gateway/db.js';
-import { enviarCodigo } from '../../servicioNotificacion/correoService.js';
+import db from './db.js';
+import { enviarCodigo } from './correoService.js';
 
-// 1. POST: Registrar supervisor (activo = 1 por defecto)
 export const registrarSupervisor = async (req, res) => {
   const { nombre, telefono, gmail, contrasena } = req.body;
 
@@ -10,15 +9,14 @@ export const registrarSupervisor = async (req, res) => {
   }
 
   try {
-    // 🛑 NUEVO: Validar si el correo ya existe
-    const [existingEmail] = await db.query('SELECT gmail FROM supervisor WHERE gmail = ?', [gmail]);
+    const [existingEmail] = await db.query('SELECT gmail FROM supervisor.supervisor WHERE gmail = ?', [gmail]);
     if (existingEmail.length > 0) {
       return res.status(400).json({ success: false, message: 'Este correo electrónico ya está registrado.' });
     }
 
-    const activo = 1; // 1 equivale a true/activo en tinyint(1)
+    const activo = 1; 
     const [result] = await db.query(
-      `INSERT INTO supervisor (nombre, telefono, gmail, contrasena, activo) 
+      `INSERT INTO supervisor.supervisor (nombre, telefono, gmail, contrasena, activo) 
        VALUES (?, ?, ?, ?, ?)`,
       [nombre, telefono, gmail, contrasena, activo]
     );
@@ -29,10 +27,9 @@ export const registrarSupervisor = async (req, res) => {
   }
 };
 
-// 2. GET: Listar todos
 export const listarSupervisores = async (req, res) => {
   try {
-    const [rows] = await db.query('SELECT * FROM supervisor');
+    const [rows] = await db.query('SELECT * FROM supervisor.supervisor');
     res.status(200).json({ success: true, data: rows });
   } catch (error) {
     console.error('Error al listar supervisores:', error);
@@ -40,11 +37,10 @@ export const listarSupervisores = async (req, res) => {
   }
 };
 
-// 3. GET: Buscar por ID
 export const buscarSupervisorPorId = async (req, res) => {
   const { id } = req.params;
   try {
-    const [rows] = await db.query('SELECT * FROM supervisor WHERE id_supervisor = ?', [id]);
+    const [rows] = await db.query('SELECT * FROM supervisor.supervisor WHERE id_supervisor = ?', [id]);
     if (rows.length === 0) return res.status(404).json({ success: false, message: 'Supervisor no encontrado' });
     res.status(200).json({ success: true, data: rows[0] });
   } catch (error) {
@@ -53,11 +49,10 @@ export const buscarSupervisorPorId = async (req, res) => {
   }
 };
 
-// 4. GET: Buscar por correo (gmail)
 export const buscarSupervisorPorGmail = async (req, res) => {
   const { gmail } = req.params;
   try {
-    const [rows] = await db.query('SELECT * FROM supervisor WHERE gmail = ?', [gmail]);
+    const [rows] = await db.query('SELECT * FROM supervisor.supervisor WHERE gmail = ?', [gmail]);
     if (rows.length === 0) return res.status(404).json({ success: false, message: 'Supervisor no encontrado con ese correo' });
     res.status(200).json({ success: true, data: rows[0] });
   } catch (error) {
@@ -66,14 +61,13 @@ export const buscarSupervisorPorGmail = async (req, res) => {
   }
 };
 
-// 5. PUT: Actualizar perfil (nombre, telefono, gmail)
 export const actualizarPerfil = async (req, res) => {
   const { id } = req.params;
   const { nombre, telefono, gmail } = req.body;
 
   try {
     const [result] = await db.query(
-      `UPDATE supervisor SET nombre = ?, telefono = ?, gmail = ? WHERE id_supervisor = ?`,
+      `UPDATE supervisor.supervisor SET nombre = ?, telefono = ?, gmail = ? WHERE id_supervisor = ?`,
       [nombre, telefono, gmail, id]
     );
     if (result.affectedRows === 0) return res.status(404).json({ success: false, message: 'Supervisor no encontrado para actualizar' });
@@ -84,7 +78,6 @@ export const actualizarPerfil = async (req, res) => {
   }
 };
 
-// 6. PUT: Cambiar contraseña
 export const cambiarContrasena = async (req, res) => {
   const { id } = req.params;
   const { contrasena } = req.body;
@@ -95,7 +88,7 @@ export const cambiarContrasena = async (req, res) => {
   }
 
   try {
-    const [rows] = await db.query('SELECT contrasena FROM supervisor WHERE id_supervisor = ?', [id]);
+    const [rows] = await db.query('SELECT contrasena FROM supervisor.supervisor WHERE id_supervisor = ?', [id]);
     if (rows.length === 0) {
       return res.status(404).json({ success: false, message: 'Supervisor no encontrado' });
     }
@@ -105,8 +98,7 @@ export const cambiarContrasena = async (req, res) => {
       return res.status(400).json({ success: false, message: 'La nueva contraseña no puede ser igual a la anterior' });
     }
 
-    const [result] = await db.query('UPDATE supervisor SET contrasena = ? WHERE id_supervisor = ?', [contrasena, id]);
-    //if (result.affectedRows === 0) return res.status(404).json({ success: false, message: 'Supervisor no encontrado' });
+    const [result] = await db.query('UPDATE supervisor.supervisor SET contrasena = ? WHERE id_supervisor = ?', [contrasena, id]);
     res.status(200).json({ success: true, message: 'Contraseña actualizada correctamente' });
   } catch (error) {
     console.error('Error al cambiar contraseña:', error);
@@ -114,10 +106,9 @@ export const cambiarContrasena = async (req, res) => {
   }
 };
 
-// 7. PUT: Cambiar estado (activo: 0 o 1) - Ahora también guarda motivo_bloqueo
 export const cambiarEstado = async (req, res) => {
   const { id } = req.params;
-  const { activo, motivo } = req.body; // Aqu
+  const { activo, motivo } = req.body; 
 
   if (![0, 1, '0', '1', true, false].includes(activo)) {
     return res.status(400).json({ success: false, message: 'El valor activo debe ser 0 o 1' });
@@ -126,15 +117,13 @@ export const cambiarEstado = async (req, res) => {
    const valorActivo = activo === 1 || activo === '1' || activo === true ? 1 : 0;
 
   try {
-    let query = 'UPDATE supervisor SET activo = ?';
+    let query = 'UPDATE supervisor.supervisor SET activo = ?';
     let values = [valorActivo];
     
-    // Si se bloquea (activo = 0), agregar motivo y fecha de bloqueo
     if (valorActivo === 0) {
       query += ', motivo_bloqueo = ?, fecha_bloqueo = NOW()';
       values.push(motivo || null);
     } else {
-      // Si se desbloquea (activo = 1), limpiar motivo y fecha de bloqueo
       query += ', motivo_bloqueo = NULL, fecha_bloqueo = NULL';
     }
 
@@ -150,78 +139,55 @@ export const cambiarEstado = async (req, res) => {
   }
 };
 
-// 8. PUT: Bloquear usuario (cambiar estado a inactivo) - GPA 300
 export const bloquearUsuario = async (req, res) => {
-  console.log("--- INTENTO DE BLOQUEO ---");
-  console.log("Body recibido:", req.body);
-  console.log("ID Supervisor:", req.params.id_supervisor);
-
   const { tipo_usuario, id_usuario, motivo } = req.body;
   const { id_supervisor } = req.params;
 
-  // Validar parámetros
   if (!tipo_usuario || !id_usuario || !id_supervisor || !motivo) {
-    return res.status(400).json({
-      success: false,
-      message: 'tipo_usuario, id_usuario, id_supervisor y motivo son obligatorios'
-    });
+    return res.status(400).json({ success: false, message: 'tipo_usuario, id_usuario, id_supervisor y motivo son obligatorios' });
   }
 
   const tiposValidos = ['estudiante', 'empleador', 'supervisor'];
   if (!tiposValidos.includes(tipo_usuario)) {
-    return res.status(400).json({
-      success: false,
-      message: 'tipo_usuario debe ser: estudiante, empleador o supervisor'
-    });
+    return res.status(400).json({ success: false, message: 'tipo_usuario debe ser: estudiante, empleador o supervisor' });
   }
 
   try {
-    // Verificar que el supervisor existe y está activo
-    const [supervisor] = await db.query('SELECT activo FROM supervisor WHERE id_supervisor = ? AND activo = 1', [id_supervisor]);
+    const [supervisor] = await db.query('SELECT activo FROM supervisor.supervisor WHERE id_supervisor = ? AND activo = 1', [id_supervisor]);
     if (supervisor.length === 0) {
       return res.status(403).json({ success: false, message: 'Supervisor no autorizado o inactivo' });
     }
 
-    // DEMO. Para bloqueo de supervisor (extra): verificar confirmaciones
     if (tipo_usuario === 'supervisor') {
       const confirmadores = req.body.confirmadores || [];
       if (!Array.isArray(confirmadores) || confirmadores.length < 2) {
-        return res.status(400).json({
-          success: false,
-          message: 'Para bloquear un supervisor, se requieren al menos 2 confirmadores (array de id_supervisor)'
-        });
+        return res.status(400).json({ success: false, message: 'Para bloquear un supervisor, se requieren al menos 2 confirmadores' });
       }
 
-      // Verificar que los confirmadores existen y están activos
       for (const id_conf of confirmadores) {
-        const [conf] = await db.query('SELECT activo FROM supervisor WHERE id_supervisor = ? AND activo = 1', [id_conf]);
+        const [conf] = await db.query('SELECT activo FROM supervisor.supervisor WHERE id_supervisor = ? AND activo = 1', [id_conf]);
         if (conf.length === 0) {
-          return res.status(400).json({
-            success: false,
-            message: `Confirmador ${id_conf} no existe o no está activo`
-          });
+          return res.status(400).json({ success: false, message: `Confirmador ${id_conf} no existe o no está activo` });
         }
       }
     }
 
-    // Determinar tabla y columna ID según tipo_usuario
     let tabla, columnaId;
     switch (tipo_usuario) {
       case 'estudiante':
-        tabla = 'estudiante';
+        tabla = 'estudiante.estudiante';
         columnaId = 'id_estudiante';
         break;
       case 'empleador':
-        tabla = 'empleador';
+        tabla = 'empleador.empleador';
         columnaId = 'id_empleador';
         break;
       case 'supervisor':
-        tabla = 'supervisor';
+        tabla = 'supervisor.supervisor';
         columnaId = 'id_supervisor';
         break;
     }
 
-    // Verificar que el usuario existe
     const [usuario] = await db.query(`SELECT activo FROM ${tabla} WHERE ${columnaId} = ?`, [id_usuario]);
     if (usuario.length === 0) {
       return res.status(404).json({ success: false, message: `${tipo_usuario} no encontrado` });
@@ -231,20 +197,13 @@ export const bloquearUsuario = async (req, res) => {
       return res.status(400).json({ success: false, message: `${tipo_usuario} ya está inactivo` });
     }
 
-    // Bloquear usuario (activo = 0, para inactivar dicho usuario)
     const [result] = await db.query(`UPDATE ${tabla} SET activo = 0, motivo_bloqueo = ?, fecha_bloqueo = NOW() WHERE ${columnaId} = ?`, [motivo, id_usuario]);
 
     if (result.affectedRows === 0) {
       return res.status(500).json({ success: false, message: 'Error al bloquear usuario' });
     }
 
-    res.status(200).json({
-      success: true,
-      message: `${tipo_usuario} bloqueado exitosamente`,
-      tipo_usuario,
-      id_usuario,
-      fecha_bloqueo: new Date(),
-    });
+    res.status(200).json({ success: true, message: `${tipo_usuario} bloqueado exitosamente`, tipo_usuario, id_usuario, fecha_bloqueo: new Date() });
 
   } catch (error) {
     console.error('Error al bloquear usuario:', error);
@@ -252,56 +211,41 @@ export const bloquearUsuario = async (req, res) => {
   }
 };
 
-// 8.1. PUT: Desbloquear usuario (cambiar estado a activo) - GPA 40
 export const desbloquearUsuario = async (req, res) => {
-  console.log("--- INTENTO DE DESBLOQUEO ---");
-  console.log("Body recibido:", req.body);
-  console.log("ID Supervisor:", req.params.id_supervisor);
-
   const { tipo_usuario, id_usuario } = req.body;
   const { id_supervisor } = req.params;
 
-  // Validar parámetros
   if (!tipo_usuario || !id_usuario || !id_supervisor) {
-    return res.status(400).json({
-      success: false,
-      message: 'tipo_usuario, id_usuario e id_supervisor son obligatorios'
-    });
+    return res.status(400).json({ success: false, message: 'tipo_usuario, id_usuario e id_supervisor son obligatorios' });
   }
 
   const tiposValidos = ['estudiante', 'empleador', 'supervisor'];
   if (!tiposValidos.includes(tipo_usuario)) {
-    return res.status(400).json({
-      success: false,
-      message: 'tipo_usuario debe ser: estudiante, empleador o supervisor'
-    });
+    return res.status(400).json({ success: false, message: 'tipo_usuario debe ser: estudiante, empleador o supervisor' });
   }
 
   try {
-    // Verificar que el supervisor existe y está activo
-    const [supervisor] = await db.query('SELECT activo FROM supervisor WHERE id_supervisor = ? AND activo = 1', [id_supervisor]);
+    const [supervisor] = await db.query('SELECT activo FROM supervisor.supervisor WHERE id_supervisor = ? AND activo = 1', [id_supervisor]);
     if (supervisor.length === 0) {
       return res.status(403).json({ success: false, message: 'Supervisor no autorizado o inactivo' });
     }
 
-    // Determinar tabla y columna ID según tipo_usuario
     let tabla, columnaId;
     switch (tipo_usuario) {
       case 'estudiante':
-        tabla = 'estudiante';
+        tabla = 'estudiante.estudiante';
         columnaId = 'id_estudiante';
         break;
       case 'empleador':
-        tabla = 'empleador';
+        tabla = 'empleador.empleador';
         columnaId = 'id_empleador';
         break;
       case 'supervisor':
-        tabla = 'supervisor';
+        tabla = 'supervisor.supervisor';
         columnaId = 'id_supervisor';
         break;
     }
 
-    // Verificar que el usuario existe
     const [usuario] = await db.query(`SELECT activo FROM ${tabla} WHERE ${columnaId} = ?`, [id_usuario]);
     if (usuario.length === 0) {
       return res.status(404).json({ success: false, message: `${tipo_usuario} no encontrado` });
@@ -311,20 +255,13 @@ export const desbloquearUsuario = async (req, res) => {
       return res.status(400).json({ success: false, message: `${tipo_usuario} ya está activo` });
     }
 
-    // Desbloquear usuario (activo = 1, limpiar motivo y fecha de bloqueo)
     const [result] = await db.query(`UPDATE ${tabla} SET activo = 1, motivo_bloqueo = NULL, fecha_bloqueo = NULL WHERE ${columnaId} = ?`, [id_usuario]);
 
     if (result.affectedRows === 0) {
       return res.status(500).json({ success: false, message: 'Error al desbloquear usuario' });
     }
 
-    res.status(200).json({
-      success: true,
-      message: `${tipo_usuario} desbloqueado exitosamente`,
-      tipo_usuario,
-      id_usuario,
-      fecha_desbloqueo: new Date(),
-    });
+    res.status(200).json({ success: true, message: `${tipo_usuario} desbloqueado exitosamente`, tipo_usuario, id_usuario, fecha_desbloqueo: new Date() });
 
   } catch (error) {
     console.error('Error al desbloquear usuario:', error);
@@ -332,149 +269,54 @@ export const desbloquearUsuario = async (req, res) => {
   }
 };
 
-// 8.2. GET: Listar todos los usuarios bloqueados (con estado inactivo) - GPA 567
 export const listarUsuariosBloqueados = async (req, res) => {
   try {
-    // Obtener estudiantes bloqueados
     const [estudiantesBloqueados] = await db.query(`
-      SELECT
-        id_estudiante as id_usuario,
-        CONCAT(nombre, ' ', apellido) as nombre_completo,
-        gmail,
-        telefono,
-        motivo_bloqueo,
-        fecha_bloqueo,
-        'estudiante' as tipo_usuario,
-        creado_en
-      FROM estudiante
-      WHERE activo = 0
-      ORDER BY fecha_bloqueo DESC
+      SELECT id_estudiante as id_usuario, CONCAT(nombre, ' ', apellido) as nombre_completo, gmail, telefono, motivo_bloqueo, fecha_bloqueo, 'estudiante' as tipo_usuario, creado_en
+      FROM estudiante.estudiante WHERE activo = 0 ORDER BY fecha_bloqueo DESC
     `);
 
-    // Obtener empleadores bloqueados
     const [empleadoresBloqueados] = await db.query(`
-      SELECT
-        id_empleador as id_usuario,
-        empresa as nombre_completo,
-        gmail,
-        telefono,
-        motivo_bloqueo,
-        fecha_bloqueo,
-        'empleador' as tipo_usuario,
-        creado_en
-      FROM empleador
-      WHERE activo = 0
-      ORDER BY fecha_bloqueo DESC
+      SELECT id_empleador as id_usuario, empresa as nombre_completo, gmail, telefono, motivo_bloqueo, fecha_bloqueo, 'empleador' as tipo_usuario, creado_en
+      FROM empleador.empleador WHERE activo = 0 ORDER BY fecha_bloqueo DESC
     `);
 
-// Obtener supervisores bloqueados
     const [supervisoresBloqueados] = await db.query(`
-      SELECT 
-        id_supervisor as id_usuario,
-        CONCAT(nombre, ' ', apellido) as nombre_completo,
-        gmail,
-        telefono,
-        motivo_bloqueo,
-        fecha_bloqueo,
-        'supervisor' as tipo_usuario,
-        creado_en
-      FROM supervisor 
-      WHERE activo = 0
-      ORDER BY fecha_bloqueo DESC
+      SELECT id_supervisor as id_usuario, CONCAT(nombre, ' ', apellido) as nombre_completo, gmail, telefono, motivo_bloqueo, fecha_bloqueo, 'supervisor' as tipo_usuario, creado_en
+      FROM supervisor.supervisor WHERE activo = 0 ORDER BY fecha_bloqueo DESC
     `);
 
-    // Combinar todos los usuarios bloqueados
-    const usuariosBloqueados = [
-      ...estudiantesBloqueados,
-      ...empleadoresBloqueados,
-      ...supervisoresBloqueados
-    ].sort((a, b) => new Date(b.fecha_bloqueo || b.creado_en) - new Date(a.fecha_bloqueo || a.creado_en));
+    const usuariosBloqueados = [ ...estudiantesBloqueados, ...empleadoresBloqueados, ...supervisoresBloqueados ]
+      .sort((a, b) => new Date(b.fecha_bloqueo || b.creado_en) - new Date(a.fecha_bloqueo || a.creado_en));
 
-    res.status(200).json({
-      success: true,
-      data: usuariosBloqueados,
-      total: usuariosBloqueados.length
-    });
-
+    res.status(200).json({ success: true, data: usuariosBloqueados, total: usuariosBloqueados.length });
   } catch (error) {
     console.error('Error al listar usuarios bloqueados:', error);
     res.status(500).json({ success: false, message: 'Error interno al listar usuarios bloqueados' });
   }
 };
 
-// 9. GET: Estadísticas de supervisores (empleadores, postulaciones, ofertas) 
-export const obtenerEstadisticasDashboard = async (req, res) => {
-  try {
-    //Contar Empleadores
-    const [[{ totalEmpleadores }]] = await db.query('SELECT COUNT(*) as totalEmpleadores FROM empleador');
-
-    //Contar Postulaciones totales
-    const [[{ totalPostulaciones }]] = await db.query('SELECT COUNT(*) as totalPostulaciones FROM postulante');
-
-    //Actividad reciente (ultimas ofertas y registros)
-    const [actividad] = await db.query(`
-      (SELECT empresa as usuario, 'Publicó una oferta' as accion, 'Ofertas' as modulo, creado_en as fecha, 'Aprobado' as estado FROM empleador ORDER BY creado_en DESC LIMIT 5)
-      UNION
-      (SELECT nombre as usuario, 'Nuevo registro' as accion, 'Estudiantes' as modulo, creado_en as fecha, 'Activo' as estado FROM estudiante ORDER BY creado_en DESC LIMIT 5)
-      ORDER BY fecha DESC LIMIT 5
-    `);
-
-    res.status(200).json({
-      success: true,
-      metricas: {
-        empleadores: totalEmpleadores,
-        postulaciones: totalPostulaciones,
-        pendientes: pendientes
-      },
-      recientes: actividad
-    });
-  } catch (error) {
-    console.error('Error en estadísticas:', error);
-    res.status(500).json({ success: false, message: 'Error al obtener estadísticas' });
-  }
-};
-
-// A. Listar estudiantes con estadísticas
-// Prueba temporal en supervisorController.js
 export const listarEstudiantesAdmin = async (req, res) => {
   try {
-    const [rows] = await db.query('SELECT * FROM estudiante');
+    const [rows] = await db.query('SELECT * FROM estudiante.estudiante');
     res.json({ success: true, data: rows });
   } catch (error) {
     console.error('ERROR REAL EN CONSOLA:', error);
     res.status(500).json({ success: false, message: error.message });
   }
 };
- 
-// B. Listar empleadores con estadísticas
+
 export const listarEmpleadoresAdmin = async (req, res) => {
   try {
     const [rows] = await db.query(`
       SELECT
-        emp.id_empleador,
-        emp.empresa,
-        emp.descripcion,
-        emp.gmail,
-        emp.telefono,
-        emp.activo,
-        emp.creado_en,
-        emp.motivo_bloqueo, -- Ahora sí existe por el ALTER TABLE
-        emp.fecha_bloqueo,  -- Ahora sí existe por el ALTER TABLE
+        emp.id_empleador, emp.empresa, emp.descripcion, emp.gmail, emp.telefono, emp.activo, emp.creado_en, emp.motivo_bloqueo, emp.fecha_bloqueo,
         COUNT(DISTINCT o.id_oferta)  AS total_ofertas,
         COUNT(DISTINCT cu.id_curso)  AS total_cursos
-      FROM empleador emp
-      LEFT JOIN oferta o  ON emp.id_empleador = o.id_empleador
-      LEFT JOIN curso  cu ON emp.id_empleador = cu.id_empleador
-      GROUP BY 
-        emp.id_empleador, 
-        emp.empresa, 
-        emp.descripcion, 
-        emp.gmail, 
-        emp.telefono, 
-        emp.activo, 
-        emp.creado_en,
-        emp.motivo_bloqueo,
-        emp.fecha_bloqueo
+      FROM empleador.empleador emp
+      LEFT JOIN oferta.oferta o  ON emp.id_empleador = o.id_empleador
+      LEFT JOIN curso.curso  cu ON emp.id_empleador = cu.id_empleador
+      GROUP BY emp.id_empleador, emp.empresa, emp.descripcion, emp.gmail, emp.telefono, emp.activo, emp.creado_en, emp.motivo_bloqueo, emp.fecha_bloqueo
       ORDER BY emp.creado_en DESC
     `);
     res.json({ success: true, data: rows });
@@ -483,21 +325,17 @@ export const listarEmpleadoresAdmin = async (req, res) => {
     res.status(500).json({ success: false, message: error.message });
   }
 };
- 
-// C. Listar supervisores
+
 export const listarSupervisoresAdmin = async (req, res) => {
   try {
-    const [rows] = await db.query(
-'SELECT id_supervisor, nombre, apellido, gmail, telefono, activo, motivo_bloqueo, fecha_bloqueo, creado_en FROM supervisor ORDER BY creado_en DESC'
-    );
+    const [rows] = await db.query('SELECT id_supervisor, nombre, apellido, gmail, telefono, activo, motivo_bloqueo, fecha_bloqueo, creado_en FROM supervisor.supervisor ORDER BY creado_en DESC');
     res.json({ success: true, data: rows });
   } catch (error) {
     console.error('Error en listarSupervisoresAdmin:', error);
     res.status(500).json({ success: false, message: error.message });
   }
 };
- 
-// D. Logs de actividad de un estudiante (derivados de postulante + curso)
+
 export const obtenerLogsEstudiante = async (req, res) => {
   const { id } = req.params;
   try {
@@ -512,8 +350,8 @@ export const obtenerLogsEstudiante = async (req, res) => {
           WHEN 2 THEN 'Rechazado'
         END                    AS estado,
         NULL                   AS fecha
-      FROM postulante p
-      JOIN oferta o ON p.id_oferta = o.id_oferta
+      FROM postulante.postulante p
+      JOIN oferta.oferta o ON p.id_oferta = o.id_oferta
       WHERE p.id_estudiante = ?
     `, [id]);
  
@@ -529,21 +367,18 @@ export const obtenerLogsEstudiante = async (req, res) => {
           WHEN 3 THEN 'Archivado'
         END               AS estado,
         fecha_creacion    AS fecha
-      FROM curso
+      FROM curso.curso
       WHERE id_estudiante = ?
     `, [id]);
  
-    const logs = [...postulaciones, ...cursos]
-      .sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
- 
+    const logs = [...postulaciones, ...cursos].sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
     res.json({ success: true, data: logs });
   } catch (error) {
     console.error('Error en obtenerLogsEstudiante:', error);
     res.status(500).json({ success: false, message: error.message });
   }
 };
- 
-// E. Logs de actividad de un empleador (derivados de oferta + curso)
+
 export const obtenerLogsEmpleador = async (req, res) => {
   const { id } = req.params;
   try {
@@ -559,7 +394,7 @@ export const obtenerLogsEmpleador = async (req, res) => {
           WHEN 3 THEN 'Archivado'
         END                AS estado,
         fecha_apertura     AS fecha
-      FROM oferta
+      FROM oferta.oferta
       WHERE id_empleador = ?
     `, [id]);
  
@@ -575,20 +410,17 @@ export const obtenerLogsEmpleador = async (req, res) => {
           WHEN 3 THEN 'Archivado'
         END               AS estado,
         fecha_creacion    AS fecha
-      FROM curso
+      FROM curso.curso
       WHERE id_empleador = ?
     `, [id]);
  
-    const logs = [...ofertas, ...cursos]
-      .sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
- 
+    const logs = [...ofertas, ...cursos].sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
     res.json({ success: true, data: logs });
   } catch (error) {
     console.error('Error en obtenerLogsEmpleador:', error);
     res.status(500).json({ success: false, message: error.message });
   }
 };
-
 
 export const enviarCodigoSupervisor = async (req, res) => {
   const { correo, codigo } = req.body;
@@ -598,7 +430,7 @@ export const enviarCodigoSupervisor = async (req, res) => {
   }
 
   try {
-    const [rows] = await db.query('SELECT * FROM supervisor WHERE gmail = ?', [correo]);
+    const [rows] = await db.query('SELECT * FROM supervisor.supervisor WHERE gmail = ?', [correo]);
     if (rows.length === 0) {
       return res.status(404).json({ success: false, message: 'Supervisor no encontrado' });
     }
