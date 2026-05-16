@@ -90,6 +90,16 @@ export async function buscarOfertasAvanzado(filtros) {
   return data;
 }
 
+export const actualizarVencimientos = async () => {
+  try {
+    const { data } = await api.patch('/api/ofertas/vencidas');
+    return data;
+  } catch (error) {
+    console.error('Error al actualizar vencimientos:', error);
+    return { success: false, message: error.message };
+  }
+};
+
 
 export default {
   listarOfertas,
@@ -104,5 +114,6 @@ export default {
   listarOfertasPaginadasPorEstado,
   contarOfertasPorEstado,
   obtenerOfertasPaginacionOrdenada,
-  obtenerOfertasPaginacionPorEstadoYFecha
+  obtenerOfertasPaginacionPorEstadoYFecha,
+  actualizarVencimientos
 }
