@@ -109,7 +109,7 @@
 
 <MotivoRechazoBanner
   v-if="curso.estado === 2"
-  :motivo="curso.motivo_rechazo"
+  :motivo="curso.rechazo"
   class="mb-3 flex-grow"
 />
 

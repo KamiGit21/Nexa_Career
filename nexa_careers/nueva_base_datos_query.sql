@@ -98,6 +98,7 @@ CREATE TABLE `curso`.`curso` (
   `id_empleador`   INT,
   `tipo_ofertante` BOOLEAN NOT NULL,
   `contacto`       VARCHAR(255),
+  `rechazo`        TEXT,
   PRIMARY KEY (`id_curso`)
 );
 

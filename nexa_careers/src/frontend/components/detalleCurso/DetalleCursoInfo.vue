@@ -8,7 +8,7 @@
 
 <MotivoRechazoBanner
   v-if="curso.estado === 2"
-  :motivo="curso.motivo_rechazo"
+  :motivo="curso.rechazo"
   class="mt-4"
 />
 
