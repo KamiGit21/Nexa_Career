@@ -1,5 +1,5 @@
-import db from '../../api-gateway/db.js';
-import { enviarCodigo } from '../../servicioNotificacion/correoService.js';
+import db from './db.js';
+import { enviarCodigo } from './correoService.js';
 
 const dominiosPermitidos = ['ucb.edu.bo'];
 
@@ -64,15 +64,12 @@ const validateEstudiante = (data, { isNew = false } = {}) => {
   }
 
   if (telefono && !isValidPhone(telefono)) errors.push('El teléfono debe contener solo dígitos y entre 7 y 15 caracteres');
-  //if (cv && !isValidUrl(cv)) errors.push('El campo cv debe ser una URL válida');
-  //cambio por esta:
+  
   if (cv && typeof cv === 'string' && cv.length > 0) {
-  // Si parece una URL (empieza con http), validar como URL
-  if (cv.startsWith('http') && !isValidUrl(cv)) {
-    errors.push('El campo cv debe ser una URL válida');
+    if (cv.startsWith('http') && !isValidUrl(cv)) {
+      errors.push('El campo cv debe ser una URL válida');
+    }
   }
-  // Si no empieza con http asumimos que es un nombre de archivo (válido)
-}
   if (contrasena && String(contrasena).length < 8) errors.push('La contraseña debe tener al menos 8 caracteres');
   if (contrasena && String(contrasena).length > 60) errors.push('La contraseña no puede exceder 60 caracteres');
   if (descripcion && String(descripcion).length > 500) errors.push('La descripción no puede exceder 500 caracteres');
@@ -83,7 +80,6 @@ const validateEstudiante = (data, { isNew = false } = {}) => {
   return { valid: errors.length === 0, errors };
 };
 
-// 1. POST: Registrar estudiante
 export const registrarEstudiante = async (req, res) => {
   const validation = validateEstudiante(req.body, { isNew: true });
   if (!validation.valid) {
@@ -93,13 +89,13 @@ export const registrarEstudiante = async (req, res) => {
   const { nombre, apellido, telefono, gmail, cv, contrasena, id_carrera, descripcion, habilidades, educacion } = req.body;
 
   try {
-    const [existingEmail] = await db.query('SELECT gmail FROM estudiante WHERE gmail = ?', [gmail]);
+    const [existingEmail] = await db.query('SELECT gmail FROM estudiante.estudiante WHERE gmail = ?', [gmail]);
     if (existingEmail.length > 0) {
       return res.status(400).json({ success: false, message: 'Este correo electrónico ya está registrado.' });
     }
     const activo = 1;
     const [result] = await db.query(
-      `INSERT INTO estudiante (nombre, apellido, telefono, gmail, cv, contrasena, activo, id_carrera, descripcion, habilidades, educacion) 
+      `INSERT INTO estudiante.estudiante (nombre, apellido, telefono, gmail, cv, contrasena, activo, id_carrera, descripcion, habilidades, educacion) 
        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [nombre, apellido, telefono, gmail, cv, contrasena, activo, id_carrera, descripcion, habilidades, educacion]
     );
@@ -110,10 +106,9 @@ export const registrarEstudiante = async (req, res) => {
   }
 };
 
-// 2. GET: Listar todos los estudiantes
 export const listarEstudiantes = async (req, res) => {
   try {
-    const [rows] = await db.query('SELECT * FROM estudiante');
+    const [rows] = await db.query('SELECT * FROM estudiante.estudiante');
     res.status(200).json({ success: true, data: rows });
   } catch (error) {
     console.error('Error al listar estudiantes:', error);
@@ -121,11 +116,10 @@ export const listarEstudiantes = async (req, res) => {
   }
 };
 
-// 3. GET: Buscar estudiante por ID
 export const buscarEstudiantePorId = async (req, res) => {
   const { id } = req.params;
   try {
-    const [rows] = await db.query('SELECT * FROM estudiante WHERE id_estudiante = ?', [id]);
+    const [rows] = await db.query('SELECT * FROM estudiante.estudiante WHERE id_estudiante = ?', [id]);
     if (rows.length === 0) return res.status(404).json({ success: false, message: 'Estudiante no encontrado' });
     res.status(200).json({ success: true, data: rows[0] });
   } catch (error) {
@@ -134,11 +128,10 @@ export const buscarEstudiantePorId = async (req, res) => {
   }
 };
 
-// 4. GET: Buscar estudiante por correo
 export const buscarEstudiantePorGmail = async (req, res) => {
   const { gmail } = req.params;
   try {
-    const [rows] = await db.query('SELECT * FROM estudiante WHERE gmail = ?', [gmail]);
+    const [rows] = await db.query('SELECT * FROM estudiante.estudiante WHERE gmail = ?', [gmail]);
     if (rows.length === 0) return res.status(404).json({ success: false, message: 'Estudiante no encontrado con ese correo' });
     res.status(200).json({ success: true, data: rows[0] });
   } catch (error) {
@@ -147,7 +140,6 @@ export const buscarEstudiantePorGmail = async (req, res) => {
   }
 };
 
-// 5. PUT: Actualizar perfil
 export const actualizarPerfil = async (req, res) => {
   const { id } = req.params;
   const { telefono, gmail, cv, descripcion, educacion, habilidades } = req.body;
@@ -159,7 +151,7 @@ export const actualizarPerfil = async (req, res) => {
 
   try {
     const [result] = await db.query(
-      `UPDATE estudiante SET telefono = ?, gmail = ?, cv = ?, descripcion = ?, educacion = ?, habilidades = ? WHERE id_estudiante = ?`,
+      `UPDATE estudiante.estudiante SET telefono = ?, gmail = ?, cv = ?, descripcion = ?, educacion = ?, habilidades = ? WHERE id_estudiante = ?`,
       [telefono, gmail, cv, descripcion, educacion, habilidades, id]
     );
     if (result.affectedRows === 0) return res.status(404).json({ success: false, message: 'Estudiante no encontrado para actualizar' });
@@ -170,7 +162,6 @@ export const actualizarPerfil = async (req, res) => {
   }
 };
 
-// 6. PUT: Cambiar contraseña
 export const cambiarContrasena = async (req, res) => {
   const { id } = req.params;
   const { contrasena } = req.body;
@@ -181,7 +172,7 @@ export const cambiarContrasena = async (req, res) => {
   }
 
   try {
-    const [rows] = await db.query('SELECT contrasena FROM estudiante WHERE id_estudiante = ?', [id]);
+    const [rows] = await db.query('SELECT contrasena FROM estudiante.estudiante WHERE id_estudiante = ?', [id]);
     if (rows.length === 0) {
       return res.status(404).json({ success: false, message: 'Estudiante no encontrado' });
     }
@@ -190,8 +181,7 @@ export const cambiarContrasena = async (req, res) => {
       return res.status(400).json({ success: false, message: 'La nueva contraseña no puede ser igual a la anterior' });
     }
 
-    const [result] = await db.query('UPDATE estudiante SET contrasena = ? WHERE id_estudiante = ?', [contrasena, id]);
-    //if (result.affectedRows === 0) return res.status(404).json({ success: false, message: 'Estudiante no encontrado' });
+    const [result] = await db.query('UPDATE estudiante.estudiante SET contrasena = ? WHERE id_estudiante = ?', [contrasena, id]);
     res.status(200).json({ success: true, message: 'Contraseña actualizada correctamente' });
   } catch (error) {
     console.error('Error al cambiar contraseña:', error);
@@ -199,7 +189,6 @@ export const cambiarContrasena = async (req, res) => {
   }
 };
 
-// 7. PUT: Cambiar estado (activo)
 export const cambiarEstado = async (req, res) => {
   const { id } = req.params;
   const { activo, motivo } = req.body;
@@ -212,17 +201,15 @@ export const cambiarEstado = async (req, res) => {
 
   try {
     if (valorActivo === 0 && motivo) {
-      // Bloquear: guardar motivo y fecha
       const [result] = await db.query(
-        'UPDATE estudiante SET activo = ?, motivo_bloqueo = ?, fecha_bloqueo = NOW() WHERE id_estudiante = ?',
+        'UPDATE estudiante.estudiante SET activo = ?, motivo_bloqueo = ?, fecha_bloqueo = NOW() WHERE id_estudiante = ?',
         [valorActivo, motivo, id]
       );
       if (result.affectedRows === 0) return res.status(404).json({ success: false, message: 'Estudiante no encontrado' });
       res.status(200).json({ success: true, message: 'Estudiante bloqueado correctamente' });
     } else {
-      // Desbloquear: limpiar motivo y fecha
       const [result] = await db.query(
-        'UPDATE estudiante SET activo = ?, motivo_bloqueo = NULL, fecha_bloqueo = NULL WHERE id_estudiante = ?',
+        'UPDATE estudiante.estudiante SET activo = ?, motivo_bloqueo = NULL, fecha_bloqueo = NULL WHERE id_estudiante = ?',
         [valorActivo, id]
       );
       if (result.affectedRows === 0) return res.status(404).json({ success: false, message: 'Estudiante no encontrado' });
@@ -234,17 +221,15 @@ export const cambiarEstado = async (req, res) => {
   }
 };
 
-//Enviar codigo de verificación por correo
 export const enviarCodigoEstudiante = async (req, res) => {
   const { correo, codigo } = req.body;
-
 
   if (!correo || !codigo) {
     return res.status(400).json({ success: false, message: 'El correo y el código son obligatorios' });
   }
 
   try {
-    const [rows] = await db.query('SELECT * FROM estudiante WHERE gmail = ?', [correo]);
+    const [rows] = await db.query('SELECT * FROM estudiante.estudiante WHERE gmail = ?', [correo]);
     if (rows.length === 0) {
       return res.status(404).json({ success: false, message: 'Estudiante no encontrado' });
     }
@@ -262,13 +247,12 @@ export const enviarCodigoEstudiante = async (req, res) => {
   }
 };
 
-// 8. GET: Obtener postulaciones de un estudiante
 export const obtenerPostulacionesPorEstudiante = async (req, res) => {
   const { id } = req.params;
   try {
     const [rows] = await db.query(`
       SELECT 
-        ofe.id_ofertante,
+        ofe.id_postulante as id_ofertante,
         ofe.id_estudiante,
         ofe.id_oferta,
         ofe.estado as estado_postulacion,
@@ -276,10 +260,10 @@ export const obtenerPostulacionesPorEstudiante = async (req, res) => {
         o.descripcion,
         o.estado as estado_oferta,
         o.fecha_apertura
-      FROM ofertante ofe
-      INNER JOIN oferta o ON ofe.id_oferta = o.id_oferta
+      FROM postulante.postulante ofe
+      INNER JOIN oferta.oferta o ON ofe.id_oferta = o.id_oferta
       WHERE ofe.id_estudiante = ?
-      ORDER BY ofe.id_ofertante DESC
+      ORDER BY ofe.id_postulante DESC
     `, [id]);
 
     res.status(200).json({ success: true, data: rows });
@@ -289,9 +273,8 @@ export const obtenerPostulacionesPorEstudiante = async (req, res) => {
   }
 };
 
-// 9. POST: Postular a una oferta ojo sin validar
 export const postularAOferta = async (req, res) => {
-  const { id } = req.params; // id_estudiante
+  const { id } = req.params; 
   const { id_oferta } = req.body;
 
   if (!id_oferta) {
@@ -299,9 +282,8 @@ export const postularAOferta = async (req, res) => {
   }
 
   try {
-    // Verificar si ya existe la postulación
     const [existing] = await db.query(
-      'SELECT * FROM ofertante WHERE id_estudiante = ? AND id_oferta = ?',
+      'SELECT * FROM postulante.postulante WHERE id_estudiante = ? AND id_oferta = ?',
       [id, id_oferta]
     );
 
@@ -309,9 +291,8 @@ export const postularAOferta = async (req, res) => {
       return res.status(400).json({ success: false, message: 'Ya te has postulado a esta oferta' });
     }
 
-    // Crear la postulación
     const [result] = await db.query(
-      `INSERT INTO ofertante (id_estudiante, id_oferta, estado) 
+      `INSERT INTO postulante.postulante (id_estudiante, id_oferta, estado) 
        VALUES (?, ?, 0)`,
       [id, id_oferta]
     );
@@ -322,4 +303,3 @@ export const postularAOferta = async (req, res) => {
     res.status(500).json({ success: false, message: 'Error interno al postular' });
   }
 };
-
