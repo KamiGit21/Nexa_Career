@@ -60,7 +60,7 @@ const validateOferta = (data) => {
 };
 
 export const crearOferta = async (req, res) => {
-  const { descripcion, fecha_apertura, oferta, id_empleador, modalidad, categorias } = req.body;
+  const { descripcion, fecha_apertura, fecha_cierre, oferta, id_empleador, modalidad, categorias } = req.body;
 
   const validation = validateOferta({ descripcion, fecha_apertura, oferta, id_empleador });
   if (!validation.valid) {
@@ -75,9 +75,9 @@ export const crearOferta = async (req, res) => {
     const rechazo = ''; 
 
     const [result] = await connection.query(
-      `INSERT INTO oferta.oferta (descripcion, fecha_apertura, estado, rechazo, oferta, id_empleador, modalidad) 
-       VALUES (?, ?, ?, ?, ?, ?, ?)`,
-      [descripcion, fecha_apertura, estado, rechazo, oferta, id_empleador, modalidad || 'Presencial']
+      `INSERT INTO oferta.oferta (descripcion, fecha_apertura, fecha_cierre, estado, rechazo, oferta, id_empleador, modalidad) 
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+      [descripcion, fecha_apertura, fecha_cierre, estado, rechazo, oferta, id_empleador, modalidad || 'Presencial']
     );
 
     const idOferta = result.insertId;
