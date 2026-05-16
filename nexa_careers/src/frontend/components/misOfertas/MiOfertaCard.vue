@@ -19,6 +19,11 @@
       <span>👥 {{ oferta.postulantes_count || 0 }} postulantes</span>
     </div>
 
+    <div v-if="oferta.estado === 2" class="mb-4 p-3 rounded-2xl bg-red-50 border border-red-100 text-red-700 text-xs">
+      <p class="font-semibold">Motivo de rechazo</p>
+      <p>{{ oferta.rechazo || oferta.motivo_rechazo || 'No se especificó un motivo.' }}</p>
+    </div>
+
     <div class="border-t border-gray-100 pt-4 flex flex-wrap gap-2">
       <button
         @click="$emit('ver-detalle', oferta)"

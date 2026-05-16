@@ -37,7 +37,7 @@
         <div v-if="oferta?.estado === 2" class="bg-red-50 border border-red-200 rounded-2xl p-4 space-y-1">
           <p class="text-sm font-bold text-red-700">Motivo de rechazo</p>
           <p class="text-sm text-red-600 leading-relaxed">
-            {{ oferta.motivo_rechazo || 'No se especificó un motivo.' }}
+            {{ oferta.rechazo || oferta.motivo_rechazo || 'No se especificó un motivo.' }}
           </p>
         </div>
 
