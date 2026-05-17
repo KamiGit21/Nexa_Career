@@ -131,11 +131,21 @@ export const listarCursosPorEmpleador = async (req, res) => {
 
 export const cambiarEstadoCurso = async (req, res) => {
   const { id_curso } = req.params;
-  const { estado } = req.body; 
+  const { estado, rechazo } = req.body;
   try {
-    await db.query('UPDATE curso.curso SET estado = ? WHERE id_curso = ?', [estado, id_curso]);
+    let query = 'UPDATE curso.curso SET estado = ?';
+    const values = [estado];
+    if (rechazo !== undefined) {
+      query += ', rechazo = ?';
+      values.push(rechazo);
+    }
+    query += ' WHERE id_curso = ?';
+    values.push(id_curso);
+
+    await db.query(query, values);
     res.status(200).json({ success: true, message: 'Estado actualizado' });
   } catch (error) {
+    console.error('Error en cambiarEstadoCurso:', error);
     res.status(500).json({ success: false, message: 'Error al actualizar estado' });
   }
 };

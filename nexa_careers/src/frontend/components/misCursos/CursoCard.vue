@@ -18,6 +18,12 @@
 
     <p class="text-sm text-gray-500 line-clamp-2 mb-4">{{ curso.descripcion || 'Sin descripción' }}</p>
 
+    <!-- Motivo de rechazo -->
+    <div v-if="curso.estado === 2 && curso.rechazo" class="bg-red-50 border border-red-200 rounded-xl px-3 py-2 mb-4">
+      <p class="text-xs font-bold text-red-700 flex items-center gap-1 mb-0.5">✕ Motivo de rechazo</p>
+      <p class="text-xs text-red-600 leading-relaxed">{{ curso.rechazo }}</p>
+    </div>
+
     <div class="flex justify-between items-center text-xs text-gray-400 mb-5">
       <span>📅 {{ formatearFecha(curso.fecha_creacion) }}</span>
       <span>📞 {{ curso.contacto }}</span>
