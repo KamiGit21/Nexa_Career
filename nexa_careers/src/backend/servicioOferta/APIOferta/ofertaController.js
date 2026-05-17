@@ -509,3 +509,38 @@ export const actualizarOfertasVencidas = async (req, res) => {
     res.status(500).json({ success: false, message: 'Error interno del servidor al actualizar vencimientos' });
   }
 };
+
+export const buscarOfertasPorEmpleadorConFiltro = async (req, res) => {
+  const { id_empleador } = req.params;
+  const { q, estado } = req.query;
+  
+  if (!id_empleador || isNaN(id_empleador)) {
+    return res.status(400).json({ success: false, message: 'ID de empleador inválido' });
+  }
+  
+  try {
+    let query = 'SELECT * FROM oferta.oferta WHERE id_empleador = ?';
+    const params = [id_empleador];
+    
+    if (q && q.trim() !== '') {
+      query += ' AND oferta LIKE ?';
+      params.push(`%${q.trim()}%`);
+    }
+    
+    if (estado !== undefined && estado !== null && estado !== '') {
+      query += ' AND estado = ?';
+      params.push(parseInt(estado));
+    }
+    
+    query += ' ORDER BY fecha_apertura DESC';
+    
+    const [rows] = await db.query(query, params);
+    res.status(200).json({ success: true, data: rows.map(row => ({
+      ...row,
+      motivo_rechazo: row.rechazo || row.motivo_rechazo || ''
+    })) });
+  } catch (error) {
+    console.error('Error al buscar ofertas del empleador:', error);
+    res.status(500).json({ success: false, message: 'Error al buscar ofertas' });
+  }
+};

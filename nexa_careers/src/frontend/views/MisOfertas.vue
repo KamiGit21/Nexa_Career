@@ -46,12 +46,12 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import MisOfertasGrid           from '../components/misOfertas/MisOfertasGrid.vue'
 import MisOfertasFiltros        from '../components/misOfertas/MisOfertasFiltros.vue'
 import ConfirmarBajaOfertaModal from '../components/misOfertas/ConfirmarBajaOfertaModal.vue'
-import { listarOfertasPorEmpleador, darDeBajaOferta } from '../services/ofertaService.js'
+import { listarOfertasPorEmpleador, buscarOfertasPorEmpleadorConFiltro, darDeBajaOferta } from '../services/ofertaService.js'
 import { obtenerNumeroPostulacionesPorOferta } from '../services/postulacionService.js'
 
 const router             = useRouter()
@@ -114,7 +114,15 @@ const cargarOfertas = async () => {
   try {
     const sesion = JSON.parse(localStorage.getItem('sesion'))
     if (!sesion || sesion.rol !== 'empleador') { router.push('/login'); return }
-    const res = await listarOfertasPorEmpleador(sesion.id)
+    
+    let res
+    // Si hay filtros activos, usar el endpoint de búsqueda
+    if (busquedaFiltro.value.trim() !== '' || estadoFiltro.value !== null) {
+      res = await buscarOfertasPorEmpleadorConFiltro(sesion.id, busquedaFiltro.value, estadoFiltro.value)
+    } else {
+      res = await listarOfertasPorEmpleador(sesion.id)
+    }
+    
     if (res.success) {
       ofertas.value = await Promise.all(
         (res.data || []).map(async (o) => ({
@@ -131,4 +139,12 @@ const cargarOfertas = async () => {
 }
 
 onMounted(cargarOfertas)
+
+let timeoutId = null
+watch([busquedaFiltro, estadoFiltro], () => {
+  if (timeoutId) clearTimeout(timeoutId)
+  timeoutId = setTimeout(() => {
+    cargarOfertas()
+  }, 500)
+})
 </script>

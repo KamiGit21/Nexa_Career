@@ -9,6 +9,7 @@ router.get('/', ofertaController.listarOfertas);
 router.get('/pendientes', ofertaController.listarOfertasPendientes);
 router.get('/titulo/:oferta', ofertaController.buscarOfertaPorTitulo);
 router.get('/empleador/:id_empleador', ofertaController.buscarOfertasPorEmpleador);
+router.get('/empleador/:id_empleador/buscar', ofertaController.buscarOfertasPorEmpleadorConFiltro);
 
 router.get('/:id/postulantes', ofertaController.obtenerPostulantesPorOferta);
 router.get('/busqueda', ofertaController.buscarOfertasAvanzado);
