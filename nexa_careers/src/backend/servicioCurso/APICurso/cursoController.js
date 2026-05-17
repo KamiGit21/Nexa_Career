@@ -131,11 +131,21 @@ export const listarCursosPorEmpleador = async (req, res) => {
 
 export const cambiarEstadoCurso = async (req, res) => {
   const { id_curso } = req.params;
-  const { estado } = req.body; 
+  const { estado, rechazo } = req.body;
   try {
-    await db.query('UPDATE curso.curso SET estado = ? WHERE id_curso = ?', [estado, id_curso]);
+    let query = 'UPDATE curso.curso SET estado = ?';
+    const values = [estado];
+    if (rechazo !== undefined) {
+      query += ', rechazo = ?';
+      values.push(rechazo);
+    }
+    query += ' WHERE id_curso = ?';
+    values.push(id_curso);
+
+    await db.query(query, values);
     res.status(200).json({ success: true, message: 'Estado actualizado' });
   } catch (error) {
+    console.error('Error en cambiarEstadoCurso:', error);
     res.status(500).json({ success: false, message: 'Error al actualizar estado' });
   }
 };
@@ -521,7 +531,13 @@ export const buscarCursosPublicosAvanzado = async (req, res) => {
     }
 
     if (categoria !== 'Todos') {
-      queryBase += " AND c.categoria = ?";
+      // Agrega condición para filtrar por categoría
+      queryBase += `
+        AND EXISTS (
+          SELECT 1 FROM categoria_curso.categoria_curso cc
+          JOIN categoria.categoria cat ON cc.id_categoria = cat.id_categoria
+          WHERE cc.id_curso = c.id_curso AND cat.categoria = ?
+        )`;
       params.push(categoria);
     }
 
@@ -538,11 +554,27 @@ export const buscarCursosPublicosAvanzado = async (req, res) => {
           WHEN c.tipo_ofertante = 0 THEN CONCAT(e.nombre, ' ', e.apellido)
           WHEN c.tipo_ofertante = 1 THEN emp.empresa
           ELSE 'Nexa User'
-        END AS nombre_publicador
+        END AS nombre_publicador,
+        CASE
+          WHEN c.tipo_ofertante = 0 THEN 'estudiante'
+          WHEN c.tipo_ofertante = 1 THEN 'empleador'
+          ELSE 'desconocido'
+        END AS tipo_publicador
       ${queryBase} ${orderBy} LIMIT ? OFFSET ?
     `;
 
     const [rows] = await db.query(queryFinal, [...params, limite, offset]);
+
+    for (const curso of rows) {
+      const [categoriasRows] = await db.query(`
+        SELECT cc.id_categoria_curso, cc.id_categoria, cat.categoria
+        FROM categoria_curso.categoria_curso cc
+        JOIN categoria.categoria cat ON cc.id_categoria = cat.id_categoria
+        WHERE cc.id_curso = ?
+        ORDER BY cat.categoria
+      `, [curso.id_curso]);
+      curso.categorias = categoriasRows;
+    }
 
     res.status(200).json({
       success: true,

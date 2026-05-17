@@ -37,6 +37,12 @@
             class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:border-[#1b2a4a] outline-none" />
         </div>
 
+        <div>
+          <label class="block text-gray-700 font-medium mb-2">Fecha de cierre (opcional)</label>
+          <input v-model="form.fecha_cierre" type="date" :min="form.fecha_apertura || fechaHoyParaInput"
+            class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:border-[#1b2a4a] outline-none" />
+        </div>
+
         <div class="flex gap-4 pt-2">
           <button type="submit" :disabled="loading"
             class="bg-[#1b2a4a] text-white px-6 py-3 rounded-xl hover:bg-[#0f1a2e] disabled:opacity-50 transition-colors">
@@ -65,6 +71,7 @@ const form = ref({
   oferta: '',
   descripcion: '',
   fecha_apertura: '',
+  fecha_cierre: '',
   modalidad: '',
   categorias: []
 })
@@ -93,6 +100,7 @@ const crearOferta = async () => {
       descripcion:   form.value.descripcion,
       id_empleador:  sesion.id,
       fecha_apertura:form.value.fecha_apertura || null,
+      fecha_cierre:  form.value.fecha_cierre || null,
       modalidad:     form.value.modalidad || 'Presencial',
       categorias:   form.value.categorias || []
     }
