@@ -153,7 +153,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted, computed, watch } from 'vue'
 import { useRouter } from 'vue-router'
 
 import MotivoRechazoBanner from '../components/comunes/MotivoRechazoBanner.vue'
@@ -163,6 +163,7 @@ import DesarchivarCursoModal from '../components/misCursos/DesarchivarCursoModal
 import MisCursosFiltros from '../components/misCursos/MisCursosFiltros.vue'
 import {
   listarCursosPorEstudiante,
+  buscarCursosEstudiante,
   listarCategorias,
   archivarCurso,
   desarchivarCurso
@@ -211,7 +212,14 @@ const cargarCursos = async () => {
       router.push('/login')
       return
     }
-    const response = await listarCursosPorEstudiante(sesion.id)
+    
+    let response
+    if (busqueda.value && busqueda.value.trim() !== '') {
+      response = await buscarCursosEstudiante(sesion.id, busqueda.value)
+    } else {
+      response = await listarCursosPorEstudiante(sesion.id)
+    }
+    
     if (response.success) {
       cursos.value = response.data || []
     }
@@ -291,6 +299,15 @@ const confirmarDesarchivar = async () => {
 onMounted(() => {
   cargarCursos()
   cargarCategorias()
+})
+
+//para buscar mientras el usuario escribe
+let timeoutId = null
+watch(busqueda, () => {
+  if (timeoutId) clearTimeout(timeoutId)
+  timeoutId = setTimeout(() => {
+    cargarCursos()
+  }, 500)
 })
 </script>
 
