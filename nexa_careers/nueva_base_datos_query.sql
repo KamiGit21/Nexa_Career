@@ -98,6 +98,7 @@ CREATE TABLE `curso`.`curso` (
   `id_empleador`   INT,
   `tipo_ofertante` BOOLEAN NOT NULL,
   `contacto`       VARCHAR(255),
+  --`rechazo`        TEXT,
   PRIMARY KEY (`id_curso`)
 );
 
@@ -126,3 +127,6 @@ CREATE TABLE `categoria_curso`.`categoria_curso` (
   `id_curso`           INT NOT NULL,
   PRIMARY KEY (`id_categoria_curso`)
 );
+
+
+ALTER TABLE curso ADD COLUMN rechazo TEXT DEFAULT NULL;

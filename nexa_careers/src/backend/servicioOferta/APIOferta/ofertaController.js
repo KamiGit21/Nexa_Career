@@ -66,7 +66,7 @@ const validateOferta = (data) => {
 };
 
 export const crearOferta = async (req, res) => {
-  const { descripcion, fecha_apertura, oferta, id_empleador, modalidad, categorias } = req.body;
+  const { descripcion, fecha_apertura, fecha_cierre, oferta, id_empleador, modalidad, categorias } = req.body;
 
   const validation = validateOferta({ descripcion, fecha_apertura, oferta, id_empleador });
   if (!validation.valid) {
@@ -81,9 +81,9 @@ export const crearOferta = async (req, res) => {
     const rechazo = ''; 
 
     const [result] = await connection.query(
-      `INSERT INTO oferta.oferta (descripcion, fecha_apertura, estado, rechazo, oferta, id_empleador, modalidad) 
-       VALUES (?, ?, ?, ?, ?, ?, ?)`,
-      [descripcion, fecha_apertura, estado, rechazo, oferta, id_empleador, modalidad || 'Presencial']
+      `INSERT INTO oferta.oferta (descripcion, fecha_apertura, fecha_cierre, estado, rechazo, oferta, id_empleador, modalidad) 
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+      [descripcion, fecha_apertura, fecha_cierre, estado, rechazo, oferta, id_empleador, modalidad || 'Presencial']
     );
 
     const idOferta = result.insertId;
@@ -488,5 +488,24 @@ export const buscarOfertasAvanzado = async (req, res) => {
   } catch (error) {
     console.error('Error en búsqueda avanzada:', error);
     res.status(500).json({ success: false, message: 'Error interno en la búsqueda' });
+  }
+};
+
+export const actualizarOfertasVencidas = async (req, res) => {
+  try {
+    const [result] = await db.query(
+      `UPDATE oferta.oferta 
+       SET estado = 4 
+       WHERE estado = 1 AND fecha_cierre < CURDATE()`
+    );
+
+    res.status(200).json({ 
+      success: true, 
+      message: 'Revisión de ofertas vencidas completada',
+      actualizadas: result.affectedRows 
+    });
+  } catch (error) {
+    console.error('Error al actualizar ofertas vencidas:', error);
+    res.status(500).json({ success: false, message: 'Error interno del servidor al actualizar vencimientos' });
   }
 };
