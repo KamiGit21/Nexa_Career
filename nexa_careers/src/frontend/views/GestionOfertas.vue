@@ -58,6 +58,7 @@ import OfertaCard from '@/components/catalogoOfertas/OfertaCard.vue'
 import CatalogoCursosPaginacion from '@/components/catalogoCursos/CatalogoCursosPaginacion.vue'
 import { listarOfertasPaginadas, listarOfertasPaginadasPorEstado } from '@/services/supervisorService.js'
 import { obtenerEmpleadorPorId } from '@/services/empleadorService.js'
+import { actualizarVencimientos } from '@/services/ofertaService.js'
 
 const router = useRouter()
 const route  = useRoute()
@@ -97,5 +98,13 @@ const cargarOfertas = async (pagina = 1) => {
   }
 }
 
-onMounted(() => cargarOfertas(paginaActual.value))
+onMounted(async () => {
+  loading.value = true
+  try {
+    await actualizarVencimientos();
+  } catch (e) {
+    console.error('Error al actualizar vencimientos:', e)
+  }
+  await cargarOfertas(paginaActual.value)
+})
 </script>

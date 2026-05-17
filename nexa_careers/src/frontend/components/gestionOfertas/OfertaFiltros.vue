@@ -12,6 +12,7 @@
         <option value="1">Aprobada</option>
         <option value="2">Rechazada</option>
         <option value="3">Archivada</option>
+        <option value="4">Vencida</option>
       </select>
     </div>
     <div class="flex items-center gap-3">

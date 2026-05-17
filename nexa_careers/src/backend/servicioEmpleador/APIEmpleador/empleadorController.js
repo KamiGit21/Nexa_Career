@@ -1,20 +1,11 @@
-import db from '../../api-gateway/db.js';
-import { enviarCodigo } from '../../servicioNotificacion/correoService.js';
+import db from './db.js';
+import { enviarCodigo } from './correoService.js';
 
 const isValidEmail = (email) => {
   if (!email || typeof email !== 'string') return false;
   const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   return regex.test(email);
 };
-
-/*
-const dominiosPermitidosEmpleador = ['ucb.edu.bo'];  // Si se quiere restringir a ciertos dominios, se puede usar esta función. Por ahora no se aplica esa restricción.
-const isInstitucional = (email) => {
-  const partes = String(email).split('@');
-  if (partes.length !== 2) return false;
-  return dominiosPermitidosEmpleador.includes(partes[1].toLowerCase());
-};
-*/
 
 const isValidPhone = (telefono) => {
   if (!telefono) return true;
@@ -47,7 +38,6 @@ const validateEmpleador = (data, { isNew = false } = {}) => {
   return { valid: errors.length === 0, errors };
 };
 
-// 1. POST: Registrar empleador (activo = true por defecto)
 export const registrarEmpleador = async (req, res) => {
   const validation = validateEmpleador(req.body, { isNew: true });
   if (!validation.valid) return res.status(400).json({ success: false, message: validation.errors.join('; ') });
@@ -55,14 +45,13 @@ export const registrarEmpleador = async (req, res) => {
   const { empresa, telefono, gmail, contrasena } = req.body;
   
   try {
-    // 🛑 NUEVO: Validar si el correo ya existe
-    const [existingEmail] = await db.query('SELECT gmail FROM empleador WHERE gmail = ?', [gmail]);
+    const [existingEmail] = await db.query('SELECT gmail FROM empleador.empleador WHERE gmail = ?', [gmail]);
     if (existingEmail.length > 0) {
       return res.status(400).json({ success: false, message: 'Este correo electrónico ya está registrado.' });
     }
     const activo = 1; 
     const [result] = await db.query(
-      `INSERT INTO empleador (empresa, telefono, gmail, contrasena, activo) 
+      `INSERT INTO empleador.empleador (empresa, telefono, gmail, contrasena, activo) 
        VALUES (?, ?, ?, ?, ?)`,
       [empresa, telefono, gmail, contrasena, activo]
     );
@@ -73,10 +62,9 @@ export const registrarEmpleador = async (req, res) => {
   }
 };
 
-// 2. GET: Listar todos los empleadores
 export const listarEmpleadores = async (req, res) => {
   try {
-    const [rows] = await db.query('SELECT * FROM empleador');
+    const [rows] = await db.query('SELECT * FROM empleador.empleador');
     res.status(200).json({ success: true, data: rows });
   } catch (error) {
     console.error('Error al listar empleadores:', error);
@@ -84,11 +72,10 @@ export const listarEmpleadores = async (req, res) => {
   }
 };
 
-// 3. GET: Buscar empleador por ID
 export const buscarEmpleadorPorId = async (req, res) => {
   const { id } = req.params;
   try {
-    const [rows] = await db.query('SELECT * FROM empleador WHERE id_empleador = ?', [id]);
+    const [rows] = await db.query('SELECT * FROM empleador.empleador WHERE id_empleador = ?', [id]);
     if (rows.length === 0) return res.status(404).json({ success: false, message: 'Empleador no encontrado' });
     res.status(200).json({ success: true, data: rows[0] });
   } catch (error) {
@@ -97,11 +84,10 @@ export const buscarEmpleadorPorId = async (req, res) => {
   }
 };
 
-// 4. GET: Buscar empleador por correo
 export const buscarEmpleadorPorGmail = async (req, res) => {
   const { gmail } = req.params;
   try {
-    const [rows] = await db.query('SELECT * FROM empleador WHERE gmail = ?', [gmail]);
+    const [rows] = await db.query('SELECT * FROM empleador.empleador WHERE gmail = ?', [gmail]);
     if (rows.length === 0) return res.status(404).json({ success: false, message: 'Empleador no encontrado con ese correo' });
     res.status(200).json({ success: true, data: rows[0] });
   } catch (error) {
@@ -110,12 +96,10 @@ export const buscarEmpleadorPorGmail = async (req, res) => {
   }
 };
 
-// 5. PUT: actualizar perfil -acepta todos los campossss - actualizado
 export const actualizarPerfil = async (req, res) => {
   const { id } = req.params;
   const { empresa, telefono, gmail, nombre, apellido, descripcion } = req.body;
 
-  // Construir la consulta dinámicamente según los campos que lleguen
   const updates = [];
   const values = [];
 
@@ -128,7 +112,6 @@ export const actualizarPerfil = async (req, res) => {
     values.push(telefono);
   }
   if (gmail !== undefined) {
-    // Validar formato del correo
     const isValidEmail = (email) => {
       if (!email || typeof email !== 'string') return false;
       const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -159,7 +142,7 @@ export const actualizarPerfil = async (req, res) => {
 
   try {
     values.push(id);
-    const query = `UPDATE empleador SET ${updates.join(', ')} WHERE id_empleador = ?`;
+    const query = `UPDATE empleador.empleador SET ${updates.join(', ')} WHERE id_empleador = ?`;
     
     const [result] = await db.query(query, values);
     
@@ -174,7 +157,6 @@ export const actualizarPerfil = async (req, res) => {
   }
 };
 
-// 6. PUT: Cambiar contraseña
 export const cambiarContrasena = async (req, res) => {
   const { id } = req.params;
   const { contrasena } = req.body;
@@ -185,7 +167,7 @@ export const cambiarContrasena = async (req, res) => {
   }
 
   try {
-    const [rows] = await db.query('SELECT contrasena FROM empleador WHERE id_empleador = ?', [id]);
+    const [rows] = await db.query('SELECT contrasena FROM empleador.empleador WHERE id_empleador = ?', [id]);
     if (rows.length === 0) {
       return res.status(404).json({ success: false, message: 'Empleador no encontrado' });
     }
@@ -194,8 +176,7 @@ export const cambiarContrasena = async (req, res) => {
       return res.status(400).json({ success: false, message: 'La nueva contraseña no puede ser igual a la anterior' });
     }
 
-    const [result] = await db.query('UPDATE empleador SET contrasena = ? WHERE id_empleador = ?', [contrasena, id]);
-    //if (result.affectedRows === 0) return res.status(404).json({ success: false, message: 'Empleador no encontrado' });
+    const [result] = await db.query('UPDATE empleador.empleador SET contrasena = ? WHERE id_empleador = ?', [contrasena, id]);
     res.status(200).json({ success: true, message: 'Contraseña actualizada correctamente' });
   } catch (error) {
     console.error('Error al cambiar contraseña:', error);
@@ -203,7 +184,6 @@ export const cambiarContrasena = async (req, res) => {
   }
 };
 
-// 7. PUT: Cambiar estado (activo)
 export const cambiarEstado = async (req, res) => {
   const { id } = req.params;
   const { activo, motivo } = req.body;
@@ -215,15 +195,13 @@ export const cambiarEstado = async (req, res) => {
   const valorActivo = activo === 1 || activo === '1' || activo === true ? 1 : 0;
 
   try {
-    let query = 'UPDATE empleador SET activo = ?';
+    let query = 'UPDATE empleador.empleador SET activo = ?';
     let values = [valorActivo];
 
-    // Si se bloquea (activo = 0), agregar motivo y fecha de bloqueo
     if (valorActivo === 0) {
       query += ', motivo_bloqueo = ?, fecha_bloqueo = NOW()';
       values.push(motivo || null);
     } else {
-      // Si se desbloquea (activo = 1), limpiar motivo y fecha de bloqueo
       query += ', motivo_bloqueo = NULL, fecha_bloqueo = NULL';
     }
 
@@ -247,7 +225,7 @@ export const enviarCodigoEmpleador = async (req, res) => {
   }
 
   try {
-    const [rows] = await db.query('SELECT * FROM empleador WHERE gmail = ?', [correo]);
+    const [rows] = await db.query('SELECT * FROM empleador.empleador WHERE gmail = ?', [correo]);
     if (rows.length === 0) {
       return res.status(404).json({ success: false, message: 'Empleador no encontrado' });
     }

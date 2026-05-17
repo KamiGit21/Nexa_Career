@@ -2,9 +2,15 @@
   <div class="bg-white rounded-2xl border border-gray-200 p-6 mb-5">
 
     <h2 class="text-lg font-bold text-[#1b2a4a] mb-3">Descripción del curso</h2>
-    <p class="text-sm text-gray-600 leading-relaxed whitespace-pre-line">
-      {{ curso.descripcion || 'Sin descripción disponible.' }}
-    </p>
+<p class="text-sm text-gray-600 leading-relaxed whitespace-pre-line">
+  {{ curso.descripcion || 'Sin descripción disponible.' }}
+</p>
+
+<MotivoRechazoBanner
+  v-if="curso.estado === 2"
+  :motivo="curso.rechazo"
+  class="mt-4"
+/>
 
     <div v-if="tags.length" class="mt-5">
       <h3 class="text-sm font-bold text-[#1b2a4a] mb-2">Categorías</h3>
@@ -41,6 +47,7 @@
 
 <script setup>
 import { computed } from 'vue'
+import MotivoRechazoBanner from '../comunes/MotivoRechazoBanner.vue'
 
 const props = defineProps({
   curso: { type: Object, required: true }
