@@ -150,7 +150,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted, computed, watch } from 'vue'
 import { useRouter } from 'vue-router'
 
 import ConfirmarBajaCursoModal from '../components/misCursos/ConfirmarBajaCursoModal.vue'
@@ -158,6 +158,7 @@ import DesarchivarCursoModal from '../components/misCursos/DesarchivarCursoModal
 import MisCursosFiltros from '../components/misCursos/MisCursosFiltros.vue'
 import {
   listarCursosPorEmpleador,
+  buscarCursosEmpleador,
   listarCategorias,
   archivarCurso,
   desarchivarCurso
@@ -206,7 +207,14 @@ const cargarCursos = async () => {
       router.push('/login')
       return
     }
-    const response = await listarCursosPorEmpleador(sesion.id)
+    
+    let response
+    if (busqueda.value && busqueda.value.trim() !== '') {
+      response = await buscarCursosEmpleador(sesion.id, busqueda.value)
+    } else {
+      response = await listarCursosPorEmpleador(sesion.id)
+    }
+    
     if (response.success) {
       cursos.value = response.data || []
     }
@@ -287,6 +295,15 @@ onMounted(() => {
   cargarCursos()
   cargarCategorias()
 })
+
+let timeoutId = null
+watch(busqueda, () => {
+  if (timeoutId) clearTimeout(timeoutId)
+  timeoutId = setTimeout(() => {
+    cargarCursos()
+  }, 500)
+})
+
 </script>
 
 <style scoped>

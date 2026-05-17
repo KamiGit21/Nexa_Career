@@ -691,3 +691,46 @@ export const buscarCursosPorEstudiante = async (req, res) => {
     res.status(500).json({ success: false, message: 'Error al buscar cursos' });
   }
 };
+
+export const buscarCursosPorEmpleador = async (req, res) => {
+  const { id_empleador } = req.params;
+  const { q } = req.query;
+  
+  if (!id_empleador || isNaN(id_empleador)) {
+    return res.status(400).json({ success: false, message: 'ID de empleador inválido' });
+  }
+  
+  if (!q || q.trim() === '') {
+    return res.status(400).json({ success: false, message: 'Debe proporcionar un término de búsqueda' });
+  }
+  
+  try {
+    const searchTerm = `%${q.trim()}%`;
+    
+    const [rows] = await db.query(
+      `SELECT * FROM curso.curso 
+       WHERE tipo_ofertante = 1 
+         AND id_empleador = ?
+         AND curso LIKE ?
+       ORDER BY curso ASC`,
+      [id_empleador, searchTerm]
+    );
+
+    // add categorías a cada curso
+    for (const curso of rows) {
+      const [categoriasRows] = await db.query(`
+        SELECT cc.id_categoria_curso, cc.id_categoria, cat.categoria 
+        FROM categoria_curso.categoria_curso cc 
+        JOIN categoria.categoria cat ON cc.id_categoria = cat.id_categoria 
+        WHERE cc.id_curso = ?
+        ORDER BY cat.categoria
+      `, [curso.id_curso]);
+      curso.categorias = categoriasRows;
+    }
+    
+    res.status(200).json({ success: true, data: rows });
+  } catch (error) {
+    console.error('Error al buscar cursos del empleador:', error);
+    res.status(500).json({ success: false, message: 'Error al buscar cursos' });
+  }
+};

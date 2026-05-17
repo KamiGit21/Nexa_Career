@@ -63,6 +63,16 @@ export const buscarCursosEstudiante = async (idEstudiante, termino) => {
   }
 }
 
+export const buscarCursosEmpleador = async (idEmpleador, termino) => {
+  try {
+    const res = await fetch(`${API_URL}/cursos/empleador/${idEmpleador}/cursos/buscar?q=${encodeURIComponent(termino)}`)
+    return await res.json()
+  } catch (error) {
+    console.error('Error en buscarCursosEmpleador:', error)
+    return { success: false, message: error.message }
+  }
+}
+
 export const listarCursosPorEmpleador = async (id) => {
   try {
     const res = await fetch(`${API_URL}/cursos/empleador/${id}`)
