@@ -145,6 +145,7 @@ import imgEmpleadores from '../assets/images/empleadores.png'
 import imgOfertas from '../assets/images/ofertas.png'
 import imgEstudiantes from '../assets/images/estudiantes.png'
 import imgCursos from '../assets/images/cursos.png'
+import { actualizarVencimientos } from '../services/ofertaService.js'
 
 const router = useRouter()
 const supervisor = ref({ nombre: '', email: '' })
@@ -206,6 +207,7 @@ onMounted(async () => {
   supervisor.value = sesion
 
   try {
+    await actualizarVencimientos(); 
     const response = await obtenerEstadisticasDashboard()
     if (response.success) {
       estadisticas.value = response.metricas
