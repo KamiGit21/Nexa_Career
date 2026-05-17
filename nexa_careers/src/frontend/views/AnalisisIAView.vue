@@ -127,68 +127,53 @@
   </div>
 </template>
 
-<script>
-export default {
-  name: 'AnalisisIAView',
-  data() {
-    return {
-      isAnalyzing: false,
-      hasResults: false,
-      aiData: {
-        profile: { role: '', skills: [], tip: '' },
-        jobs: []
-      }
-    };
-  },
-  methods: {
-    simularAnalisis() {
-      this.isAnalyzing = true;
-      this.hasResults = false;
+<script setup>
+import { ref, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
+import { analizarPerfilIA } from '../services/estudianteService.js'
 
-      //Tiempo de respuesta de la IA
-      setTimeout(() => {
-        this.aiData = {
-          profile: {
-            role: 'Desarrollador Full Stack (Junior-Mid)',
-            skills: ['Vue.js', 'Node.js', 'PostgreSQL', 'Express', 'JavaScript (ES6+)', 'Git'],
-            tip: 'Tu perfil es fuerte en el backend, pero añadir algo de experiencia en Docker o despliegue en la nube (AWS/Railway) aumentaría tus coincidencias en un 15%.'
-          },
-          jobs: [
-            {
-              id: 1,
-              title: 'Frontend Developer Vue.js',
-              company: 'Software SRL',
-              location: 'La Paz (Híbrido)',
-              match: 95,
-              reason: 'Dominas el 100% del stack frontend requerido. Tu portafolio en Vue 3 es un diferencial clave.',
-              tags: ['URGENTE', 'FULL-TIME']
-            },
-            {
-              id: 2,
-              title: 'Backend Developer (Node/Express)',
-              company: 'Fintech Bol',
-              location: 'Remoto',
-              match: 88,
-              reason: 'Tu manejo de PostgreSQL y arquitectura de microservicios coincide con su infraestructura de pagos.',
-              tags: ['REMOTO', 'USD PAY']
-            },
-            {
-              id: 3,
-              title: 'Full Stack Web Developer',
-              company: 'Agencia Digital X',
-              location: 'Santa Cruz',
-              match: 72,
-              reason: 'Buscan a alguien con tus bases, aunque el proyecto usa PHP para el legacy (tienes bases de PHP).',
-              tags: ['PROYECTO 6 MESES']
-            }
-          ]
-        };
-        this.isAnalyzing = false;
-        this.hasResults = true;
-      }, 2500);
-    }
+const router = useRouter()
+
+const isAnalyzing = ref(false)
+const hasResults = ref(false)
+const aiData = ref({
+  profile: { role: '', skills: [], tip: '' },
+  jobs: []
+})
+const idEstudiante = ref(null)
+
+onMounted(() => {
+  const sesion = JSON.parse(localStorage.getItem('sesion') || '{}')
+  if (!sesion.id || sesion.rol !== 'estudiante') { 
+    router.push('/login')
+    return 
   }
-};
+  idEstudiante.value = sesion.id
+})
+
+const simularAnalisis = async () => {
+  if (!idEstudiante.value) return;
+
+  isAnalyzing.value = true;
+  hasResults.value = false;
+
+  try {
+    // Llamada REAL al backend que ejecuta Gemini
+    const response = await analizarPerfilIA(idEstudiante.value);
+    
+    if (response.success && response.data) {
+      aiData.value = response.data;
+      hasResults.value = true;
+    } else {
+      alert(response.message || 'No se encontraron coincidencias suficientes.');
+    }
+  } catch (error) {
+    console.error('Error al contactar a la IA:', error);
+    alert('Hubo un error de conexión con Nexa AI. Inténtalo de nuevo más tarde.');
+  } finally {
+    isAnalyzing.value = false;
+  }
+}
 </script>
 
 <style scoped>

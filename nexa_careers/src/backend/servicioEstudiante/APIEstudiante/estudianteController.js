@@ -1,5 +1,6 @@
 import db from './db.js';
 import { enviarCodigo } from './correoService.js';
+import { GoogleGenerativeAI } from '@google/generative-ai';
 
 const dominiosPermitidos = ['ucb.edu.bo'];
 
@@ -301,5 +302,117 @@ export const postularAOferta = async (req, res) => {
   } catch (error) {
     console.error('Error al postular:', error);
     res.status(500).json({ success: false, message: 'Error interno al postular' });
+  }
+};
+
+export const analizarPerfilConIA = async (req, res) => {
+  const { id } = req.params;
+  console.log(`\n --- INICIANDO ANÁLISIS IA PARA ESTUDIANTE ${id} ---`);
+  if (process.env.GEMINI_API_KEY) {
+    const terminacion = process.env.GEMINI_API_KEY.slice(-4);
+    console.log(`🔑 API KEY DETECTADA: ✅ SÍ (Termina en ...${terminacion})`);
+  } else {
+    console.log(`🔑 API KEY DETECTADA: ❌ NO ESTÁ LEYENDO EL .env`);
+    return res.status(500).json({ success: false, message: 'Falta la API Key en el servidor' });
+  }
+
+  /*try {
+    console.log("🔍 Consultando a Google qué modelos tienes habilitados...");
+    const listResponse = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${process.env.GEMINI_API_KEY}`);
+    const listData = await listResponse.json();
+    
+    if (listData.models) {
+      const modelosValidos = listData.models
+        .filter(m => m.supportedGenerationMethods && m.supportedGenerationMethods.includes("generateContent"))
+        .map(m => m.name.replace('models/', '')); // Limpiamos el texto para que solo salga el nombre
+        
+      console.log("✅ MODELOS QUE GOOGLE TE PERMITE USAR:\n", modelosValidos);
+    } else {
+      console.log("❌ Google no devolvió ningún modelo. Revisa tu cuenta en AI Studio.");
+    }
+  } catch(e) {
+    console.log("⚠️ Error al intentar listar modelos:", e.message);
+  }*/
+
+  try {
+    const [estudianteRows] = await db.query(
+      'SELECT descripcion, habilidades, cv FROM estudiante.estudiante WHERE id_estudiante = ?', 
+      [id]
+    );
+    
+    if (estudianteRows.length === 0) {
+      return res.status(404).json({ success: false, message: 'Estudiante no encontrado' });
+    }
+    const estudiante = estudianteRows[0];
+
+    const [ofertasRows] = await db.query(`
+      SELECT o.id_oferta, o.oferta, o.descripcion, o.modalidad, e.empresa 
+      FROM oferta.oferta o 
+      JOIN empleador.empleador e ON o.id_empleador = e.id_empleador 
+      WHERE o.estado = 1
+    `);
+
+    if (ofertasRows.length === 0) {
+      return res.status(200).json({ success: false, message: 'No hay ofertas activas para analizar' });
+    }
+
+    const datosEstudiante = `Descripción: ${estudiante.descripcion || 'N/A'}. Habilidades: ${estudiante.habilidades || 'N/A'}. CV: ${estudiante.cv || 'N/A'}`;
+    const datosOfertas = JSON.stringify(ofertasRows.map(o => ({
+      id: o.id_oferta,
+      titulo: o.oferta,
+      descripcion: o.descripcion
+    })));
+
+    const prompt = `Actúa como un Reclutador Experto y Analista de Talento IT. Tu única tarea es leer el perfil de un estudiante y compararlo con una lista de ofertas laborales activas.
+    REGLA ESTRICTA: No saludes, no expliques. Tu respuesta DEBE SER ÚNICA Y EXCLUSIVAMENTE un objeto JSON válido con esta estructura exacta:
+    {
+      "profile": {
+        "role": "[Título del rol que mejor lo define]",
+        "skills": ["[Skill 1]", "[Skill 2]", "[Skill 3]"],
+        "tip": "[Consejo accionable para mejorar empleabilidad]"
+      },
+      "jobs": [
+        {
+          "id": [ID numérico de la oferta],
+          "match": [Número 0-100],
+          "reason": "[Por qué encaja en 2 líneas]"
+        }
+      ]
+    }
+    Filtra y devuelve solo ofertas con match > 60%.
+    
+    Perfil del estudiante: ${datosEstudiante}
+    Ofertas disponibles: ${datosOfertas}`;
+
+    const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+    const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" }); 
+    
+    const result = await model.generateContent(prompt);
+    let responseText = result.response.text();
+    
+    responseText = responseText.replace(/```json/g, '').replace(/```/g, '').trim();
+    const aiData = JSON.parse(responseText);
+
+    const jobsEnriquecidos = aiData.jobs.map(aiJob => {
+      const ofertaOriginal = ofertasRows.find(o => o.id_oferta === aiJob.id);
+      return {
+        id: aiJob.id,
+        title: ofertaOriginal ? ofertaOriginal.oferta : 'Oferta',
+        company: ofertaOriginal ? ofertaOriginal.empresa : 'Empresa',
+        location: ofertaOriginal ? ofertaOriginal.modalidad : 'N/A',
+        match: aiJob.match,
+        reason: aiJob.reason,
+        tags: ['IA MATCH', ofertaOriginal ? ofertaOriginal.modalidad.toUpperCase() : '']
+      };
+    });
+
+    aiData.jobs = jobsEnriquecidos;
+
+    
+    res.status(200).json({ success: true, data: aiData });
+
+  } catch (error) {
+    console.error('Error en el análisis de IA:', error);
+    res.status(500).json({ success: false, message: 'La IA no pudo procesar el perfil en este momento' });
   }
 };
