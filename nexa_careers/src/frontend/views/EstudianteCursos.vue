@@ -103,9 +103,15 @@
             <span class="text-xs text-gray-400">Sin categorías</span>
           </div>
 
-          <p class="text-gray-500 text-sm mb-4 line-clamp-3 flex-grow">
-            {{ curso.descripcion || 'Sin descripción' }}
-          </p>
+          <p class="text-gray-500 text-sm mb-3 line-clamp-3" :class="curso.estado === 2 ? '' : 'flex-grow'">
+  {{ curso.descripcion || 'Sin descripción' }}
+</p>
+
+<MotivoRechazoBanner
+  v-if="curso.estado === 2"
+  :motivo="curso.rechazo"
+  class="mb-3 flex-grow"
+/>
 
           <div class="text-sm text-gray-600 space-y-1 mb-4">
             <p><span class="font-medium">Contacto:</span> {{ curso.contacto || 'No especificado' }}</p>
@@ -172,7 +178,7 @@
 <script setup>
 import { ref, onMounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
-
+import MotivoRechazoBanner from '../components/comunes/MotivoRechazoBanner.vue'
 // Importaciones de modales y servicios
 import ConfirmarBajaCursoModal from '../components/misCursos/ConfirmarBajaCursoModal.vue'
 import DesarchivarCursoModal from '../components/misCursos/DesarchivarCursoModal.vue'

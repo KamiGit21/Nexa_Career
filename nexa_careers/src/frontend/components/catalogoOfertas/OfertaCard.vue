@@ -72,6 +72,7 @@ const ESTADOS = {
   1: { label: 'Aprobada',  bg: 'bg-green-100',  text: 'text-green-800'  },
   2: { label: 'Rechazada', bg: 'bg-red-100',    text: 'text-red-800'    },
   3: { label: 'Archivada', bg: 'bg-gray-100',   text: 'text-gray-500'   },
+  4: { label: 'Vencida',   bg: 'bg-red-100',    text: 'text-red-800'    },
 }
 
 const estadoConfig = computed(() => ESTADOS[props.oferta.estado] ?? ESTADOS[0])
