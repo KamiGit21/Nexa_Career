@@ -8,40 +8,53 @@
 
     <main class="max-w-7xl mx-auto pt-8 pb-4 px-6">
 
-      <div class="flex flex-wrap justify-between items-center bg-white p-5 rounded-2xl shadow-sm mb-8 gap-4 border border-gray-100">
+      <div class="flex flex-col md:flex-row justify-between items-center gap-4 mb-8">
         
-        <div class="flex items-center gap-3">
-          <label class="text-[#002855] font-semibold text-sm">Estado:</label>
-          <select 
-            v-model="estadoFiltro" 
-            class="border-2 border-gray-300 rounded-lg px-3 py-1.5 focus:border-[#b5943a] outline-none cursor-pointer text-sm bg-gray-50 hover:bg-white transition-colors"
-          >
-            <option value="Todos">Todos</option>
-            <option value="0">Pendiente</option>
-            <option value="1">Aprobado</option>
-            <option value="2">Rechazado</option>
-            <option value="3">Archivado</option>
-          </select>
-        </div>
-
-        <div class="flex items-center gap-4 flex-wrap">
-          <button 
-            @click="toggleOrden" 
-            class="text-sm font-semibold text-[#002855] border-2 border-[#002855] px-4 py-1.5 rounded-lg hover:bg-[#002855] hover:text-white transition-colors"
-          >
-            Orden: {{ orden === 'reciente' ? 'Más Recientes' : 'Más Antiguos' }}
-          </button>
-
+        <div class="w-full md:w-auto flex items-center gap-4 flex-wrap bg-white p-3 rounded-2xl shadow-sm border border-gray-100">
           <div class="flex items-center gap-3">
+            <label class="text-[#002855] font-semibold text-sm pl-2">Estado:</label>
+            <select 
+              v-model="estadoFiltro" 
+              class="border border-gray-200 rounded-lg px-3 py-1.5 focus:border-[#b5943a] focus:ring-1 focus:ring-[#b5943a] outline-none cursor-pointer text-sm bg-gray-50 hover:bg-white transition-colors"
+            >
+              <option value="Todos">Todos</option>
+              <option value="0">Pendiente</option>
+              <option value="1">Aprobado</option>
+              <option value="2">Rechazado</option>
+              <option value="3">Archivado</option>
+            </select>
+          </div>
+
+          <div class="h-6 w-px bg-gray-200 hidden md:block"></div>
+
+          <div class="flex items-center gap-3 pr-2">
             <label class="text-[#002855] font-semibold text-sm">Mostrar:</label>
             <select 
               v-model="itemsPorPagina" 
-              class="border-2 border-gray-300 rounded-lg px-3 py-1.5 focus:border-[#b5943a] outline-none cursor-pointer text-sm bg-gray-50 hover:bg-white transition-colors"
+              class="border border-gray-200 rounded-lg px-3 py-1.5 focus:border-[#b5943a] focus:ring-1 focus:ring-[#b5943a] outline-none cursor-pointer text-sm bg-gray-50 hover:bg-white transition-colors"
             >
               <option v-for="n in opcionesPagina" :key="n" :value="n">{{ n }}</option>
             </select>
           </div>
         </div>
+
+        <button
+          @click="toggleOrden"
+          class="w-full md:w-auto flex items-center justify-center gap-2 bg-white text-[#1b2a4a] text-sm font-semibold px-5 py-2.5 rounded-xl border border-gray-200 shadow-sm hover:border-[#D1B16D] hover:text-[#b5943a] hover:shadow-md hover:-translate-y-0.5 transition-all group"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            class="h-5 w-5 text-gray-400 group-hover:text-[#D1B16D] transition-transform duration-300"
+            :class="orden === 'reciente' ? 'rotate-0' : 'rotate-180'"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4" />
+          </svg>
+          <span>Orden: <span class="text-gray-600 group-hover:text-[#b5943a] transition-colors">{{ orden === 'reciente' ? 'Más Recientes' : 'Más Antiguos' }}</span></span>
+        </button>
+
       </div>
 
       <div v-if="loading" class="text-center py-20 text-gray-500">
@@ -88,12 +101,11 @@
     
     <BotonScroll />
 
-    <!-- Modal para dar de baja curso -->
     <ConfirmarBajaCursoModal
       :visible="mostrarModalBaja"
       :curso="cursoSeleccionado"
       @cerrar="mostrarModalBaja = false"
-      @confirmar="confirmarDarBajaLocal"
+      @confirmar="confirmarDarBaja"
     />
   </div>
 </template>
@@ -105,6 +117,9 @@ import {
   listarCursosPaginadosPorFecha,
   listarCursosPublicosPaginadosPorFechaPorEstado 
 } from '../services/cursoService.js'
+
+// Importamos el servicio del supervisor para hacer el cambio real
+import { cambiarEstadoCurso } from '../services/supervisorService.js'
 
 import CursoPublicoCard from '@/components/catalogoCursos/CursoPublicoCard.vue'
 import CatalogoCursosPaginacion from '@/components/catalogoCursos/CatalogoCursosPaginacion.vue'
@@ -138,25 +153,33 @@ const abrirModalDarBaja = (curso) => {
   mostrarModalBaja.value = true
 }
 
-// Función 100% frontend - solo simula la baja
-const confirmarDarBajaLocal = ({ idCurso, motivo }) => {
-  // Buscar el curso en el array local y cambiar su estado a 3 (Archivado)
-  const index = cursos.value.findIndex(c => c.id_curso === idCurso)
-  if (index !== -1) {
-    cursos.value[index] = {
-      ...cursos.value[index],
-      estado: 3,
-      motivo_baja: motivo,
-      fecha_baja: new Date().toISOString()
+// LÓGICA DE BACKEND REAL PARA DAR DE BAJA
+const confirmarDarBaja = async ({ idCurso, motivo, terminarCarga }) => {
+  try {
+    // Usamos cambiarEstadoCurso con estado 2 (Rechazado)
+    const res = await cambiarEstadoCurso(idCurso, 2, motivo)
+    
+    if (res.success || res) {
+      alert(`✅ Curso dado de baja correctamente\nMotivo: ${motivo}`)
+      
+      // Si el filtro no es "Todos" ni "Rechazado(2)", desaparece
+      if (estadoFiltro.value !== 'Todos' && estadoFiltro.value !== '2') {
+        cargarCursos(paginaActual.value)
+      } else {
+        const index = cursos.value.findIndex(c => c.id_curso === idCurso)
+        if (index !== -1) {
+          cursos.value[index].estado = 2
+        }
+      }
+    } else {
+      alert(res.message || 'Error al intentar dar de baja el curso')
     }
-  }
-  
-  // Mostrar mensaje de éxito
-  alert(`✅ Curso dado de baja correctamente\nMotivo: ${motivo}`)
-  
-  // Si el filtro actual NO es "Archivados" ni "Todos", recargar para que desaparezca
-  if (estadoFiltro.value !== 'Todos' && estadoFiltro.value !== '3') {
-    cargarCursos(paginaActual.value)
+  } catch (error) {
+    console.error('Error al dar de baja:', error)
+    alert('Hubo un problema de conexión con el servidor.')
+  } finally {
+    if (terminarCarga) terminarCarga()
+    mostrarModalBaja.value = false
   }
 }
 

@@ -15,7 +15,7 @@
           <strong>{{ curso?.curso || 'Curso' }}</strong>
         </p>
         <p class="text-xs text-red-500 mb-4">
-          Esta acción cambiará el estado del curso a "Archivado" (estado 3) y ya no será visible para los estudiantes.
+          Esta acción cambiará el estado del curso a "Rechazado" y ya no será visible para los estudiantes.
         </p>
         
         <div class="mb-4">
@@ -69,7 +69,7 @@ const cerrar = () => {
   emit('cerrar')
 }
 
-const confirmar = async () => {
+const confirmar = () => {
   if (!motivo.value.trim()) {
     errorMotivo.value = true
     return
@@ -77,15 +77,14 @@ const confirmar = async () => {
   errorMotivo.value = false
   dandoDeBaja.value = true
   
-  // Simular un pequeño retraso (como si fuera una llamada a la API)
-  setTimeout(() => {
-    emit('confirmar', { 
-      idCurso: props.curso?.id_curso, 
-      motivo: motivo.value 
-    })
-    dandoDeBaja.value = false
-    cerrar()
-  }, 500)
+  emit('confirmar', { 
+    idCurso: props.curso?.id_curso, 
+    motivo: motivo.value,
+    terminarCarga: () => {
+      dandoDeBaja.value = false
+      cerrar()
+    }
+  })
 }
 
 watch(() => props.visible, (val) => {
