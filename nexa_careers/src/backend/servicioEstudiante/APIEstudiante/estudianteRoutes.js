@@ -1,5 +1,6 @@
 import express from 'express';
 import * as estudianteController from './estudianteController.js';
+import 'dotenv/config';
 
 const router = express.Router();
 
@@ -17,6 +18,7 @@ router.post('/enviarCodigo', estudianteController.enviarCodigoEstudiante);
 // rutas pa postulaciones de un estudiante
 router.get('/:id/postulaciones', estudianteController.obtenerPostulacionesPorEstudiante);
 router.post('/:id/postulaciones', estudianteController.postularAOferta);//nuevooooo
+router.get('/analisis-ia/:id', estudianteController.analizarPerfilConIA);
 
 
 
