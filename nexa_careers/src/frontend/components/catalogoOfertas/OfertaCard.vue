@@ -38,20 +38,19 @@
     </div>
 
     <!-- bn dar de baja -->
-    <button
-      v-if="mostrarBotonBaja && oferta.estado !== 3"
+   <button
+      v-if="mostrarBotonBaja && ![2, 3, 4, 5].includes(oferta.estado)"
       @click.stop="abrirModalBaja"
       class="mt-4 w-full py-2 bg-red-50 hover:bg-red-100 text-red-600 font-semibold text-sm rounded-lg transition-colors flex items-center justify-center gap-2 border border-red-200"
     >
       🚫 Dar de Baja
     </button>
 
-    <!-- Mensaje si ya está archivada -->
     <div
-      v-if="mostrarBotonBaja && oferta.estado === 3"
-      class="mt-4 w-full py-2 bg-gray-50 text-gray-400 font-semibold text-sm rounded-lg text-center border border-gray-200"
+      v-if="mostrarBotonBaja && [2, 3, 4, 5].includes(oferta.estado)"
+      class="mt-4 w-full py-2 bg-gray-50 text-gray-500 font-semibold text-sm rounded-lg text-center border border-gray-200"
     >
-      📦 Oferta archivada
+      {{ oferta.estado === 2 ? '❌ Oferta rechazada' : (oferta.estado === 3 ? '📦 Oferta archivada' : '⏳ Oferta vencida') }}
     </div>
   </div>
 </template>

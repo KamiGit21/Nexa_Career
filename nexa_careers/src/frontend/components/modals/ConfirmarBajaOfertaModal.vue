@@ -15,7 +15,7 @@
           <strong>{{ oferta?.oferta || 'Oferta' }}</strong>
         </p>
         <p class="text-xs text-red-500 mb-4">
-          Esta acción cambiará el estado de la oferta a "Archivada" (estado 3) y ya no será visible para los estudiantes.
+          Esta acción cambiará el estado de la oferta a Rechazada y ya no será visible para los estudiantes.
         </p>
         
         <div class="mb-4">
@@ -69,23 +69,22 @@ const cerrar = () => {
   emit('cerrar')
 }
 
-const confirmar = async () => {
+const confirmar = () => {
   if (!motivo.value.trim()) {
     errorMotivo.value = true
     return
   }
   errorMotivo.value = false
   dandoDeBaja.value = true
-  
-  // Simular un pequeño retraso (como si fuera una llamada a la API)
-  setTimeout(() => {
-    emit('confirmar', { 
-      idOferta: props.oferta?.id_oferta, 
-      motivo: motivo.value 
-    })
-    dandoDeBaja.value = false
-    cerrar()
-  }, 500)
+  emit('confirmar', { 
+    idOferta: props.oferta?.id_oferta, 
+    motivo: motivo.value, 
+    // 🚨 ESTO FALTABA EN TU CÓDIGO ACTUAL 🚨
+    terminarCarga: () => {
+      dandoDeBaja.value = false
+      cerrar()
+    }
+  })
 }
 
 watch(() => props.visible, (val) => {
