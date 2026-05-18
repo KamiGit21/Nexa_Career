@@ -1,6 +1,10 @@
 import db from './db.js';
 import { enviarCodigo } from './correoService.js';
 import { GoogleGenerativeAI } from '@google/generative-ai';
+import { uploadDir } from './cvController.js';
+import path from 'path';
+import fs from 'fs';
+import PDFParser from 'pdf2json'
 
 const dominiosPermitidos = ['ucb.edu.bo'];
 
@@ -345,6 +349,36 @@ export const analizarPerfilConIA = async (req, res) => {
     }
     const estudiante = estudianteRows[0];
 
+    let textoDelCV = "El estudiante no adjuntó un archivo de CV o el documento no se pudo procesar.";
+    
+    if (estudiante.cv) {
+      try {
+        const files = fs.readdirSync(uploadDir);
+        const cvFile = files.find(f => f.startsWith(`cv_${id}_`)) || estudiante.cv;
+        const cvPath = path.join(uploadDir, cvFile);
+        
+        if (fs.existsSync(cvPath)) {
+          textoDelCV = await new Promise((resolve, reject) => {
+            const pdfParser = new PDFParser(this, 1);
+            
+            pdfParser.on("pdfParser_dataError", errData => reject(errData.parserError));
+            pdfParser.on("pdfParser_dataReady", pdfData => {
+              const rawText = pdfParser.getRawTextContent();
+              resolve(rawText.replace(/\r\n/g, " ").replace(/\n/g, " ").trim());
+            });
+            
+            pdfParser.loadPDF(cvPath);
+          });
+          
+          console.log("📄 Texto completo extraído del PDF con éxito para el prompt.");
+        } else {
+          console.log(`⚠️ Archivo físico no localizado en el path: ${cvPath}`);
+        }
+      } catch (error) {
+        console.error("❌ Error interno al procesar el PDF:", error.message);
+      }
+    }
+
     const [ofertasRows] = await db.query(`
       SELECT o.id_oferta, o.oferta, o.descripcion, o.modalidad, e.empresa 
       FROM oferta.oferta o 
@@ -356,7 +390,7 @@ export const analizarPerfilConIA = async (req, res) => {
       return res.status(200).json({ success: false, message: 'No hay ofertas activas para analizar' });
     }
 
-    const datosEstudiante = `Descripción: ${estudiante.descripcion || 'N/A'}. Habilidades: ${estudiante.habilidades || 'N/A'}. CV: ${estudiante.cv || 'N/A'}`;
+    const datosEstudiante = `Descripción: ${estudiante.descripcion || 'N/A'}. Habilidades: ${estudiante.habilidades || 'N/A'}. CV Texto extraído: ${textoDelCV}`;
     const datosOfertas = JSON.stringify(ofertasRows.map(o => ({
       id: o.id_oferta,
       titulo: o.oferta,
