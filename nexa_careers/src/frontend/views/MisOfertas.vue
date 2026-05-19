@@ -17,9 +17,16 @@
         </router-link>
       </div>
 
+      <!-- FILTRO -->
+      <MisOfertasFiltros
+        v-model:busqueda="busquedaFiltro"
+        v-model:estadoFiltro="estadoFiltro"
+      />
+
       <MisOfertasGrid
-        :ofertas="ofertas"
+        :ofertas="ofertasFiltradas"
         :loading="loading"
+        :filtro-activo="hayFiltroActivo"
         @ver-detalle="(o) => router.push(`/ofertas/${o.id_oferta}`)"
         @editar="(o) => router.push(`/mis-ofertas/${o.id_oferta}/editar`)"
         @dar-de-baja="prepararBaja"
@@ -39,11 +46,12 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import MisOfertasGrid           from '../components/misOfertas/MisOfertasGrid.vue'
+import MisOfertasFiltros        from '../components/misOfertas/MisOfertasFiltros.vue'
 import ConfirmarBajaOfertaModal from '../components/misOfertas/ConfirmarBajaOfertaModal.vue'
-import { listarOfertasPorEmpleador, darDeBajaOferta } from '../services/ofertaService.js'
+import { listarOfertasPorEmpleador, buscarOfertasPorEmpleadorConFiltro, darDeBajaOferta } from '../services/ofertaService.js'
 import { obtenerNumeroPostulacionesPorOferta } from '../services/postulacionService.js'
 
 const router             = useRouter()
@@ -53,6 +61,32 @@ const ofertaSeleccionada = ref(null)
 const modalBajaVisible   = ref(false)
 const procesando         = ref(false)
 const errorBaja          = ref('')
+
+const busquedaFiltro = ref('')
+const estadoFiltro   = ref(null)
+
+const hayFiltroActivo = computed(() =>
+  busquedaFiltro.value.trim() !== '' || estadoFiltro.value !== null
+)
+
+const ofertasFiltradas = computed(() => {
+  let resultado = ofertas.value
+
+  if (busquedaFiltro.value.trim()) {
+    const q = busquedaFiltro.value.toLowerCase().trim()
+    resultado = resultado.filter(o =>
+      o.oferta?.toLowerCase().includes(q) ||
+      o.categoria?.toLowerCase().includes(q) ||
+      o.descripcion?.toLowerCase().includes(q)
+    )
+  }
+
+  if (estadoFiltro.value !== null) {
+    resultado = resultado.filter(o => o.estado === estadoFiltro.value)
+  }
+
+  return resultado
+})
 
 const cerrarModal  = () => { modalBajaVisible.value = false; ofertaSeleccionada.value = null; errorBaja.value = '' }
 const prepararBaja = (o) => { ofertaSeleccionada.value = o; errorBaja.value = ''; modalBajaVisible.value = true }
@@ -80,7 +114,15 @@ const cargarOfertas = async () => {
   try {
     const sesion = JSON.parse(localStorage.getItem('sesion'))
     if (!sesion || sesion.rol !== 'empleador') { router.push('/login'); return }
-    const res = await listarOfertasPorEmpleador(sesion.id)
+    
+    let res
+    // Si hay filtros activos, usar el endpoint de búsqueda
+    if (busquedaFiltro.value.trim() !== '' || estadoFiltro.value !== null) {
+      res = await buscarOfertasPorEmpleadorConFiltro(sesion.id, busquedaFiltro.value, estadoFiltro.value)
+    } else {
+      res = await listarOfertasPorEmpleador(sesion.id)
+    }
+    
     if (res.success) {
       ofertas.value = await Promise.all(
         (res.data || []).map(async (o) => ({
@@ -97,4 +139,12 @@ const cargarOfertas = async () => {
 }
 
 onMounted(cargarOfertas)
+
+let timeoutId = null
+watch([busquedaFiltro, estadoFiltro], () => {
+  if (timeoutId) clearTimeout(timeoutId)
+  timeoutId = setTimeout(() => {
+    cargarOfertas()
+  }, 500)
+})
 </script>

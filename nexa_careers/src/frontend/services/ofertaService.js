@@ -51,6 +51,15 @@ export async function listarOfertasPorEmpleador(idEmpleador) {
   return data
 }
 
+export async function buscarOfertasPorEmpleadorConFiltro(idEmpleador, termino, estado = null) {
+  let url = `/api/ofertas/empleador/${idEmpleador}/buscar?q=${encodeURIComponent(termino || '')}`;
+  if (estado !== null && estado !== '') {
+    url += `&estado=${estado}`;
+  }
+  const { data } = await api.get(url);
+  return data;
+}
+
 export async function listarOfertasPaginadasPorEstado(pagina, estado, size = 15) {
   const { data } = await api.get(`/api/ofertas/pagina/${pagina}/size/${size}/estado/${estado}`);
   return data;

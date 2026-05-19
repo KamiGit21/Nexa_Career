@@ -6,9 +6,14 @@
 
   <div v-else-if="ofertas.length === 0" class="text-center py-20 text-gray-400">
     <p class="text-5xl mb-4">📭</p>
-    <p class="text-lg font-medium">Aún no tienes ofertas publicadas.</p>
-    <p class="text-sm mt-1">Cuando crees una oferta aparecerá aquí.</p>
+    <p class="text-lg font-medium">
+      {{ filtroActivo ? 'No hay ofertas que coincidan con tu búsqueda' : 'Aún no tienes ofertas publicadas.' }}
+    </p>
+    <p class="text-sm mt-1">
+      {{ filtroActivo ? 'Prueba con otros términos o limpia los filtros' : 'Cuando crees una oferta aparecerá aquí.' }}
+    </p>
     <router-link
+      v-if="!filtroActivo"
       to="/mis-ofertas/nueva"
       class="inline-block mt-6 px-6 py-3 bg-[#1b2a4a] text-white rounded-2xl
              font-medium hover:bg-[#0f1a2e] transition-colors"
@@ -33,8 +38,9 @@
 import MiOfertaCard from './MiOfertaCard.vue'
 
 defineProps({
-  ofertas: { type: Array,   default: () => [] },
-  loading: { type: Boolean, default: false     },
+  ofertas:      { type: Array,   default: () => [] },
+  loading:      { type: Boolean, default: false     },
+  filtroActivo: { type: Boolean, default: false     },
 })
 
 defineEmits(['ver-detalle', 'editar', 'dar-de-baja'])
