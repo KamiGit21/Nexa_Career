@@ -46,6 +46,7 @@ services:
       DB_PORT: 3306
       DB_USER: root
       DB_PASSWORD: password
+      GEMINI_API_KEY: "AIzaSyCUWHsnF3tW0pzZCw-YdiYp8Z5HbHI1xJQ" 
     ports:
       - "3003:3003"
     command: node src/backend/servicioEstudiante/APIEstudiante/indexEstudiante.js

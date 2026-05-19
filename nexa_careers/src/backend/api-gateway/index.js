@@ -104,13 +104,13 @@ const proxyFileTo = (targetUrl) => async (req, res) => {
 app.use('/api/carreras', proxyTo(URL_CARRERA));
 
 app.get('/api/estudiantes', proxyTo(URL_ESTUDIANTE));
+app.get('/api/estudiantes/analisis-ia/:id', proxyTo(URL_ESTUDIANTE));
 app.get('/api/estudiantes/:id', proxyTo(URL_ESTUDIANTE));
 app.get('/api/estudiantes/gmail/:gmail', proxyTo(URL_ESTUDIANTE));
 app.post('/api/estudiantes/registrar', proxyTo(URL_ESTUDIANTE));
 app.put('/api/estudiantes/:id/perfil', proxyTo(URL_ESTUDIANTE));
 app.put('/api/estudiantes/:id/contrasena', proxyTo(URL_ESTUDIANTE));
 app.put('/api/estudiantes/:id/estado', proxyTo(URL_ESTUDIANTE));
-app.get('/api/estudiantes/:id/postulaciones', proxyTo(URL_ESTUDIANTE));
 app.post('/api/estudiantes/enviarCodigo', proxyTo(URL_ESTUDIANTE));
 
 app.post('/api/estudiantes/:id/cv/upload', proxyFileTo(URL_ESTUDIANTE));
