@@ -245,7 +245,7 @@ export const obtenerCursosPaginacionPorFechaDesendente = async (req, res) => {
     const totalPaginas = Math.ceil(totalCursos / limite);
 
     const [rows] = await db.query(
-      'SELECT * FROM curso.curso ORDER BY fecha_creacion DESC LIMIT ? OFFSET ?',
+      'SELECT * FROM curso.curso ORDER BY fecha_creacion DESC, id_curso DESC LIMIT ? OFFSET ?',
       [limite, offset]
     );
     res.status(200).json({ success: true, data: rows, paginas: totalPaginas});
@@ -257,7 +257,7 @@ export const obtenerCursosPaginacionPorFechaDesendente = async (req, res) => {
 
 export const obtenerCursosPaginacionPorFechaAscendente = async (req, res) => {
   const pagina = parseInt(req.params.pagina) || 1;
-  const limite = 15;
+  const limite = parseInt(req.params.size) || 15;
   const offset = (pagina - 1) * limite;
 
   try {
@@ -266,7 +266,7 @@ export const obtenerCursosPaginacionPorFechaAscendente = async (req, res) => {
     const totalPaginas = Math.ceil(totalCursos / limite);
 
     const [rows] = await db.query(
-      'SELECT * FROM curso.curso ORDER BY fecha_creacion ASC LIMIT ? OFFSET ?',
+      'SELECT * FROM curso.curso ORDER BY fecha_creacion ASC, id_curso ASC LIMIT ? OFFSET ?',
       [limite, offset]
     );
     res.status(200).json({ success: true, data: rows, paginas: totalPaginas });
@@ -288,7 +288,7 @@ export const obtenerCursosPaginacionPorEstadoYFechaDescendente = async (req, res
     const totalPaginas = Math.ceil(totalCursos / limite);
 
     const [rows] = await db.query(
-      'SELECT * FROM curso.curso WHERE estado = ? ORDER BY fecha_creacion DESC LIMIT ? OFFSET ?',
+      'SELECT * FROM curso.curso WHERE estado = ? ORDER BY fecha_creacion DESC, id_curso DESC LIMIT ? OFFSET ?',
       [estado, limite, offset]
     );
     res.status(200).json({ success: true, data: rows, paginas: totalPaginas });
@@ -310,7 +310,7 @@ export const obtenerCursosPaginacionPorEstadoYFechaAscendente = async (req, res)
     const totalPaginas = Math.ceil(totalCursos / limite);
 
     const [rows] = await db.query(
-      'SELECT * FROM curso.curso WHERE estado = ? ORDER BY fecha_creacion ASC LIMIT ? OFFSET ?',
+      'SELECT * FROM curso.curso WHERE estado = ? ORDER BY fecha_creacion ASC, id_curso ASC LIMIT ? OFFSET ?',
       [estado, limite, offset]
     );
     res.status(200).json({ success: true, data: rows, paginas: totalPaginas });
