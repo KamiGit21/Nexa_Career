@@ -163,3 +163,16 @@ export const desbloquearEstudiante = async (idEstudiante) => {
   }
 
 };
+
+export const analizarPerfilIA = async (idEstudiante) => {
+  try {
+    const res = await fetch(`${API_URL}/estudiantes/analisis-ia/${idEstudiante}`, {
+      method: 'GET',
+      headers: { 'Content-Type': 'application/json' }
+    });
+    return await res.json();
+  } catch (error) {
+    console.error('Error en analizarPerfilIA:', error);
+    return { success: false, message: error.message };
+  }
+};

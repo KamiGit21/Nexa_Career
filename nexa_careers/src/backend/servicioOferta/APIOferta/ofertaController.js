@@ -359,7 +359,7 @@ export const obtenerOfertasPaginacionPorFechaAscendente = async (req, res) => {
     const totalPaginas = Math.ceil(totalOfertas / limite);
 
     const [rows] = await db.query(
-      'SELECT * FROM oferta.oferta ORDER BY fecha_apertura ASC LIMIT ? OFFSET ?',
+      'SELECT * FROM oferta.oferta ORDER BY fecha_apertura ASC, id_oferta ASC LIMIT ? OFFSET ?',
       [limite, offset]
     );
     res.status(200).json({
@@ -384,7 +384,7 @@ export const obtenerOfertasPaginacionPorFechaDescendente = async (req, res) => {
     const totalPaginas = Math.ceil(countResult[0].total / limite);
 
     const [rows] = await db.query(
-      'SELECT * FROM oferta.oferta ORDER BY fecha_apertura DESC LIMIT ? OFFSET ?',
+      'SELECT * FROM oferta.oferta ORDER BY fecha_apertura DESC, id_oferta DESC LIMIT ? OFFSET ?',
       [limite, offset]
     );
     res.status(200).json({ success: true, data: rows, paginas: totalPaginas });
@@ -405,7 +405,7 @@ export const obtenerOfertasPaginacionPorEstadoYFechaAscendente = async (req, res
     const totalPaginas = Math.ceil(totalOfertas / limite);
 
     const [rows] = await db.query(
-      'SELECT * FROM oferta.oferta WHERE estado = ? ORDER BY fecha_apertura ASC LIMIT ? OFFSET ? ',
+      'SELECT * FROM oferta.oferta WHERE estado = ? ORDER BY fecha_apertura ASC, id_oferta ASC LIMIT ? OFFSET ? ',
       [estado, limite, offset]
     );
     res.status(200).json({
@@ -432,7 +432,7 @@ export const obtenerOfertasPaginacionPorEstadoYFechaDescendente = async (req, re
     const totalPaginas = Math.ceil(totalOfertas / limite);
 
     const [rows] = await db.query(
-      'SELECT * FROM oferta.oferta WHERE estado = ? ORDER BY fecha_apertura DESC LIMIT ? OFFSET ? ',
+      'SELECT * FROM oferta.oferta WHERE estado = ? ORDER BY fecha_apertura DESC, id_oferta DESC LIMIT ? OFFSET ? ',
       [estado, limite, offset]
     );
     res.status(200).json({
