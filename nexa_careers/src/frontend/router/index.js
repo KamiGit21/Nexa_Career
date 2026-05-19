@@ -41,7 +41,7 @@ import ListaSupervisores from '@/views/ListaSupervisores.vue'
 import SolicitarRecuperacion from '@/views/SolicitarRecuperacion.vue'
 import VerificarCodigo from '@/views/VerificarCodigo.vue'
 import NuevaPassword from '@/views/NuevaPassword.vue'
-import GestionCursos from '@/views/GestionCursos.vue'
+import GestionCursos from '@/views/Gestioncursos.vue'
 
 //Categorias ofertas laborales
 import GestionCategorias from '@/views/GestionCategorias.vue'
