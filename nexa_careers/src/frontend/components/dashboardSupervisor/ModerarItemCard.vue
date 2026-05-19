@@ -68,7 +68,7 @@
           </div>
 
           <div v-if="estadoSeleccionado === 2" class="text-left">
-            <label class="text-[10px] uppercase font-bold text-gray-400 mb-1 ml-1">Motivo del rechazo</label>
+            <label class="text-[10px] uppercase font-bold text-gray-400 mb-1 ml-1">Motivo del rechazo <span class="normal-case font-normal">(opcional)</span></label>
             <input v-model="motivoRechazo" type="text" placeholder="Ej. Información insuficiente..."
               class="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-red-200 focus:border-red-400 outline-none transition-all" />
           </div>
@@ -78,8 +78,8 @@
               class="flex-1 py-2.5 border border-gray-200 rounded-xl text-sm font-semibold text-gray-600 hover:bg-gray-50 transition-colors">
               Cancelar
             </button>
-            <button @click="confirmarAccion" :disabled="estadoSeleccionado === 2 && !motivoRechazo.trim()"
-              class="flex-1 py-2.5 rounded-xl text-sm font-semibold text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            <button @click="confirmarAccion"
+              class="flex-1 py-2.5 rounded-xl text-sm font-semibold text-white transition-colors"
               :class="config.btnConfirmar">
               Confirmar
             </button>
@@ -131,12 +131,12 @@ const cerrarModal = () => {
 }
 
 const confirmarAccion = () => {
-  if (estadoSeleccionado.value === 2 && !motivoRechazo.value.trim()) return
-
   emit('accion', {
     id: props.item.id,
     estado: estadoSeleccionado.value,
-    rechazo: motivoRechazo.value,
+    rechazo: estadoSeleccionado.value === 2
+      ? (motivoRechazo.value.trim() || 'Motivo no especificado')
+      : null,
   })
   cerrarModal()
 }
