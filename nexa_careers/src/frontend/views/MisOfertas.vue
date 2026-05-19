@@ -30,6 +30,7 @@
         @ver-detalle="(o) => router.push(`/ofertas/${o.id_oferta}`)"
         @editar="(o) => router.push(`/mis-ofertas/${o.id_oferta}/editar`)"
         @dar-de-baja="prepararBaja"
+        @postulantes="(o) => router.push(`/mis-ofertas/${o.id_oferta}/postulantes`)"
       />
 
     </div>
@@ -87,6 +88,10 @@ const ofertasFiltradas = computed(() => {
 
   return resultado
 })
+
+const verPostulantes = (idOferta) => {
+  router.push(`/mis-ofertas/${idOferta}/postulantes`)
+}
 
 const cerrarModal  = () => { modalBajaVisible.value = false; ofertaSeleccionada.value = null; errorBaja.value = '' }
 const prepararBaja = (o) => { ofertaSeleccionada.value = o; errorBaja.value = ''; modalBajaVisible.value = true }

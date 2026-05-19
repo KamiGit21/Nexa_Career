@@ -30,6 +30,7 @@
       @ver-detalle="$emit('ver-detalle', $event)"
       @editar="$emit('editar', $event)"
       @dar-de-baja="$emit('dar-de-baja', $event)"
+      @postulantes="$emit('postulantes', $event)"
     />
   </div>
 </template>
