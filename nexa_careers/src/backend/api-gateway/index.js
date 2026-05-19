@@ -157,6 +157,9 @@ app.use('/api/cursos', proxyTo('http://localhost:3008'));
 
 // Servicio de Categorias (puerto 3009)
 app.use('/api/categorias', proxyTo('http://localhost:3009'));
+app.use('/api/estudiantes', proxyTo('http://localhost:3003'));
+app.use('/api/supervisores', proxyTo('http://localhost:3005'));
+app.get('/api/estudiantes/analisis-ia/:id', proxyTo('http://localhost:3003'));
 
 // Ruta raíz
 app.get('/', (req, res) => {

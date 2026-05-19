@@ -36,10 +36,6 @@
           class="flex-1 py-2 px-3 bg-red-500 text-white text-[10px] sm:text-xs font-semibold rounded-xl hover:bg-red-600 transition-colors disabled:opacity-50">
           ✗ Rechazar
         </button>
-        <button @click="abrirModal(3)" :disabled="cargando"
-          class="flex-1 py-2 px-3 bg-gray-400 text-white text-[10px] sm:text-xs font-semibold rounded-xl hover:bg-gray-500 transition-colors disabled:opacity-50">
-          Archivar
-        </button>
       </div>
     </div>
 
@@ -72,7 +68,7 @@
           </div>
 
           <div v-if="estadoSeleccionado === 2" class="text-left">
-            <label class="text-[10px] uppercase font-bold text-gray-400 mb-1 ml-1">Motivo del rechazo</label>
+            <label class="text-[10px] uppercase font-bold text-gray-400 mb-1 ml-1">Motivo del rechazo <span class="normal-case font-normal">(opcional)</span></label>
             <input v-model="motivoRechazo" type="text" placeholder="Ej. Información insuficiente..."
               class="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-red-200 focus:border-red-400 outline-none transition-all" />
           </div>
@@ -82,8 +78,8 @@
               class="flex-1 py-2.5 border border-gray-200 rounded-xl text-sm font-semibold text-gray-600 hover:bg-gray-50 transition-colors">
               Cancelar
             </button>
-            <button @click="confirmarAccion" :disabled="estadoSeleccionado === 2 && !motivoRechazo.trim()"
-              class="flex-1 py-2.5 rounded-xl text-sm font-semibold text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            <button @click="confirmarAccion"
+              class="flex-1 py-2.5 rounded-xl text-sm font-semibold text-white transition-colors"
               :class="config.btnConfirmar">
               Confirmar
             </button>
@@ -115,7 +111,6 @@ const motivoRechazo = ref('')
 const ESTADOS = {
   1: { label: 'Aceptar', titulo: '¿Aceptar contenido?', icono: '✅', iconoBg: 'bg-green-100', badge: 'bg-green-100 text-green-700', btnConfirmar: 'bg-green-600 hover:bg-green-700' },
   2: { label: 'Rechazar', titulo: '¿Rechazar contenido?', icono: '❌', iconoBg: 'bg-red-100', badge: 'bg-red-100 text-red-700', btnConfirmar: 'bg-red-500 hover:bg-red-600' },
-  3: { label: 'Archivar', titulo: '¿Archivar contenido?', icono: '📦', iconoBg: 'bg-gray-100', badge: 'bg-gray-100 text-gray-600', btnConfirmar: 'bg-gray-500 hover:bg-gray-600' },
 }
 
 const config = computed(() => ESTADOS[estadoSeleccionado.value] ?? {})
@@ -136,12 +131,12 @@ const cerrarModal = () => {
 }
 
 const confirmarAccion = () => {
-  if (estadoSeleccionado.value === 2 && !motivoRechazo.value.trim()) return
-
   emit('accion', {
     id: props.item.id,
     estado: estadoSeleccionado.value,
-    rechazo: motivoRechazo.value,
+    rechazo: estadoSeleccionado.value === 2
+      ? (motivoRechazo.value.trim() || 'Motivo no especificado')
+      : null,
   })
   cerrarModal()
 }
