@@ -8,7 +8,7 @@
         :value="busqueda"
         @input="$emit('update:busqueda', $event.target.value)"
         type="text"
-        placeholder="Buscar por nombre o descripción..."
+        placeholder="Buscar por título de curso..."
         class="flex-1 bg-transparent outline-none text-sm text-slate-800 placeholder-gray-400"
       />
       <button
