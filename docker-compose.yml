@@ -1,0 +1,196 @@
+services:
+
+  mysql:
+    image: mysql:8
+    container_name: nexa_mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: password
+    ports:
+      - "3307:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-ppassword"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+
+  servicio-carrera:
+    build:
+      context: ./nexa_careers
+      dockerfile: Dockerfile
+    container_name: nexa_carrera
+    restart: unless-stopped
+    environment:
+      DB_HOST: mysql
+      DB_PORT: 3306
+      DB_USER: root
+      DB_PASSWORD: password
+    ports:
+      - "3002:3002"
+    command: node src/backend/servicioCarrera/APICarrera/indexCarrera.js
+    depends_on:
+      mysql:
+        condition: service_healthy
+
+  servicio-estudiante:
+    build:
+      context: ./nexa_careers
+      dockerfile: Dockerfile
+    container_name: nexa_estudiante
+    restart: unless-stopped
+    environment:
+      DB_HOST: mysql
+      DB_PORT: 3306
+      DB_USER: root
+      DB_PASSWORD: password
+    ports:
+      - "3003:3003"
+    command: node src/backend/servicioEstudiante/APIEstudiante/indexEstudiante.js
+    volumes:
+      - cv_uploads:/app/src/backend/servicioEstudiante/uploads
+    depends_on:
+      mysql:
+        condition: service_healthy
+
+  servicio-empleador:
+    build:
+      context: ./nexa_careers
+      dockerfile: Dockerfile
+    container_name: nexa_empleador
+    restart: unless-stopped
+    environment:
+      DB_HOST: mysql
+      DB_PORT: 3306
+      DB_USER: root
+      DB_PASSWORD: password
+    ports:
+      - "3004:3004"
+    command: node src/backend/servicioEmpleador/APIEmpleador/indexEmpleador.js
+    depends_on:
+      mysql:
+        condition: service_healthy
+
+  servicio-supervisor:
+    build:
+      context: ./nexa_careers
+      dockerfile: Dockerfile
+    container_name: nexa_supervisor
+    restart: unless-stopped
+    environment:
+      DB_HOST: mysql
+      DB_PORT: 3306
+      DB_USER: root
+      DB_PASSWORD: password
+    ports:
+      - "3005:3005"
+    command: node src/backend/servicioSupervisor/APISupervisor/indexSupervisor.js
+    depends_on:
+      mysql:
+        condition: service_healthy
+
+  servicio-oferta:
+    build:
+      context: ./nexa_careers
+      dockerfile: Dockerfile
+    container_name: nexa_oferta
+    restart: unless-stopped
+    environment:
+      DB_HOST: mysql
+      DB_PORT: 3306
+      DB_USER: root
+      DB_PASSWORD: password
+    ports:
+      - "3006:3006"
+    command: node src/backend/servicioOferta/APIOferta/indexOferta.js
+    depends_on:
+      mysql:
+        condition: service_healthy
+
+  servicio-ofertante:
+    build:
+      context: ./nexa_careers
+      dockerfile: Dockerfile
+    container_name: nexa_ofertante
+    restart: unless-stopped
+    environment:
+      DB_HOST: mysql
+      DB_PORT: 3306
+      DB_USER: root
+      DB_PASSWORD: password
+    ports:
+      - "3007:3007"
+    command: node src/backend/servicioOfertante/APIOfertante/indexOfertante.js
+    depends_on:
+      mysql:
+        condition: service_healthy
+
+  servicio-curso:
+    build:
+      context: ./nexa_careers
+      dockerfile: Dockerfile
+    container_name: nexa_curso
+    restart: unless-stopped
+    environment:
+      DB_HOST: mysql
+      DB_PORT: 3306
+      DB_USER: root
+      DB_PASSWORD: password
+    ports:
+      - "3008:3008"
+    command: node src/backend/servicioCurso/APICurso/indexCurso.js
+    depends_on:
+      mysql:
+        condition: service_healthy
+
+  servicio-categoria:
+    build:
+      context: ./nexa_careers
+      dockerfile: Dockerfile
+    container_name: nexa_categoria
+    restart: unless-stopped
+    environment:
+      DB_HOST: mysql
+      DB_PORT: 3306
+      DB_USER: root
+      DB_PASSWORD: password
+    ports:
+      - "3009:3009"
+    command: node src/backend/servicioCategoria/APICategoria/indexCategoria.js
+    depends_on:
+      mysql:
+        condition: service_healthy
+
+  api-gateway:
+    build:
+      context: ./nexa_careers
+      dockerfile: Dockerfile
+    container_name: nexa_gateway
+    restart: unless-stopped
+    environment:
+      URL_CARRERA:    http://servicio-carrera:3002
+      URL_ESTUDIANTE: http://servicio-estudiante:3003
+      URL_EMPLEADOR:  http://servicio-empleador:3004
+      URL_SUPERVISOR: http://servicio-supervisor:3005
+      URL_OFERTA:     http://servicio-oferta:3006
+      URL_OFERTANTE:  http://servicio-ofertante:3007
+      URL_CURSO:      http://servicio-curso:3008
+      URL_CATEGORIA:  http://servicio-categoria:3009
+    ports:
+      - "3000:3000"
+    command: node src/backend/api-gateway/index.js
+    depends_on:
+      - servicio-carrera
+      - servicio-estudiante
+      - servicio-empleador
+      - servicio-supervisor
+      - servicio-oferta
+      - servicio-ofertante
+      - servicio-curso
+      - servicio-categoria
+
+volumes:
+  mysql_data:
+  cv_uploads:
