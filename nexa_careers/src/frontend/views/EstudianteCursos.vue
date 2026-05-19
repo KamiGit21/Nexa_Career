@@ -15,34 +15,13 @@
         </router-link>
       </div>
 
-      <!-- === FILTRO POR CATEGORÍAS === -->
-      <div class="mb-6 bg-white rounded-2xl p-4 shadow-sm">
-        <div class="flex items-center gap-3 flex-wrap">
-          <span class="text-sm font-medium text-gray-600">Filtrar por categoría:</span>
-          
-          <select 
-            v-model="categoriaFiltro"
-            class="px-4 py-2 border border-gray-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#1b2a4a] focus:border-transparent bg-white"
-          >
-            <option :value="null">Todas las categorías</option>
-            <option 
-              v-for="cat in categorias" 
-              :key="cat.id_categoria" 
-              :value="cat.id_categoria"
-            >
-              {{ cat.categoria }}
-            </option>
-          </select>
-
-          <div v-if="categoriaFiltro" class="flex items-center gap-2">
-            <span class="text-xs text-gray-500">Filtrando por:</span>
-            <span class="bg-blue-100 text-blue-700 px-2 py-1 rounded-full text-xs flex items-center gap-1">
-              {{ nombreCategoriaSeleccionada }}
-              <button @click="categoriaFiltro = null" class="hover:text-blue-900">✕</button>
-            </span>
-          </div>
-        </div>
-      </div>
+      <!-- Filtros por búsqueda, categoría y estado -->
+      <MisCursosFiltros
+        v-model:busqueda="busqueda"
+        v-model:categoriaFiltro="categoriaFiltro"
+        v-model:estadoFiltro="estadoFiltro"
+        :categorias="categorias"
+      />
 
       <div v-if="loading" class="text-center py-20 text-gray-500">
         <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-[#1b2a4a] mx-auto mb-4"></div>
@@ -52,13 +31,13 @@
       <div v-else-if="cursosFiltrados.length === 0" class="text-center py-20 text-gray-400">
         <p class="text-5xl mb-4">📭</p>
         <p class="text-lg font-medium">
-          {{ categoriaFiltro ? 'No hay cursos en esta categoría' : 'Aún no has publicado ningún curso' }}
+          {{ hayFiltrosActivos ? 'No hay cursos con estos filtros' : 'Aún no has publicado ningún curso' }}
         </p>
         <p class="text-sm mt-1">
-          {{ categoriaFiltro ? 'Prueba con otra categoría' : 'Cuando publiques uno aparecerá aquí' }}
+          {{ hayFiltrosActivos ? 'Prueba con otros filtros' : 'Cuando publiques uno aparecerá aquí' }}
         </p>
         <router-link
-          v-if="!categoriaFiltro"
+          v-if="!hayFiltrosActivos"
           to="/publicar-curso"
           class="inline-block mt-6 px-6 py-3 bg-[#1b2a4a] text-white rounded-2xl font-medium hover:bg-[#0f1a2e] transition-colors">
           + Publicar Curso
@@ -89,7 +68,7 @@
             </span>
           </div>
 
-          <!-- === MOSTRAR CATEGORÍAS === -->
+          <!-- Categorías del curso -->
           <div v-if="curso.categorias && curso.categorias.length > 0" class="flex flex-wrap gap-1 mb-3">
             <span
               v-for="cat in curso.categorias"
@@ -118,7 +97,7 @@
             <p><span class="font-medium">Fecha:</span> {{ formatearFecha(curso.fecha_creacion) }}</p>
           </div>
 
-          <!-- === BOTONES DE ACCIÓN === -->
+          <!-- Botones de acción -->
           <div class="flex flex-wrap items-center gap-4 mt-auto pt-4 border-t border-gray-100">
             <button
               @click="verDetalle(curso)"
@@ -132,10 +111,9 @@
             >
               Editar
             </button>
-            
-            <div class="flex-grow"></div> <!-- Espaciador -->
 
-            <!-- Botones de Acción de Estado -->
+            <div class="flex-grow"></div>
+
             <button
               v-if="curso.estado !== 3"
               @click="abrirModalBaja(curso)"
@@ -156,7 +134,6 @@
 
     </div>
 
-    <!-- Modales para Confirmación -->
     <ConfirmarBajaCursoModal
       :visible="modalBajaVisible"
       :nombre-curso="cursoSeleccionado?.curso || ''"
@@ -176,44 +153,50 @@
 </template>
 
 <script setup>
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted, computed, watch } from 'vue'
 import { useRouter } from 'vue-router'
+
 import MotivoRechazoBanner from '../components/comunes/MotivoRechazoBanner.vue'
 // Importaciones de modales y servicios
 import ConfirmarBajaCursoModal from '../components/misCursos/ConfirmarBajaCursoModal.vue'
 import DesarchivarCursoModal from '../components/misCursos/DesarchivarCursoModal.vue'
-import { 
-  listarCursosPorEstudiante, 
+import MisCursosFiltros from '../components/misCursos/MisCursosFiltros.vue'
+import {
+  listarCursosPorEstudiante,
+  buscarCursosEstudiante,
   listarCategorias,
   archivarCurso,
-  desarchivarCurso 
+  desarchivarCurso
 } from '../services/cursoService.js'
 
 const router = useRouter()
 const cursos = ref([])
 const categorias = ref([])
+const busqueda = ref('')
 const categoriaFiltro = ref(null)
+const estadoFiltro = ref(null)
 const loading = ref(true)
 
-// Variables para modales
 const modalBajaVisible = ref(false)
 const modalDesarchivarVisible = ref(false)
 const cursoSeleccionado = ref(null)
 const procesando = ref(false)
 
-const cursosFiltrados = computed(() => {
-  if (!categoriaFiltro.value) {
-    return cursos.value
-  }
-  return cursos.value.filter(curso => {
-    return curso.categorias && curso.categorias.some(cat => cat.id_categoria === categoriaFiltro.value)
-  })
-})
+const hayFiltrosActivos = computed(() =>
+  !!busqueda.value || !!categoriaFiltro.value || estadoFiltro.value !== null
+)
 
-const nombreCategoriaSeleccionada = computed(() => {
-  if (!categoriaFiltro.value) return ''
-  const cat = categorias.value.find(c => c.id_categoria === categoriaFiltro.value)
-  return cat ? cat.categoria : ''
+const cursosFiltrados = computed(() => {
+  const texto = busqueda.value.toLowerCase().trim()
+  return cursos.value.filter(curso => {
+    const porTexto = !texto ||
+      curso.curso?.toLowerCase().includes(texto) ||
+      curso.descripcion?.toLowerCase().includes(texto)
+    const porCategoria = !categoriaFiltro.value ||
+      (curso.categorias && curso.categorias.some(cat => cat.id_categoria === categoriaFiltro.value))
+    const porEstado = estadoFiltro.value === null || curso.estado === estadoFiltro.value
+    return porTexto && porCategoria && porEstado
+  })
 })
 
 const formatearFecha = (fecha) => {
@@ -229,7 +212,14 @@ const cargarCursos = async () => {
       router.push('/login')
       return
     }
-    const response = await listarCursosPorEstudiante(sesion.id)
+    
+    let response
+    if (busqueda.value && busqueda.value.trim() !== '') {
+      response = await buscarCursosEstudiante(sesion.id, busqueda.value)
+    } else {
+      response = await listarCursosPorEstudiante(sesion.id)
+    }
+    
     if (response.success) {
       cursos.value = response.data || []
     }
@@ -251,29 +241,23 @@ const cargarCategorias = async () => {
   }
 }
 
-const verDetalle = (curso) => {
-  router.push(`/cursos/${curso.id_curso}`)
-}
+const verDetalle = (curso) => router.push(`/cursos/${curso.id_curso}`)
+const editarCurso = (curso) => router.push(`/editar-curso/${curso.id_curso}`)
 
-const editarCurso = (curso) => {
-  router.push(`/editar-curso/${curso.id_curso}`)
-}
-
-// === Lógica de Modales ===
-const cerrarModales = () => { 
+const cerrarModales = () => {
   modalBajaVisible.value = false
   modalDesarchivarVisible.value = false
-  cursoSeleccionado.value = null 
+  cursoSeleccionado.value = null
 }
 
-const abrirModalBaja = (curso) => { 
+const abrirModalBaja = (curso) => {
   cursoSeleccionado.value = curso
-  modalBajaVisible.value = true 
+  modalBajaVisible.value = true
 }
 
-const abrirModalDesarchivar = (curso) => { 
+const abrirModalDesarchivar = (curso) => {
   cursoSeleccionado.value = curso
-  modalDesarchivarVisible.value = true 
+  modalDesarchivarVisible.value = true
 }
 
 const confirmarBaja = async () => {
@@ -284,13 +268,13 @@ const confirmarBaja = async () => {
       const idx = cursos.value.findIndex(c => c.id_curso === cursoSeleccionado.value.id_curso)
       if (idx !== -1) cursos.value[idx].estado = 3
       cerrarModales()
-    } else { 
-      alert(res.message || 'No se pudo dar de baja el curso.') 
+    } else {
+      alert(res.message || 'No se pudo dar de baja el curso.')
     }
-  } catch { 
-    alert('Error de conexión.') 
-  } finally { 
-    procesando.value = false 
+  } catch {
+    alert('Error de conexión.')
+  } finally {
+    procesando.value = false
   }
 }
 
@@ -302,19 +286,28 @@ const confirmarDesarchivar = async () => {
       const idx = cursos.value.findIndex(c => c.id_curso === cursoSeleccionado.value.id_curso)
       if (idx !== -1) cursos.value[idx].estado = 0
       cerrarModales()
-    } else { 
-      alert(res.message || 'No se pudo desarchivar el curso.') 
+    } else {
+      alert(res.message || 'No se pudo desarchivar el curso.')
     }
-  } catch { 
-    alert('Error de conexión.') 
-  } finally { 
-    procesando.value = false 
+  } catch {
+    alert('Error de conexión.')
+  } finally {
+    procesando.value = false
   }
 }
 
 onMounted(() => {
   cargarCursos()
   cargarCategorias()
+})
+
+//para buscar mientras el usuario escribe
+let timeoutId = null
+watch(busqueda, () => {
+  if (timeoutId) clearTimeout(timeoutId)
+  timeoutId = setTimeout(() => {
+    cargarCursos()
+  }, 500)
 })
 </script>
 
