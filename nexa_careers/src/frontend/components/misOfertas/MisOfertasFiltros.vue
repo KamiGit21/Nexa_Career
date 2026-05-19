@@ -9,7 +9,7 @@
           :value="busqueda"
           @input="$emit('update:busqueda', $event.target.value)"
           type="text"
-          placeholder="Título, categoría o descripción..."
+          placeholder="Buscar por título de oferta..."
           class="px-4 py-2 border border-gray-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#1b2a4a] focus:border-transparent bg-white w-64"
         />
       </div>
