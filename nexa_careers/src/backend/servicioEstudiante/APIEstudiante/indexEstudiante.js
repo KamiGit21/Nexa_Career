@@ -1,7 +1,9 @@
+import 'dotenv/config';
 import express from 'express';
 import cors from 'cors';  // ← Importar cors
 import estudianteRoutes from './estudianteRoutes.js';
 import cvRoutes from './cvRoutes.js';
+
 
 const app = express();
 

@@ -359,7 +359,7 @@ export const analizarPerfilConIA = async (req, res) => {
         
         if (fs.existsSync(cvPath)) {
           textoDelCV = await new Promise((resolve, reject) => {
-            const pdfParser = new PDFParser(this, 1);
+            const pdfParser = new PDFParser(null, 1);
             
             pdfParser.on("pdfParser_dataError", errData => reject(errData.parserError));
             pdfParser.on("pdfParser_dataReady", pdfData => {
