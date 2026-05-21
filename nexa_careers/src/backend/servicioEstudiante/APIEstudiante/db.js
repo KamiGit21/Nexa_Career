@@ -5,6 +5,7 @@ const pool = mysql.createPool({
   port: process.env.DB_PORT || 3307,
   user: process.env.DB_USER || 'root',
   password: process.env.DB_PASSWORD || 'password',
+  database: 'estudiante',   // ← Línea agregada
   waitForConnections: true,
   connectionLimit: 10,
   queueLimit: 0
@@ -19,4 +20,4 @@ pool.getConnection()
     console.error('❌ Error al conectar con la base de datos:', err.message);
   });
 
-export default pool;  
+export default pool;

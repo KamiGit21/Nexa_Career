@@ -32,7 +32,6 @@ export const subirCV = async (req, res) => {
       });
     }
 
-    // Guardar SOLO el nombre del archivo (no la URL)
     const cvPath = req.file.filename;
     
     await db.query(
@@ -61,7 +60,7 @@ export const subirCV = async (req, res) => {
   }
 };
 
-// 2. ver cv principal correccion ------------------------------
+// 2. Obtener CV para visualizar
 export const obtenerCV = async (req, res) => {
   const id_estudiante = req.params.id;
 
@@ -78,10 +77,9 @@ export const obtenerCV = async (req, res) => {
       });
     }
 
-    // aquiiii - busca el archivo físico en la carpeta uploads 
+    // Buscar archivo que empiece con el ID del estudiante
     const files = fs.readdirSync(uploadDir);
-    // busca un archivo que empiece con cv_{id_estudiante}_
-    const cvFile = files.find(f => f.startsWith(`cv_${id_estudiante}_`));
+    const cvFile = files.find(f => f.startsWith(`${id_estudiante}_`));
     
     if (!cvFile) {
       return res.status(404).json({ 
@@ -91,7 +89,6 @@ export const obtenerCV = async (req, res) => {
     }
 
     const filePath = path.join(uploadDir, cvFile);
-    
     if (!fs.existsSync(filePath)) {
       return res.status(404).json({ 
         success: false, 
@@ -99,9 +96,12 @@ export const obtenerCV = async (req, res) => {
       });
     }
 
-    // envia como un odf
+    // Extraer nombre original para la descarga
+    const parts = cvFile.split('_');
+    const originalName = parts.slice(2).join('_');
+    
     res.setHeader('Content-Type', 'application/pdf');
-    res.setHeader('Content-Disposition', `inline; filename="cv_${id_estudiante}.pdf"`);
+    res.setHeader('Content-Disposition', `inline; filename="${encodeURIComponent(originalName)}"`);
     
     const fileStream = fs.createReadStream(filePath);
     fileStream.pipe(res);
@@ -131,22 +131,21 @@ export const eliminarCV = async (req, res) => {
       });
     }
 
-    const cvFilename = estudiante[0].cv;
+    const files = fs.readdirSync(uploadDir);
+    const cvFile = files.find(f => f.startsWith(`${id_estudiante}_`));
     
-    if (!cvFilename) {
+    if (!cvFile) {
       return res.status(404).json({ 
         success: false, 
         message: 'El estudiante no tiene un CV cargado' 
       });
     }
 
-    // Eliminar el archivo físico
-    const filePath = path.join(uploadDir, cvFilename);
+    const filePath = path.join(uploadDir, cvFile);
     if (fs.existsSync(filePath)) {
       fs.unlinkSync(filePath);
     }
 
-    // Actualizar la BD (poner NULL en lugar de la ruta)
     await db.query(
       'UPDATE estudiante.estudiante SET cv = NULL WHERE id_estudiante = ?',
       [id_estudiante]
@@ -192,10 +191,8 @@ export const obtenerInfoCV = async (req, res) => {
       });
     }
 
-    // Buscar el archivo físico en la carpeta uploads
     const files = fs.readdirSync(uploadDir);
-    // Buscar un archivo que empiece con cv_{id_estudiante}_
-    const cvFile = files.find(f => f.startsWith(`cv_${id_estudiante}_`));
+    const cvFile = files.find(f => f.startsWith(`${id_estudiante}_`));
     
     if (!cvFile) {
       return res.status(200).json({
@@ -209,11 +206,15 @@ export const obtenerInfoCV = async (req, res) => {
     const filePath = path.join(uploadDir, cvFile);
     const stats = fs.statSync(filePath);
     
+    const parts = cvFile.split('_');
+    const originalName = parts.slice(2).join('_');
+    
     res.status(200).json({
       success: true,
       hasCV: true,
       data: {
-        filename: cvFile,
+        filename: originalName,
+        storedFilename: cvFile,
         size: stats.size,
         sizeMB: (stats.size / (1024 * 1024)).toFixed(2),
         uploadedAt: stats.birthtime,
