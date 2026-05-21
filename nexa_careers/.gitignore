@@ -40,3 +40,5 @@ node_modules/
 *.timestamp-*-*.mjs
 
 .env
+
+nexa_careers/src/backend/servicioEstudiante/uploads/
