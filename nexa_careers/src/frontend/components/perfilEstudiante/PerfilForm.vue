@@ -39,7 +39,7 @@
       </p>
     </div>
 
-    <div class="password-group">
+    <!--<div class="password-group">
       <div class="flex-between">
         <label class="label-main">Contraseña:</label>
       </div>
@@ -47,7 +47,7 @@
     </div>
 
     <InputField v-model="formData.confirmarContrasena" label="Confirmar Contraseña:" type="password"
-      placeholder="********" />
+      placeholder="********" />-->
 
     <div class="submit-container">
       <SaveButton label="Guardar Cambios" class="btn-submit" />
@@ -60,7 +60,6 @@ import { ref, reactive, onMounted } from 'vue';
 import { useRoute } from 'vue-router';
 import InputField from "./InputField.vue";
 import TextAreaField from "./TextAreaField.vue";
-import PasswordField from "./PasswordField.vue";
 import CvUpload from "../CvUpload.vue";
 import SaveButton from "./SaveButton.vue";
 import {

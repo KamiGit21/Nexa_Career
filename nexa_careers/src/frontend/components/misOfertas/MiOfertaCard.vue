@@ -25,30 +25,25 @@
     </div>
 
     <div class="border-t border-gray-100 pt-4 flex flex-wrap gap-2">
-      <button
-        @click="$emit('ver-detalle', oferta)"
-        class="flex-1 py-2 text-xs font-semibold text-[#1b2a4a] border border-[#1b2a4a]/30
-               rounded-xl hover:bg-[#1b2a4a] hover:text-white transition-colors"
-      >
+      <button @click="$emit('ver-detalle', oferta)" class="flex-1 py-2 text-xs font-semibold text-[#1b2a4a] border border-[#1b2a4a]/30
+               rounded-xl hover:bg-[#1b2a4a] hover:text-white transition-colors">
         Ver detalle
       </button>
 
-      <button
-        @click="$emit('editar', oferta)"
-        class="flex-1 py-2 text-xs font-semibold text-yellow-600 border border-yellow-200
-               rounded-xl hover:bg-yellow-50 transition-colors"
-      >
+      <button @click="$emit('editar', oferta)" class="flex-1 py-2 text-xs font-semibold text-yellow-600 border border-yellow-200
+               rounded-xl hover:bg-yellow-50 transition-colors">
         Editar
       </button>
 
-      <button
-        @click="$emit('dar-de-baja', oferta)"
-        :disabled="oferta.estado === 3"
-        class="w-full py-2 text-xs font-semibold rounded-xl transition-colors"
-        :class="oferta.estado === 3
+      <button @click="$emit('postulantes', oferta)" class="flex-1 py-2 text-xs font-semibold text-yellow-600 border border-yellow-200
+               rounded-xl hover:bg-yellow-50 transition-colors">
+        Ver postulantes
+      </button>
+
+      <button @click="$emit('dar-de-baja', oferta)" :disabled="oferta.estado === 3"
+        class="w-full py-2 text-xs font-semibold rounded-xl transition-colors" :class="oferta.estado === 3
           ? 'text-gray-400 border border-gray-200 cursor-not-allowed'
-          : 'text-red-600 border border-red-200 hover:bg-red-50'"
-      >
+          : 'text-red-600 border border-red-200 hover:bg-red-50'">
         {{ oferta.estado === 3 ? 'Dada de baja' : 'Dar de baja' }}
       </button>
     </div>
@@ -59,7 +54,7 @@
 import OfertaEstadoBadge from './OfertaEstadoBadge.vue'
 
 defineProps({ oferta: { type: Object, required: true } })
-defineEmits(['ver-detalle', 'editar', 'dar-de-baja'])
+defineEmits(['ver-detalle', 'editar', 'dar-de-baja', 'postulantes'])
 
 const formatearFecha = (fecha) => {
   if (!fecha) return 'Sin fecha'
