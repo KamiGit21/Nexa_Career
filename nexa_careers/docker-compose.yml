@@ -16,7 +16,7 @@ services:
     volumes:
       - .:/app
       - /app/node_modules
-    command: ["node", "src/backend/api-gateway/index.js"]
+    command: ["node","--watch", "src/backend/api-gateway/index.js"]
     networks:
       - nexa_network
 
@@ -33,7 +33,7 @@ services:
     volumes:
       - .:/app
       - /app/node_modules
-    command: ["node", "src/backend/servicioCarrera/APICarrera/indexCarrera.js"] 
+    command: ["node", "--watch", "src/backend/servicioCarrera/APICarrera/indexCarrera.js"] 
     networks:
       - nexa_network
 
@@ -48,7 +48,7 @@ services:
       - ./src/backend/servicioEstudiante/uploads:/app/src/backend/servicioEstudiante/uploads
       - .:/app
       - /app/node_modules
-    command: ["node", "src/backend/servicioEstudiante/APIEstudiante/indexEstudiante.js"]
+    command: ["node", "--watch", "src/backend/servicioEstudiante/APIEstudiante/indexEstudiante.js"]
     networks:
       - nexa_network
 
@@ -62,7 +62,7 @@ services:
     volumes:
       - .:/app
       - /app/node_modules
-    command: ["node", "src/backend/servicioEmpleador/APIEmpleador/indexEmpleador.js"]
+    command: ["node", "--watch", "src/backend/servicioEmpleador/APIEmpleador/indexEmpleador.js"]
     networks:
       - nexa_network
 
@@ -76,7 +76,7 @@ services:
     volumes:
       - .:/app
       - /app/node_modules
-    command: ["node", "src/backend/servicioSupervisor/APISupervisor/indexSupervisor.js"]
+    command: ["node", "--watch", "src/backend/servicioSupervisor/APISupervisor/indexSupervisor.js"]
     networks:
       - nexa_network
 
@@ -90,7 +90,7 @@ services:
     volumes:
       - .:/app
       - /app/node_modules
-    command: ["node", "src/backend/servicioOferta/APIOferta/indexOferta.js"]
+    command: ["node", "--watch", "src/backend/servicioOferta/APIOferta/indexOferta.js"]
     networks:
       - nexa_network
 
@@ -104,7 +104,7 @@ services:
     volumes:
       - .:/app
       - /app/node_modules
-    command: ["node", "src/backend/servicioOfertante/APIOfertante/indexOfertante.js"]
+    command: ["node", "--watch", "src/backend/servicioOfertante/APIOfertante/indexOfertante.js"]
     networks:
       - nexa_network
 
@@ -118,7 +118,7 @@ services:
     volumes:
       - .:/app
       - /app/node_modules
-    command: ["node", "src/backend/servicioCurso/APICurso/indexCurso.js"]
+    command: ["node", "--watch", "src/backend/servicioCurso/APICurso/indexCurso.js"]
     networks:
       - nexa_network
 
@@ -132,7 +132,7 @@ services:
     volumes:
       - .:/app
       - /app/node_modules
-    command: ["node", "src/backend/servicioCategoria/APICategoria/indexCategoria.js"]
+    command: ["node", "--watch", "src/backend/servicioCategoria/APICategoria/indexCategoria.js"]
     networks:
       - nexa_network
 
@@ -148,6 +148,8 @@ services:
       - "5173:5173"
     env_file:
       - .env
+    environment:                          
+      - CHOKIDAR_USEPOLLING=true
     volumes:
       - .:/app
       - /app/node_modules

@@ -149,7 +149,7 @@ const requisitos = ref([
 // Cargar carreras desde el microservicio al montar el componente
 onMounted(async () => {
   try {
-    const res = await fetch('http://localhost:3002/api/carreras')
+    const res = await fetch('http://localhost:3000/api/carreras')
     const data = await res.json()
     if (data.success) {
       carreras.value = data.data
