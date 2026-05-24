@@ -69,6 +69,52 @@
                 </div>
               </div>
             </section>
+
+            <section class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+              <div class="bg-gray-50 px-6 py-4 border-b border-gray-100 flex justify-between items-center">
+                <h3 class="font-bold text-gray-700 flex items-center gap-2">
+                  <i class="fas fa-graduation-cap text-indigo-500"></i> Cursos Recomendados
+                </h3>
+                <span v-if="hasResults" class="bg-indigo-100 text-indigo-700 text-[10px] font-black px-2 py-0.5 rounded-full uppercase tracking-wider">Top 5</span>
+              </div>
+
+              <div class="p-6">
+                <div v-if="isAnalyzing" class="space-y-3">
+                  <div v-for="n in 3" :key="n" class="h-16 bg-gray-50 rounded-xl animate-pulse border border-gray-100"></div>
+                </div>
+
+                <div v-else-if="hasResults" class="space-y-4 animate-fadeIn">
+                  <p class="text-xs text-gray-500 mb-2">Potencia tus habilidades clave para aumentar tu compatibilidad con las ofertas:</p>
+                  
+                  <div v-for="(curso, index) in recommendedCourses" :key="curso.id" @click="verDetalleCurso(curso.id)"
+                    class="group flex items-center justify-between p-3 rounded-xl border border-gray-100 hover:border-indigo-200 hover:bg-indigo-50/30 transition-all cursor-pointer">
+                    <div class="flex items-center gap-3 overflow-hidden">
+                      <div class="w-8 h-8 rounded-lg bg-indigo-50 flex items-center justify-center font-bold text-indigo-600 text-sm flex-shrink-0 group-hover:bg-indigo-100">
+                        {{ index + 1 }}
+                      </div>
+                      <div class="overflow-hidden">
+                        <h4 class="text-xs font-bold text-gray-800 truncate group-hover:text-indigo-600 transition-colors">{{ curso.curso }}</h4>
+                        <p class="text-[11px] text-gray-400 truncate">{{ curso.fecha_creacion }}</p>
+                      </div>
+                    </div>
+                    <div class="flex items-center gap-2 flex-shrink-0 pl-2">
+                      <span class="text-[10px] font-semibold bg-gray-100 text-gray-600 px-2 py-0.5 rounded-md group-hover:bg-indigo-100 group-hover:text-indigo-700 transition-colors">
+                        {{ curso.ofertante }}
+                      </span>
+                      <i class="fas fa-chevron-right text-gray-300 text-xs group-hover:translate-x-0.5 transition-transform group-hover:text-indigo-400"></i>
+                    </div>
+                  </div>
+                </div>
+
+                <div v-else class="text-center py-8">
+                  <div class="w-12 h-12 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-3">
+                    <i class="fas fa-book-open text-gray-300 text-xl"></i>
+                  </div>
+                  <p class="text-gray-400 text-xs px-4">Las recomendaciones académicas aparecerán una vez analizado tu perfil.</p>
+                </div>
+              </div>
+            </section>
+
           </div>
 
           <div class="lg:col-span-8 space-y-6">
@@ -149,6 +195,14 @@ const aiData = ref({
 })
 const idEstudiante = ref(null)
 
+const recommendedCourses = ref([
+  { id: 101, curso: 'Dominando Vue 3 y Compositon API Avanzado', ofertante: 'UCB', fecha_creacion: '2026-01-11'},
+  { id: 102, curso: 'Microservicios con Node.js, Express y Clean Architecture', ofertante: 'Mitocode', fecha_creacion: '2026-01-12'},
+  { id: 103, curso: 'Diseño de Bases de Datos de Alta Disponibilidad con Postgres', ofertante: 'Supabase Inc.', fecha_creacion: '2026-01-13'},
+  { id: 104, curso: 'Estrategias de Seguridad Web: Implementación de JWT, CSRF y OWASP', ofertante: 'Nexa Security Lab', fecha_creacion: '2026-01-14'},
+  { id: 105, curso: 'Desarrollo Mobile Multiplataforma con Flutter e Inyección de Dependencias', ofertante: 'Udemy', fecha_creacion: '2026-01-15'}
+])
+
 onMounted(() => {
   const sesion = JSON.parse(localStorage.getItem('sesion') || '{}')
   if (!sesion.id || sesion.rol !== 'estudiante') {
@@ -160,6 +214,11 @@ onMounted(() => {
 
 const verDetalleOferta = (idOferta) => {
   router.push(`/ofertas/${idOferta}`)
+}
+
+const verDetalleCurso = (idCurso) => {
+  console.log(`Navegando al detalle del curso recomendado con ID: ${idCurso}`)
+  router.push(`/cursos/${idCurso}`)
 }
 
 const simularAnalisis = async () => {
