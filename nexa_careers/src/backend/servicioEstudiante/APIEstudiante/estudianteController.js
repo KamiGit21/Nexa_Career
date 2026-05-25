@@ -320,7 +320,7 @@ export const analizarPerfilConIA = async (req, res) => {
     return res.status(500).json({ success: false, message: 'Falta la API Key en el servidor' });
   }
 
-  try {
+  /*try {
     console.log("🔍 Consultando a Google qué modelos tienes habilitados...");
     const listResponse = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${process.env.GEMINI_API_KEY}`);
     const listData = await listResponse.json();
@@ -336,7 +336,7 @@ export const analizarPerfilConIA = async (req, res) => {
     }
   } catch(e) {
     console.log("⚠️ Error al intentar listar modelos:", e.message);
-  }
+  }*/
 
   try {
     const [estudianteRows] = await db.query(
@@ -390,6 +390,19 @@ export const analizarPerfilConIA = async (req, res) => {
       return res.status(200).json({ success: false, message: 'No hay ofertas activas para analizar' });
     }
 
+    const [cursosRows] = await db.query(`
+      SELECT 
+        c.id_curso, 
+        c.curso, 
+        c.descripcion, 
+        c.fecha_creacion, 
+        COALESCE(e.empresa, CONCAT(est.nombre, ' ', est.apellido), 'Usuario Desconocido') AS nombre_ofertante
+      FROM curso.curso c
+      LEFT JOIN empleador.empleador e ON c.id_empleador = e.id_empleador
+      LEFT JOIN estudiante.estudiante est ON c.id_estudiante = est.id_estudiante
+      WHERE c.estado = 1
+    `);
+
     const datosEstudiante = `Descripción: ${estudiante.descripcion || 'N/A'}. Habilidades: ${estudiante.habilidades || 'N/A'}. CV Texto extraído: ${textoDelCV}`;
     const datosOfertas = JSON.stringify(ofertasRows.map(o => ({
       id: o.id_oferta,
@@ -397,7 +410,13 @@ export const analizarPerfilConIA = async (req, res) => {
       descripcion: o.descripcion
     })));
 
-    const prompt = `Actúa como un Reclutador Experto y Analista de Talento IT. Tu única tarea es leer el perfil de un estudiante y compararlo con una lista de ofertas laborales activas.
+    const datosCursos = JSON.stringify(cursosRows.map(c => ({
+      id: c.id_curso,
+      titulo: c.curso,
+      descripcion: c.descripcion
+    })));
+
+    const prompt = `Actúa como un Reclutador Experto, Analista de Talento y Asesor de Desarrollo Profesional Multidisciplinario. Tu única tarea es leer el perfil de un estudiante y compararlo con una lista de ofertas laborales y cursos disponibles.
     REGLA ESTRICTA: No saludes, no expliques. Tu respuesta DEBE SER ÚNICA Y EXCLUSIVAMENTE un objeto JSON válido con esta estructura exacta:
     {
       "profile": {
@@ -411,12 +430,19 @@ export const analizarPerfilConIA = async (req, res) => {
           "match": [Número 0-100],
           "reason": "[Por qué encaja en 2 líneas]"
         }
+      ],
+      "courses": [
+        {
+          "id": [ID numérico del curso],
+          "reason": "[Por qué le sirve en 1 línea]"
+        }
       ]
     }
-    Filtra y devuelve solo ofertas con match > 60%.
+    Filtra y devuelve solo ofertas con match > 60%. Devuelve EXACTAMENTE los 5 cursos que mejor cubran las debilidades del estudiante o potencien su perfil actual.
     
     Perfil del estudiante: ${datosEstudiante}
-    Ofertas disponibles: ${datosOfertas}`;
+    Ofertas disponibles: ${datosOfertas}
+    Cursos disponibles: ${datosCursos}`;
 
     const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
     const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" }); 
@@ -440,8 +466,25 @@ export const analizarPerfilConIA = async (req, res) => {
       };
     });
 
-    aiData.jobs = jobsEnriquecidos;
+    const cursosEnriquecidos = (aiData.courses || []).map(aiCourse => {
+      const cursoOriginal = cursosRows.find(c => c.id_curso === aiCourse.id);
+      let fechaFormateada = 'Reciente';
+      
+      if (cursoOriginal && cursoOriginal.fecha_creacion) {
+        fechaFormateada = new Date(cursoOriginal.fecha_creacion).toISOString().split('T')[0];
+      }
 
+      return {
+        id: aiCourse.id,
+        curso: cursoOriginal ? cursoOriginal.curso : 'Curso Recomendado',
+        ofertante: cursoOriginal ? cursoOriginal.nombre_ofertante : 'Desconocido', 
+        fecha_creacion: fechaFormateada,
+        reason: aiCourse.reason
+      };
+    });
+
+    aiData.jobs = jobsEnriquecidos;
+    aiData.courses = cursosEnriquecidos;
     
     res.status(200).json({ success: true, data: aiData });
 

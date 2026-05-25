@@ -195,13 +195,7 @@ const aiData = ref({
 })
 const idEstudiante = ref(null)
 
-const recommendedCourses = ref([
-  { id: 101, curso: 'Dominando Vue 3 y Compositon API Avanzado', ofertante: 'UCB', fecha_creacion: '2026-01-11'},
-  { id: 102, curso: 'Microservicios con Node.js, Express y Clean Architecture', ofertante: 'Mitocode', fecha_creacion: '2026-01-12'},
-  { id: 103, curso: 'Diseño de Bases de Datos de Alta Disponibilidad con Postgres', ofertante: 'Supabase Inc.', fecha_creacion: '2026-01-13'},
-  { id: 104, curso: 'Estrategias de Seguridad Web: Implementación de JWT, CSRF y OWASP', ofertante: 'Nexa Security Lab', fecha_creacion: '2026-01-14'},
-  { id: 105, curso: 'Desarrollo Mobile Multiplataforma con Flutter e Inyección de Dependencias', ofertante: 'Udemy', fecha_creacion: '2026-01-15'}
-])
+const recommendedCourses = ref([])
 
 onMounted(() => {
   const sesion = JSON.parse(localStorage.getItem('sesion') || '{}')
@@ -233,6 +227,7 @@ const simularAnalisis = async () => {
 
     if (response.success && response.data) {
       aiData.value = response.data;
+      recommendedCourses.value = response.data.courses || [];
       hasResults.value = true;
     } else {
       alert(response.message || 'No se encontraron coincidencias suficientes.');
