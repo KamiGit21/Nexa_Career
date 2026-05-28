@@ -29,6 +29,7 @@
         :filtro-activo="hayFiltroActivo"
         @ver-detalle="(o) => router.push(`/ofertas/${o.id_oferta}`)"
         @editar="(o) => router.push(`/mis-ofertas/${o.id_oferta}/editar`)"
+        @ver-postulantes="(o) => router.push(`/mis-ofertas/${o.id_oferta}/postulantes`)"
         @dar-de-baja="prepararBaja"
       />
 
