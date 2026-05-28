@@ -30,6 +30,7 @@
       @ver-detalle="$emit('ver-detalle', $event)"
       @editar="$emit('editar', $event)"
       @dar-de-baja="$emit('dar-de-baja', $event)"
+      @ver-postulantes="(o) => $emit('ver-postulantes', o)"
     />
   </div>
 </template>
@@ -43,5 +44,5 @@ defineProps({
   filtroActivo: { type: Boolean, default: false     },
 })
 
-defineEmits(['ver-detalle', 'editar', 'dar-de-baja'])
+defineEmits(['ver-detalle', 'editar', 'dar-de-baja', 'ver-postulantes'])
 </script>

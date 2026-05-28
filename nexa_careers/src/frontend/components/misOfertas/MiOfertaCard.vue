@@ -35,7 +35,7 @@
         Editar
       </button>
 
-      <button @click="$emit('postulantes', oferta)" class="flex-1 py-2 text-xs font-semibold text-yellow-600 border border-yellow-200
+      <button @click="$emit('ver-postulantes', oferta)" class="flex-1 py-2 text-xs font-semibold text-yellow-600 border border-yellow-200
                rounded-xl hover:bg-yellow-50 transition-colors">
         Ver postulantes
       </button>
@@ -54,7 +54,7 @@
 import OfertaEstadoBadge from './OfertaEstadoBadge.vue'
 
 defineProps({ oferta: { type: Object, required: true } })
-defineEmits(['ver-detalle', 'editar', 'dar-de-baja', 'postulantes'])
+defineEmits(['ver-detalle', 'editar', 'dar-de-baja', 'ver-postulantes'])
 
 const formatearFecha = (fecha) => {
   if (!fecha) return 'Sin fecha'
