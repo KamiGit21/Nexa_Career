@@ -154,7 +154,7 @@ const handleSubmit = async () => {
           }))
           // AVISAR AL ESTADO GLOBAL
           authState.actualizarSesion()
-          router.push('/ofertas')
+          router.push('/home')
         } else if (userData.contrasena !== form.value.password) {
           alert('La contraseña ingresada es incorrecta')
         } else if (userData.activo === 0) {

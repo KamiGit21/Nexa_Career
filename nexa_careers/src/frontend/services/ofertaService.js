@@ -65,9 +65,9 @@ export async function listarOfertasPaginadasPorEstado(pagina, estado, size = 15)
   return data;
 }
 
-export async function contarOfertasPorEstado(estado = 1) {
-  const { data } = await api.get('/api/ofertas')
-  return (data.data || []).filter(o => o.estado === estado).length
+export async function contarOfertasPorEstado(estado) {
+  const { data } = await api.get(`/api/ofertas/contar/${estado}`);
+  return data;
 }
 
 export async function obtenerOfertasPaginacionOrdenada(pagina) {

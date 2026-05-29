@@ -734,3 +734,34 @@ export const buscarCursosPorEmpleador = async (req, res) => {
     res.status(500).json({ success: false, message: 'Error al buscar cursos' });
   }
 };
+
+export const contarCursos = async (req, res) => {
+  const { estado } = req.params;
+  if (estado === undefined) {
+    return res.status(400).json({ 
+      success: false, 
+      message: 'Debes proporcionar un estado para contar los cursos.' 
+    });
+  }
+
+  try {
+    const [result] = await db.query(
+      'SELECT COUNT(*) as total FROM curso.curso WHERE estado = ?',
+      [estado]
+    );
+    res.status(200).json({
+      success: true,
+      data: {
+        estado: parseInt(estado),
+        total: result[0].total
+      }
+    });
+
+  } catch (error) {
+    console.error('❌ Error al contar cursos:', error);
+    res.status(500).json({ 
+      success: false, 
+      message: 'Error interno al intentar contar los cursos' 
+    });
+  }
+};

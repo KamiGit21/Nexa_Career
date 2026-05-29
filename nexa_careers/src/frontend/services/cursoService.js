@@ -1,4 +1,10 @@
+import axios from 'axios'
 const API_URL = 'http://localhost:3000/api'
+
+const api = axios.create({
+  baseURL: 'http://localhost:3000',
+  headers: { 'Content-Type': 'application/json' },
+})
 
 export const publicarCursoPorEstudiante = async (data) => {
   try {
@@ -241,4 +247,9 @@ export const desarchivarCurso = async (idCurso) => {
     console.error('Error en desarchivarCurso:', error)
     return { success: false, message: 'Error de conexión' }
   }
+}
+
+export const contarCursosPorEstado = async (estado) => {
+  const { data } = await api.get(`/api/cursos/contar/${estado}`);
+  return data;
 }

@@ -41,6 +41,7 @@ router.patch('/:id_curso/archivar', cursoController.archivarCurso);
 router.patch('/:id_curso/desarchivar', cursoController.desarchivarCurso); 
 router.patch('/:id_curso/estado', cursoController.cambiarEstadoCurso);
 router.get('/:id_curso', cursoController.obtenerCursoPorId);
+router.get('/contar/:estado', cursoController.contarCursos);
 
 export default router;
 
