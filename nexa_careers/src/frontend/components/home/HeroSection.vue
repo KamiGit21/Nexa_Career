@@ -6,7 +6,7 @@
           ¡Empieza a adquirir<br>experiencia ya!
         </h1>
         <p class="text-xl text-gray-600 max-w-lg">
-          Busca tu oportunidad de carrera entre más de 1200 puestos que tenemos para ti.
+          Busca tu oportunidad de carrera y especialízate en todos puestos que tenemos para ti.
         </p>
 
         <div v-if="loading" class="flex gap-12 pt-6">
@@ -16,20 +16,18 @@
           </div>
         </div>
 
-        <div v-else class="flex gap-12 pt-6">
+        <div v-else class="flex gap-6 pt-6">
           <div v-for="stat in stats" :key="stat.label">
-            <div class="text-5xl font-semibold text-[#1b2a4a]">{{ stat.value }}</div>
+            <div class="text-4xl font-bold text-[#1b2a4a]">{{ stat.value }}</div>
             <div class="text-sm text-gray-500">{{ stat.label }}</div>
           </div>
         </div>
       </div>
 
       <div class="relative flex justify-center">
-        <div class="w-[520px] h-[520px] bg-gradient-to-br from-[#e8f0fb] to-[#d0b06d]/10 rounded-[4rem] flex items-center justify-center">
-          <img src="../../assets/images/hero.png" alt="Hero" class="w-full h-full object-contain">
+          <img src="../../assets/images/hero.png" alt="Hero" class="w-[500px] h-[500px] object-contain rounded-[3rem]">
         </div>
       </div>
-    </div>
   </section>
 </template>
 
@@ -39,16 +37,15 @@ import { ref, onMounted } from 'vue'
 const stats = ref([])
 const loading = ref(true)
 
-// TODO: GET /api/stats
 const cargarStats = async () => {
   loading.value = true
   try {
     // const res = await fetch('/api/stats')
     // stats.value = await res.json()
     
-    // Temporal mientras no tengas backend
     stats.value = [
-      { value: '+1235', label: 'Estudiantes registrados' },
+      { value: '+530', label: 'Ofertas laborales activas' },
+      { value: '+120', label: 'Cursos publicados' },
       { value: '+156', label: 'Empresas aliadas' },
       { value: '+820', label: 'Entrevistas conseguidas' }
     ]
