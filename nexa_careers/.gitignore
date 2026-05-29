@@ -38,3 +38,7 @@ node_modules/
 
 # Vite
 *.timestamp-*-*.mjs
+
+.env
+
+src/backend/servicioEstudiante/uploads/

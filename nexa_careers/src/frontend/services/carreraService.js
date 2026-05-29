@@ -1,5 +1,5 @@
 // src/frontend/services/carreraService.js
-const API_URL = 'http://localhost:3002/api';
+const API_URL = 'http://localhost:3000/api';
 
 export const obtenerCarreraPorId = async (id) => {
   try {

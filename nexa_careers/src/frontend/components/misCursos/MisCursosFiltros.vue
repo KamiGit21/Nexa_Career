@@ -1,5 +1,24 @@
 <template>
-  <div class="mb-6 bg-white rounded-2xl p-4 shadow-sm">
+  <div class="mb-6 bg-white rounded-2xl p-4 shadow-sm space-y-3">
+
+    <!-- Buscador -->
+    <div class="flex items-center gap-3 bg-gray-50 border border-gray-200 rounded-xl px-4 py-2 focus-within:ring-2 focus-within:ring-[#1b2a4a] focus-within:border-transparent transition-all">
+      <span class="text-gray-400">🔍</span>
+      <input
+        :value="busqueda"
+        @input="$emit('update:busqueda', $event.target.value)"
+        type="text"
+        placeholder="Buscar por título de curso..."
+        class="flex-1 bg-transparent outline-none text-sm text-slate-800 placeholder-gray-400"
+      />
+      <button
+        v-if="busqueda"
+        @click="$emit('update:busqueda', '')"
+        class="text-gray-400 hover:text-gray-600 text-xs"
+      >✕</button>
+    </div>
+
+    <!-- Filtros por categoría y estado -->
     <div class="flex items-center gap-4 flex-wrap">
 
       <!-- Filtro por categoría -->
@@ -59,12 +78,13 @@
 import { computed } from 'vue'
 
 const props = defineProps({
+  busqueda:        { type: String, default: '' },
   categoriaFiltro: { default: null },
   estadoFiltro:    { default: null },
   categorias:      { type: Array, default: () => [] }
 })
 
-defineEmits(['update:categoriaFiltro', 'update:estadoFiltro'])
+defineEmits(['update:busqueda', 'update:categoriaFiltro', 'update:estadoFiltro'])
 
 const nombresEstado = { 0: 'Pendiente', 1: 'Aceptado', 2: 'Rechazado', 3: 'Archivado' }
 

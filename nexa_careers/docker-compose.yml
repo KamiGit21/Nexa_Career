@@ -1,0 +1,161 @@
+version: '3.8'
+
+services:
+  # ==========================================
+  # API GATEWAY
+  # ==========================================
+  api-gateway:
+    build: 
+      context: . 
+      dockerfile: Dockerfile
+    container_name: nexa_api_gateway
+    ports:
+      - "3000:3000"
+    env_file:
+      - .env
+    volumes:
+      - .:/app
+      - /app/node_modules
+    command: ["node","--watch", "src/backend/api-gateway/index.js"]
+    networks:
+      - nexa_network
+
+  # ==========================================
+  # MICROSERVICIOS BACKEND
+  # ==========================================
+  servicio-carrera:
+    build: 
+      context: .
+      dockerfile: Dockerfile
+    container_name: nexa_servicio_carrera
+    env_file:
+      - .env
+    volumes:
+      - .:/app
+      - /app/node_modules
+    command: ["node", "--watch", "src/backend/servicioCarrera/APICarrera/indexCarrera.js"] 
+    networks:
+      - nexa_network
+
+  servicio-estudiante:
+    build: 
+      context: .
+      dockerfile: Dockerfile
+    container_name: nexa_servicio_estudiante
+    env_file:
+      - .env
+    volumes:
+      - ./src/backend/servicioEstudiante/uploads:/app/src/backend/servicioEstudiante/uploads
+      - .:/app
+      - /app/node_modules
+    command: ["node", "--watch", "src/backend/servicioEstudiante/APIEstudiante/indexEstudiante.js"]
+    networks:
+      - nexa_network
+
+  servicio-empleador:
+    build: 
+      context: .
+      dockerfile: Dockerfile
+    container_name: nexa_servicio_empleador
+    env_file:
+      - .env
+    volumes:
+      - .:/app
+      - /app/node_modules
+    command: ["node", "--watch", "src/backend/servicioEmpleador/APIEmpleador/indexEmpleador.js"]
+    networks:
+      - nexa_network
+
+  servicio-supervisor:
+    build: 
+      context: .
+      dockerfile: Dockerfile
+    container_name: nexa_servicio_supervisor
+    env_file:
+      - .env
+    volumes:
+      - .:/app
+      - /app/node_modules
+    command: ["node", "--watch", "src/backend/servicioSupervisor/APISupervisor/indexSupervisor.js"]
+    networks:
+      - nexa_network
+
+  servicio-oferta:
+    build: 
+      context: .
+      dockerfile: Dockerfile
+    container_name: nexa_servicio_oferta
+    env_file:
+      - .env
+    volumes:
+      - .:/app
+      - /app/node_modules
+    command: ["node", "--watch", "src/backend/servicioOferta/APIOferta/indexOferta.js"]
+    networks:
+      - nexa_network
+
+  servicio-ofertante:
+    build: 
+      context: .
+      dockerfile: Dockerfile
+    container_name: nexa_servicio_ofertante
+    env_file:
+      - .env
+    volumes:
+      - .:/app
+      - /app/node_modules
+    command: ["node", "--watch", "src/backend/servicioOfertante/APIOfertante/indexOfertante.js"]
+    networks:
+      - nexa_network
+
+  servicio-curso:
+    build: 
+      context: .
+      dockerfile: Dockerfile
+    container_name: nexa_servicio_curso
+    env_file:
+      - .env
+    volumes:
+      - .:/app
+      - /app/node_modules
+    command: ["node", "--watch", "src/backend/servicioCurso/APICurso/indexCurso.js"]
+    networks:
+      - nexa_network
+
+  servicio-categoria:
+    build: 
+      context: .
+      dockerfile: Dockerfile
+    container_name: nexa_servicio_categoria
+    env_file:
+      - .env
+    volumes:
+      - .:/app
+      - /app/node_modules
+    command: ["node", "--watch", "src/backend/servicioCategoria/APICategoria/indexCategoria.js"]
+    networks:
+      - nexa_network
+
+  # ==========================================
+  # FRONTEND (VITE)
+  # ==========================================
+  frontend:
+    build: 
+      context: .
+      dockerfile: src/frontend/Dockerfile
+    container_name: nexa_frontend
+    ports:
+      - "5173:5173"
+    env_file:
+      - .env
+    environment:                          
+      - CHOKIDAR_USEPOLLING=true
+    volumes:
+      - .:/app
+      - /app/node_modules
+    networks:
+      - nexa_network
+
+networks:
+  nexa_network:
+    driver: bridge

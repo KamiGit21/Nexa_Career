@@ -1,230 +1,151 @@
+<!-- src/frontend/views/MisOfertas.vue -->
 <template>
   <div class="min-h-screen bg-[#f8f5f0]">
-
     <div class="max-w-7xl mx-auto px-6 py-10">
+
       <div class="flex justify-between items-end mb-8">
         <div>
           <h1 class="text-4xl font-bold text-[#1b2a4a]">Mis Ofertas</h1>
           <p class="text-gray-500 mt-1">Gestiona las oportunidades que has publicado</p>
         </div>
-        <router-link to="/mis-ofertas/nueva"
-          class="px-6 py-3 bg-[#1b2a4a] text-white rounded-2xl font-medium flex items-center gap-2 hover:bg-[#0f1a2e]">
+        <router-link
+          to="/mis-ofertas/nueva"
+          class="px-6 py-3 bg-[#1b2a4a] text-white rounded-2xl font-medium
+                 flex items-center gap-2 hover:bg-[#0f1a2e] transition-colors"
+        >
           + Nueva Oferta
         </router-link>
       </div>
 
-      <div v-if="loading" class="text-center py-20 text-gray-500">Cargando tus ofertas...</div>
+      <!-- FILTRO -->
+      <MisOfertasFiltros
+        v-model:busqueda="busquedaFiltro"
+        v-model:estadoFiltro="estadoFiltro"
+      />
 
-      <div v-else-if="ofertas.length === 0" class="text-center py-20 text-gray-500">
-        Aún no tienes ofertas publicadas.
-      </div>
+      <MisOfertasGrid
+        :ofertas="ofertasFiltradas"
+        :loading="loading"
+        :filtro-activo="hayFiltroActivo"
+        @ver-detalle="(o) => router.push(`/ofertas/${o.id_oferta}`)"
+        @editar="(o) => router.push(`/mis-ofertas/${o.id_oferta}/editar`)"
+        @ver-postulantes="(o) => router.push(`/mis-ofertas/${o.id_oferta}/postulantes`)"
+        @dar-de-baja="prepararBaja"
+      />
 
-      <div v-else class="bg-white rounded-3xl shadow-sm overflow-hidden">
-        <!-- Tabla header -->
-        <div class="grid grid-cols-13 bg-[#1b2a4a] text-white text-sm py-5 px-8 font-medium">
-          <div class="col-span-5">Oferta</div>
-          <div class="col-span-2">Categoría</div>
-          <div class="col-span-2">Apertura</div>
-          <div class="col-span-1 text-center">Postulantes</div>
-          <div class="col-span-3 text-center">Acciones</div>
-        </div>
-
-        <div v-for="oferta in ofertas" :key="oferta.id_oferta"
-          class="grid grid-cols-12 items-center px-8 py-6 border-b hover:bg-gray-50">
-          <div class="col-span-4">
-            <p class="font-semibold text-[#1b2a4a]">{{ oferta.oferta }}</p>
-            <p class="text-sm text-gray-500 line-clamp-2">{{ oferta.descripcion }}</p>
-            <!-- Mostrar el estado para que el empleador sepa el estado actual -->
-            <span class="mt-1 inline-block text-[10px] font-bold px-2 py-0.5 rounded-full" :class="{
-              'bg-yellow-100 text-yellow-700': oferta.estado === 0,
-              'bg-green-100  text-green-700': oferta.estado === 1,
-              'bg-red-100    text-red-700': oferta.estado === 2,
-              'bg-gray-100   text-gray-500': oferta.estado === 3,
-            }">
-              {{ ['Pendiente', 'Activa', 'Rechazada', 'Dada de baja'][oferta.estado] ?? 'Desconocido' }}
-            </span>
-          </div>
-          <div class="col-span-2">{{ oferta.categoria || 'General' }}</div>
-          <div class="col-span-2">{{ formatearFecha(oferta.fecha_apertura) }}</div>
-          <div class="col-span-1 text-center font-medium">{{ oferta.postulantes_count || 0 }}</div>
-
-          <div class="col-span-3 text-center flex gap-3 justify-center">
-            <button @click="verPostulantes(oferta.id_oferta)"
-              class="px-4 py-2 bg-green-600 text-white rounded-xl text-xs font-medium hover:bg-green-700 transition-colors">
-              Postulantes
-            </button>
-            <button @click="editarOferta(oferta.id_oferta)"
-              class="px-4 py-2 bg-yellow-500 text-white rounded-xl text-xs font-medium hover:bg-yellow-600 transition-colors">
-              Editar
-            </button>
-            <!-- Deshabilitar boton si la oferta ya fue dada de baja (estado = 3) -->
-            <button @click="prepararBaja(oferta)" :disabled="oferta.estado === 3"
-              class="px-4 py-2 rounded-xl text-xs font-medium transition-colors" :class="oferta.estado === 3
-                ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
-                : 'bg-red-600 text-white hover:bg-red-700'">
-              {{ oferta.estado === 3 ? 'Dada de baja' : 'Dar de Baja' }}
-            </button>
-          </div>
-        </div>
-      </div>
     </div>
 
-    <!-- Modal de confirmacion de baja -->
-    <Transition name="fade">
-      <div v-if="showModal"
-        class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm px-4">
-        <div class="bg-white rounded-3xl p-8 max-w-md w-full shadow-2xl transform transition-all">
-          <div class="text-center">
-            <div class="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-red-100 mb-6">
-              <span class="text-red-600 text-3xl">⚠️</span>
-            </div>
-            <h3 class="text-xl font-bold text-[#1b2a4a] mb-2">¿Está seguro que desea cerrar esta oferta?</h3>
-            <p class="text-gray-500 mb-8">
-              Estás a punto de dar de baja la oferta: <br>
-              <span class="font-bold text-slate-800">"{{ ofertaSeleccionada?.oferta }}"</span>.
-              <br>
-              <span class="text-sm text-gray-400 mt-2 block">
-                La oferta pasará a estado <strong>Inactiva</strong> y dejará de ser visible para los estudiantes.
-              </span>
-            </p>
-
-            <p v-if="errorBaja" class="text-sm text-red-500 mb-4 bg-red-50 px-4 py-2 rounded-xl">
-              {{ errorBaja }}
-            </p>
-
-            <div class="flex gap-4">
-              <button @click="showModal = false; errorBaja = ''" :disabled="procesandoBaja"
-                class="flex-1 px-4 py-3 bg-gray-100 text-gray-700 rounded-xl font-semibold hover:bg-gray-200 transition-colors disabled:opacity-50">
-                Cancelar
-              </button>
-              <button @click="confirmarBaja" :disabled="procesandoBaja"
-                class="flex-1 px-4 py-3 bg-red-600 text-white rounded-xl font-semibold hover:bg-red-700 transition-colors disabled:opacity-50">
-                {{ procesandoBaja ? 'Procesando...' : 'Sí, Dar de Baja' }}
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-    </Transition>
+    <ConfirmarBajaOfertaModal
+      :visible="modalBajaVisible"
+      :nombre-oferta="ofertaSeleccionada?.oferta || ''"
+      :cargando="procesando"
+      :error="errorBaja"
+      @cancelar="cerrarModal"
+      @confirmar="confirmarBaja"
+    />
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
-import { listarOfertasPorEmpleador, darDeBajaOferta } from '../services/ofertaService.js'
+import MisOfertasGrid           from '../components/misOfertas/MisOfertasGrid.vue'
+import MisOfertasFiltros        from '../components/misOfertas/MisOfertasFiltros.vue'
+import ConfirmarBajaOfertaModal from '../components/misOfertas/ConfirmarBajaOfertaModal.vue'
+import { listarOfertasPorEmpleador, buscarOfertasPorEmpleadorConFiltro, darDeBajaOferta } from '../services/ofertaService.js'
 import { obtenerNumeroPostulacionesPorOferta } from '../services/postulacionService.js'
 
-const router = useRouter()
-const ofertas = ref([])
-const loading = ref(true)
-
-const showModal = ref(false)
+const router             = useRouter()
+const ofertas            = ref([])
+const loading            = ref(true)
 const ofertaSeleccionada = ref(null)
-const procesandoBaja = ref(false)
-const errorBaja = ref('')
+const modalBajaVisible   = ref(false)
+const procesando         = ref(false)
+const errorBaja          = ref('')
 
-const prepararBaja = (oferta) => {
-  ofertaSeleccionada.value = oferta
-  errorBaja.value = ''
-  showModal.value = true
-}
+const busquedaFiltro = ref('')
+const estadoFiltro   = ref(null)
 
-// Conectar con el endpoint PUT /api/ofertas/:id/archivar
+const hayFiltroActivo = computed(() =>
+  busquedaFiltro.value.trim() !== '' || estadoFiltro.value !== null
+)
+
+const ofertasFiltradas = computed(() => {
+  let resultado = ofertas.value
+
+  if (busquedaFiltro.value.trim()) {
+    const q = busquedaFiltro.value.toLowerCase().trim()
+    resultado = resultado.filter(o =>
+      o.oferta?.toLowerCase().includes(q) ||
+      o.categoria?.toLowerCase().includes(q) ||
+      o.descripcion?.toLowerCase().includes(q)
+    )
+  }
+
+  if (estadoFiltro.value !== null) {
+    resultado = resultado.filter(o => o.estado === estadoFiltro.value)
+  }
+
+  return resultado
+})
+
+const cerrarModal  = () => { modalBajaVisible.value = false; ofertaSeleccionada.value = null; errorBaja.value = '' }
+const prepararBaja = (o) => { ofertaSeleccionada.value = o; errorBaja.value = ''; modalBajaVisible.value = true }
+
 const confirmarBaja = async () => {
-  procesandoBaja.value = true
-  errorBaja.value = ''
-
+  procesando.value = true
   try {
-    const response = await darDeBajaOferta(ofertaSeleccionada.value.id_oferta)
-
-    if (response.success) {
-      // Actualizar el estado para mostrar el cambio sin recargar toda la lista
+    const res = await darDeBajaOferta(ofertaSeleccionada.value.id_oferta)
+    if (res.success) {
       const idx = ofertas.value.findIndex(o => o.id_oferta === ofertaSeleccionada.value.id_oferta)
-      if (idx !== -1) {
-        ofertas.value[idx].estado = 3
-      }
-      showModal.value = false
+      if (idx !== -1) ofertas.value[idx].estado = 3
+      cerrarModal()
     } else {
-      errorBaja.value = response.message || 'No se pudo dar de baja la oferta. Intenta de nuevo.'
+      errorBaja.value = res.message || 'No se pudo dar de baja la oferta.'
     }
-  } catch (e) {
-    console.error('Error al dar de baja la oferta:', e)
+  } catch {
     errorBaja.value = 'Error de conexión con el servidor.'
   } finally {
-    procesandoBaja.value = false
+    procesando.value = false
   }
-}
-
-const formatearFecha = (fecha) => {
-  if (!fecha) return 'No especificada'
-  return new Date(fecha).toLocaleDateString('es-ES')
 }
 
 const cargarOfertas = async () => {
   loading.value = true
   try {
     const sesion = JSON.parse(localStorage.getItem('sesion'))
-    if (!sesion || sesion.rol !== 'empleador') {
-      router.push('/inicio-sesion')
-      return
-    }
-
-    const idEmpleador = sesion.id
-    console.log('Cargando ofertas para empleador:', idEmpleador)
-
-    const response = await listarOfertasPorEmpleador(idEmpleador)
-    console.log('Respuesta del backend:', response)
-
-    if (response.success) {
-
-      const ofertasBase = response.data || []
-
-      const ofertasConConteo = await Promise.all(
-        ofertasBase.map(async (oferta) => {
-          const conteo = await obtenerNumeroPostulacionesPorOferta(oferta.id_oferta)
-          return { ...oferta, postulantes_count: conteo }
-        })
-      )
-
-      ofertas.value = ofertasConConteo
+    if (!sesion || sesion.rol !== 'empleador') { router.push('/login'); return }
+    
+    let res
+    // Si hay filtros activos, usar el endpoint de búsqueda
+    if (busquedaFiltro.value.trim() !== '' || estadoFiltro.value !== null) {
+      res = await buscarOfertasPorEmpleadorConFiltro(sesion.id, busquedaFiltro.value, estadoFiltro.value)
     } else {
-      console.error('Error en respuesta:', response.message)
+      res = await listarOfertasPorEmpleador(sesion.id)
     }
-  } catch (error) {
-    console.error('Error al cargar ofertas:', error)
+    
+    if (res.success) {
+      ofertas.value = await Promise.all(
+        (res.data || []).map(async (o) => ({
+          ...o,
+          postulantes_count: await obtenerNumeroPostulacionesPorOferta(o.id_oferta)
+        }))
+      )
+    }
+  } catch (e) {
+    console.error('Error al cargar ofertas:', e)
   } finally {
     loading.value = false
   }
 }
 
-const verPostulantes = (idOferta) => {
-  router.push(`/mis-ofertas/${idOferta}/postulantes`)
-}
-
-const editarOferta = (idOferta) => {
-  router.push(`/mis-ofertas/${idOferta}/editar`)
-}
-
 onMounted(cargarOfertas)
+
+let timeoutId = null
+watch([busquedaFiltro, estadoFiltro], () => {
+  if (timeoutId) clearTimeout(timeoutId)
+  timeoutId = setTimeout(() => {
+    cargarOfertas()
+  }, 500)
+})
 </script>
-
-<style scoped>
-/* Animacion de modal*/
-.fade-enter-active,
-.fade-leave-active {
-  transition: opacity 0.3s ease;
-}
-
-.fade-enter-from,
-.fade-leave-to {
-  opacity: 0;
-}
-
-.line-clamp-2 {
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-}
-</style>

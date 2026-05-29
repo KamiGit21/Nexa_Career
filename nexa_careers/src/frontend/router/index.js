@@ -41,10 +41,12 @@ import ListaSupervisores from '@/views/ListaSupervisores.vue'
 import SolicitarRecuperacion from '@/views/SolicitarRecuperacion.vue'
 import VerificarCodigo from '@/views/VerificarCodigo.vue'
 import NuevaPassword from '@/views/NuevaPassword.vue'
-import GestionCursos from '@/views/GestionCursos.vue'
+import GestionCursos from '@/views/Gestioncursos.vue'
 
 //Categorias ofertas laborales
 import GestionCategorias from '@/views/GestionCategorias.vue'
+//Analisis IA CV
+import AnalisisIA from '@/views/AnalisisIAView.vue'
 
 const routes = [
   { path: '/', redirect: '/home' },
@@ -221,7 +223,16 @@ const routes = [
   name: 'GestionCategorias',
   component: GestionCategorias,
   meta: { requiereRol: ['supervisor'] }
-},
+  },
+
+  //Analisis IA CV
+  {
+    path: '/analisis-ia',
+    name: 'AnalisisIA',
+    component: AnalisisIA,
+    meta: { requiereRol: ['estudiante'] }
+  },
+
   { path: '/:pathMatch(.*)*', redirect: '/home' }
 ]
 

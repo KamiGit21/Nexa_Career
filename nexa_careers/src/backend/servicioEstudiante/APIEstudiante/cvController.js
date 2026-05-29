@@ -1,11 +1,11 @@
-import db from '../../api-gateway/db.js';
+import db from './db.js';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-const uploadDir = path.join(__dirname, '../uploads/cv');
+export const uploadDir = path.join(__dirname, '../uploads/cv');
 
 // 1. Subir o reemplazar CV
 export const subirCV = async (req, res) => {
@@ -20,7 +20,7 @@ export const subirCV = async (req, res) => {
 
   try {
     const [estudiante] = await db.query(
-      'SELECT cv FROM estudiante WHERE id_estudiante = ?',
+      'SELECT cv FROM estudiante.estudiante WHERE id_estudiante = ?',
       [id_estudiante]
     );
     
@@ -36,7 +36,7 @@ export const subirCV = async (req, res) => {
     const cvPath = req.file.filename;
     
     await db.query(
-      'UPDATE estudiante SET cv = ? WHERE id_estudiante = ?',
+      'UPDATE estudiante.estudiante SET cv = ? WHERE id_estudiante = ?',
       [cvPath, id_estudiante]
     );
 
@@ -67,7 +67,7 @@ export const obtenerCV = async (req, res) => {
 
   try {
     const [estudiante] = await db.query(
-      'SELECT cv FROM estudiante WHERE id_estudiante = ?',
+      'SELECT cv FROM estudiante.estudiante WHERE id_estudiante = ?',
       [id_estudiante]
     );
 
@@ -120,7 +120,7 @@ export const eliminarCV = async (req, res) => {
 
   try {
     const [estudiante] = await db.query(
-      'SELECT cv FROM estudiante WHERE id_estudiante = ?',
+      'SELECT cv FROM estudiante.estudiante WHERE id_estudiante = ?',
       [id_estudiante]
     );
 
@@ -148,7 +148,7 @@ export const eliminarCV = async (req, res) => {
 
     // Actualizar la BD (poner NULL en lugar de la ruta)
     await db.query(
-      'UPDATE estudiante SET cv = NULL WHERE id_estudiante = ?',
+      'UPDATE estudiante.estudiante SET cv = NULL WHERE id_estudiante = ?',
       [id_estudiante]
     );
 
@@ -171,7 +171,7 @@ export const obtenerInfoCV = async (req, res) => {
 
   try {
     const [estudiante] = await db.query(
-      'SELECT cv FROM estudiante WHERE id_estudiante = ?',
+      'SELECT cv FROM estudiante.estudiante WHERE id_estudiante = ?',
       [id_estudiante]
     );
 

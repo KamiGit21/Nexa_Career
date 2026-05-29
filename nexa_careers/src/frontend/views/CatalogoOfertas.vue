@@ -39,7 +39,8 @@
 import { ref, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import {
-  buscarOfertasAvanzado
+  buscarOfertasAvanzado,
+  actualizarVencimientos
 } from '../services/ofertaService.js'
 
 import OfertasHeader from '../components/catalogoOfertas/OfertasHeader.vue'
@@ -146,5 +147,8 @@ watch(limite, () => {
   cargarOfertas(1)
 })
 
-onMounted(() => cargarOfertas(1))
+onMounted(async () => {
+  await actualizarVencimientos()
+  cargarOfertas(1)
+})
 </script>

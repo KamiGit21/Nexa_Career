@@ -9,6 +9,7 @@ router.get('/', ofertaController.listarOfertas);
 router.get('/pendientes', ofertaController.listarOfertasPendientes);
 router.get('/titulo/:oferta', ofertaController.buscarOfertaPorTitulo);
 router.get('/empleador/:id_empleador', ofertaController.buscarOfertasPorEmpleador);
+router.get('/empleador/:id_empleador/buscar', ofertaController.buscarOfertasPorEmpleadorConFiltro);
 
 router.get('/:id/postulantes', ofertaController.obtenerPostulantesPorOferta);
 router.get('/busqueda', ofertaController.buscarOfertasAvanzado);
@@ -26,6 +27,7 @@ router.get('/pagina/:pagina/size/:size/apertura/arriba', ofertaController.obtene
 router.get('/pagina/:pagina/size/:size/apertura/abajo', ofertaController.obtenerOfertasPaginacionPorFechaDescendente);
 router.get('/pagina/:pagina/size/:size/apertura/arriba/estado/:estado/', ofertaController.obtenerOfertasPaginacionPorEstadoYFechaAscendente);
 router.get('/pagina/:pagina/size/:size/apertura/abajo/estado/:estado/', ofertaController.obtenerOfertasPaginacionPorEstadoYFechaDescendente);
+router.patch('/vencidas', ofertaController.actualizarOfertasVencidas);
 
 
 export default router;

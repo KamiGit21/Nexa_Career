@@ -51,6 +51,15 @@ export async function listarOfertasPorEmpleador(idEmpleador) {
   return data
 }
 
+export async function buscarOfertasPorEmpleadorConFiltro(idEmpleador, termino, estado = null) {
+  let url = `/api/ofertas/empleador/${idEmpleador}/buscar?q=${encodeURIComponent(termino || '')}`;
+  if (estado !== null && estado !== '') {
+    url += `&estado=${estado}`;
+  }
+  const { data } = await api.get(url);
+  return data;
+}
+
 export async function listarOfertasPaginadasPorEstado(pagina, estado, size = 15) {
   const { data } = await api.get(`/api/ofertas/pagina/${pagina}/size/${size}/estado/${estado}`);
   return data;
@@ -90,6 +99,16 @@ export async function buscarOfertasAvanzado(filtros) {
   return data;
 }
 
+export const actualizarVencimientos = async () => {
+  try {
+    const { data } = await api.patch('/api/ofertas/vencidas');
+    return data;
+  } catch (error) {
+    console.error('Error al actualizar vencimientos:', error);
+    return { success: false, message: error.message };
+  }
+};
+
 
 export default {
   listarOfertas,
@@ -104,5 +123,6 @@ export default {
   listarOfertasPaginadasPorEstado,
   contarOfertasPorEstado,
   obtenerOfertasPaginacionOrdenada,
-  obtenerOfertasPaginacionPorEstadoYFecha
+  obtenerOfertasPaginacionPorEstadoYFecha,
+  actualizarVencimientos
 }

@@ -1,5 +1,10 @@
-import db from '../../api-gateway/db.js';
-import { enviarCodigo } from '../../servicioNotificacion/correoService.js';
+import db from './db.js';
+import { enviarCodigo } from './correoService.js';
+import { GoogleGenerativeAI } from '@google/generative-ai';
+import { uploadDir } from './cvController.js';
+import path from 'path';
+import fs from 'fs';
+import PDFParser from 'pdf2json'
 
 const dominiosPermitidos = ['ucb.edu.bo'];
 
@@ -64,15 +69,12 @@ const validateEstudiante = (data, { isNew = false } = {}) => {
   }
 
   if (telefono && !isValidPhone(telefono)) errors.push('El teléfono debe contener solo dígitos y entre 7 y 15 caracteres');
-  //if (cv && !isValidUrl(cv)) errors.push('El campo cv debe ser una URL válida');
-  //cambio por esta:
+  
   if (cv && typeof cv === 'string' && cv.length > 0) {
-  // Si parece una URL (empieza con http), validar como URL
-  if (cv.startsWith('http') && !isValidUrl(cv)) {
-    errors.push('El campo cv debe ser una URL válida');
+    if (cv.startsWith('http') && !isValidUrl(cv)) {
+      errors.push('El campo cv debe ser una URL válida');
+    }
   }
-  // Si no empieza con http asumimos que es un nombre de archivo (válido)
-}
   if (contrasena && String(contrasena).length < 8) errors.push('La contraseña debe tener al menos 8 caracteres');
   if (contrasena && String(contrasena).length > 60) errors.push('La contraseña no puede exceder 60 caracteres');
   if (descripcion && String(descripcion).length > 500) errors.push('La descripción no puede exceder 500 caracteres');
@@ -83,7 +85,6 @@ const validateEstudiante = (data, { isNew = false } = {}) => {
   return { valid: errors.length === 0, errors };
 };
 
-// 1. POST: Registrar estudiante
 export const registrarEstudiante = async (req, res) => {
   const validation = validateEstudiante(req.body, { isNew: true });
   if (!validation.valid) {
@@ -93,13 +94,13 @@ export const registrarEstudiante = async (req, res) => {
   const { nombre, apellido, telefono, gmail, cv, contrasena, id_carrera, descripcion, habilidades, educacion } = req.body;
 
   try {
-    const [existingEmail] = await db.query('SELECT gmail FROM estudiante WHERE gmail = ?', [gmail]);
+    const [existingEmail] = await db.query('SELECT gmail FROM estudiante.estudiante WHERE gmail = ?', [gmail]);
     if (existingEmail.length > 0) {
       return res.status(400).json({ success: false, message: 'Este correo electrónico ya está registrado.' });
     }
     const activo = 1;
     const [result] = await db.query(
-      `INSERT INTO estudiante (nombre, apellido, telefono, gmail, cv, contrasena, activo, id_carrera, descripcion, habilidades, educacion) 
+      `INSERT INTO estudiante.estudiante (nombre, apellido, telefono, gmail, cv, contrasena, activo, id_carrera, descripcion, habilidades, educacion) 
        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [nombre, apellido, telefono, gmail, cv, contrasena, activo, id_carrera, descripcion, habilidades, educacion]
     );
@@ -110,10 +111,9 @@ export const registrarEstudiante = async (req, res) => {
   }
 };
 
-// 2. GET: Listar todos los estudiantes
 export const listarEstudiantes = async (req, res) => {
   try {
-    const [rows] = await db.query('SELECT * FROM estudiante');
+    const [rows] = await db.query('SELECT * FROM estudiante.estudiante');
     res.status(200).json({ success: true, data: rows });
   } catch (error) {
     console.error('Error al listar estudiantes:', error);
@@ -121,11 +121,10 @@ export const listarEstudiantes = async (req, res) => {
   }
 };
 
-// 3. GET: Buscar estudiante por ID
 export const buscarEstudiantePorId = async (req, res) => {
   const { id } = req.params;
   try {
-    const [rows] = await db.query('SELECT * FROM estudiante WHERE id_estudiante = ?', [id]);
+    const [rows] = await db.query('SELECT * FROM estudiante.estudiante WHERE id_estudiante = ?', [id]);
     if (rows.length === 0) return res.status(404).json({ success: false, message: 'Estudiante no encontrado' });
     res.status(200).json({ success: true, data: rows[0] });
   } catch (error) {
@@ -134,11 +133,10 @@ export const buscarEstudiantePorId = async (req, res) => {
   }
 };
 
-// 4. GET: Buscar estudiante por correo
 export const buscarEstudiantePorGmail = async (req, res) => {
   const { gmail } = req.params;
   try {
-    const [rows] = await db.query('SELECT * FROM estudiante WHERE gmail = ?', [gmail]);
+    const [rows] = await db.query('SELECT * FROM estudiante.estudiante WHERE gmail = ?', [gmail]);
     if (rows.length === 0) return res.status(404).json({ success: false, message: 'Estudiante no encontrado con ese correo' });
     res.status(200).json({ success: true, data: rows[0] });
   } catch (error) {
@@ -147,7 +145,6 @@ export const buscarEstudiantePorGmail = async (req, res) => {
   }
 };
 
-// 5. PUT: Actualizar perfil
 export const actualizarPerfil = async (req, res) => {
   const { id } = req.params;
   const { telefono, gmail, cv, descripcion, educacion, habilidades } = req.body;
@@ -159,7 +156,7 @@ export const actualizarPerfil = async (req, res) => {
 
   try {
     const [result] = await db.query(
-      `UPDATE estudiante SET telefono = ?, gmail = ?, cv = ?, descripcion = ?, educacion = ?, habilidades = ? WHERE id_estudiante = ?`,
+      `UPDATE estudiante.estudiante SET telefono = ?, gmail = ?, cv = ?, descripcion = ?, educacion = ?, habilidades = ? WHERE id_estudiante = ?`,
       [telefono, gmail, cv, descripcion, educacion, habilidades, id]
     );
     if (result.affectedRows === 0) return res.status(404).json({ success: false, message: 'Estudiante no encontrado para actualizar' });
@@ -170,7 +167,6 @@ export const actualizarPerfil = async (req, res) => {
   }
 };
 
-// 6. PUT: Cambiar contraseña
 export const cambiarContrasena = async (req, res) => {
   const { id } = req.params;
   const { contrasena } = req.body;
@@ -181,7 +177,7 @@ export const cambiarContrasena = async (req, res) => {
   }
 
   try {
-    const [rows] = await db.query('SELECT contrasena FROM estudiante WHERE id_estudiante = ?', [id]);
+    const [rows] = await db.query('SELECT contrasena FROM estudiante.estudiante WHERE id_estudiante = ?', [id]);
     if (rows.length === 0) {
       return res.status(404).json({ success: false, message: 'Estudiante no encontrado' });
     }
@@ -190,8 +186,7 @@ export const cambiarContrasena = async (req, res) => {
       return res.status(400).json({ success: false, message: 'La nueva contraseña no puede ser igual a la anterior' });
     }
 
-    const [result] = await db.query('UPDATE estudiante SET contrasena = ? WHERE id_estudiante = ?', [contrasena, id]);
-    //if (result.affectedRows === 0) return res.status(404).json({ success: false, message: 'Estudiante no encontrado' });
+    const [result] = await db.query('UPDATE estudiante.estudiante SET contrasena = ? WHERE id_estudiante = ?', [contrasena, id]);
     res.status(200).json({ success: true, message: 'Contraseña actualizada correctamente' });
   } catch (error) {
     console.error('Error al cambiar contraseña:', error);
@@ -199,7 +194,6 @@ export const cambiarContrasena = async (req, res) => {
   }
 };
 
-// 7. PUT: Cambiar estado (activo)
 export const cambiarEstado = async (req, res) => {
   const { id } = req.params;
   const { activo, motivo } = req.body;
@@ -212,17 +206,15 @@ export const cambiarEstado = async (req, res) => {
 
   try {
     if (valorActivo === 0 && motivo) {
-      // Bloquear: guardar motivo y fecha
       const [result] = await db.query(
-        'UPDATE estudiante SET activo = ?, motivo_bloqueo = ?, fecha_bloqueo = NOW() WHERE id_estudiante = ?',
+        'UPDATE estudiante.estudiante SET activo = ?, motivo_bloqueo = ?, fecha_bloqueo = NOW() WHERE id_estudiante = ?',
         [valorActivo, motivo, id]
       );
       if (result.affectedRows === 0) return res.status(404).json({ success: false, message: 'Estudiante no encontrado' });
       res.status(200).json({ success: true, message: 'Estudiante bloqueado correctamente' });
     } else {
-      // Desbloquear: limpiar motivo y fecha
       const [result] = await db.query(
-        'UPDATE estudiante SET activo = ?, motivo_bloqueo = NULL, fecha_bloqueo = NULL WHERE id_estudiante = ?',
+        'UPDATE estudiante.estudiante SET activo = ?, motivo_bloqueo = NULL, fecha_bloqueo = NULL WHERE id_estudiante = ?',
         [valorActivo, id]
       );
       if (result.affectedRows === 0) return res.status(404).json({ success: false, message: 'Estudiante no encontrado' });
@@ -234,17 +226,15 @@ export const cambiarEstado = async (req, res) => {
   }
 };
 
-//Enviar codigo de verificación por correo
 export const enviarCodigoEstudiante = async (req, res) => {
   const { correo, codigo } = req.body;
-
 
   if (!correo || !codigo) {
     return res.status(400).json({ success: false, message: 'El correo y el código son obligatorios' });
   }
 
   try {
-    const [rows] = await db.query('SELECT * FROM estudiante WHERE gmail = ?', [correo]);
+    const [rows] = await db.query('SELECT * FROM estudiante.estudiante WHERE gmail = ?', [correo]);
     if (rows.length === 0) {
       return res.status(404).json({ success: false, message: 'Estudiante no encontrado' });
     }
@@ -262,13 +252,12 @@ export const enviarCodigoEstudiante = async (req, res) => {
   }
 };
 
-// 8. GET: Obtener postulaciones de un estudiante
 export const obtenerPostulacionesPorEstudiante = async (req, res) => {
   const { id } = req.params;
   try {
     const [rows] = await db.query(`
       SELECT 
-        ofe.id_ofertante,
+        ofe.id_postulante as id_ofertante,
         ofe.id_estudiante,
         ofe.id_oferta,
         ofe.estado as estado_postulacion,
@@ -276,10 +265,10 @@ export const obtenerPostulacionesPorEstudiante = async (req, res) => {
         o.descripcion,
         o.estado as estado_oferta,
         o.fecha_apertura
-      FROM ofertante ofe
-      INNER JOIN oferta o ON ofe.id_oferta = o.id_oferta
+      FROM postulante.postulante ofe
+      INNER JOIN oferta.oferta o ON ofe.id_oferta = o.id_oferta
       WHERE ofe.id_estudiante = ?
-      ORDER BY ofe.id_ofertante DESC
+      ORDER BY ofe.id_postulante DESC
     `, [id]);
 
     res.status(200).json({ success: true, data: rows });
@@ -289,9 +278,8 @@ export const obtenerPostulacionesPorEstudiante = async (req, res) => {
   }
 };
 
-// 9. POST: Postular a una oferta ojo sin validar
 export const postularAOferta = async (req, res) => {
-  const { id } = req.params; // id_estudiante
+  const { id } = req.params; 
   const { id_oferta } = req.body;
 
   if (!id_oferta) {
@@ -299,9 +287,8 @@ export const postularAOferta = async (req, res) => {
   }
 
   try {
-    // Verificar si ya existe la postulación
     const [existing] = await db.query(
-      'SELECT * FROM ofertante WHERE id_estudiante = ? AND id_oferta = ?',
+      'SELECT * FROM postulante.postulante WHERE id_estudiante = ? AND id_oferta = ?',
       [id, id_oferta]
     );
 
@@ -309,9 +296,8 @@ export const postularAOferta = async (req, res) => {
       return res.status(400).json({ success: false, message: 'Ya te has postulado a esta oferta' });
     }
 
-    // Crear la postulación
     const [result] = await db.query(
-      `INSERT INTO ofertante (id_estudiante, id_oferta, estado) 
+      `INSERT INTO postulante.postulante (id_estudiante, id_oferta, estado) 
        VALUES (?, ?, 0)`,
       [id, id_oferta]
     );
@@ -323,3 +309,187 @@ export const postularAOferta = async (req, res) => {
   }
 };
 
+export const analizarPerfilConIA = async (req, res) => {
+  const { id } = req.params;
+  console.log(`\n --- INICIANDO ANÁLISIS IA PARA ESTUDIANTE ${id} ---`);
+  if (process.env.GEMINI_API_KEY) {
+    const terminacion = process.env.GEMINI_API_KEY.slice(-4);
+    console.log(`🔑 API KEY DETECTADA: ✅ SÍ (Termina en ...${terminacion})`);
+  } else {
+    console.log(`🔑 API KEY DETECTADA: ❌ NO ESTÁ LEYENDO EL .env`);
+    return res.status(500).json({ success: false, message: 'Falta la API Key en el servidor' });
+  }
+
+  /*try {
+    console.log("🔍 Consultando a Google qué modelos tienes habilitados...");
+    const listResponse = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${process.env.GEMINI_API_KEY}`);
+    const listData = await listResponse.json();
+    
+    if (listData.models) {
+      const modelosValidos = listData.models
+        .filter(m => m.supportedGenerationMethods && m.supportedGenerationMethods.includes("generateContent"))
+        .map(m => m.name.replace('models/', '')); // Limpiamos el texto para que solo salga el nombre
+        
+      console.log("✅ MODELOS QUE GOOGLE TE PERMITE USAR:\n", modelosValidos);
+    } else {
+      console.log("❌ Google no devolvió ningún modelo. Revisa tu cuenta en AI Studio.");
+    }
+  } catch(e) {
+    console.log("⚠️ Error al intentar listar modelos:", e.message);
+  }*/
+
+  try {
+    const [estudianteRows] = await db.query(
+      'SELECT descripcion, habilidades, cv FROM estudiante.estudiante WHERE id_estudiante = ?', 
+      [id]
+    );
+    
+    if (estudianteRows.length === 0) {
+      return res.status(404).json({ success: false, message: 'Estudiante no encontrado' });
+    }
+    const estudiante = estudianteRows[0];
+
+    let textoDelCV = "El estudiante no adjuntó un archivo de CV o el documento no se pudo procesar.";
+    
+    if (estudiante.cv) {
+      try {
+        const files = fs.readdirSync(uploadDir);
+        const cvFile = files.find(f => f.startsWith(`cv_${id}_`)) || estudiante.cv;
+        const cvPath = path.join(uploadDir, cvFile);
+        
+        if (fs.existsSync(cvPath)) {
+          textoDelCV = await new Promise((resolve, reject) => {
+            const pdfParser = new PDFParser(this, 1);
+            
+            pdfParser.on("pdfParser_dataError", errData => reject(errData.parserError));
+            pdfParser.on("pdfParser_dataReady", pdfData => {
+              const rawText = pdfParser.getRawTextContent();
+              resolve(rawText.replace(/\r\n/g, " ").replace(/\n/g, " ").trim());
+            });
+            
+            pdfParser.loadPDF(cvPath);
+          });
+          
+          console.log("📄 Texto completo extraído del PDF con éxito para el prompt.");
+        } else {
+          console.log(`⚠️ Archivo físico no localizado en el path: ${cvPath}`);
+        }
+      } catch (error) {
+        console.error("❌ Error interno al procesar el PDF:", error.message);
+      }
+    }
+
+    const [ofertasRows] = await db.query(`
+      SELECT o.id_oferta, o.oferta, o.descripcion, o.modalidad, e.empresa 
+      FROM oferta.oferta o 
+      JOIN empleador.empleador e ON o.id_empleador = e.id_empleador 
+      WHERE o.estado = 1
+    `);
+
+    if (ofertasRows.length === 0) {
+      return res.status(200).json({ success: false, message: 'No hay ofertas activas para analizar' });
+    }
+
+    const [cursosRows] = await db.query(`
+      SELECT 
+        c.id_curso, 
+        c.curso, 
+        c.descripcion, 
+        c.fecha_creacion, 
+        COALESCE(e.empresa, CONCAT(est.nombre, ' ', est.apellido), 'Usuario Desconocido') AS nombre_ofertante
+      FROM curso.curso c
+      LEFT JOIN empleador.empleador e ON c.id_empleador = e.id_empleador
+      LEFT JOIN estudiante.estudiante est ON c.id_estudiante = est.id_estudiante
+      WHERE c.estado = 1
+    `);
+
+    const datosEstudiante = `Descripción: ${estudiante.descripcion || 'N/A'}. Habilidades: ${estudiante.habilidades || 'N/A'}. CV Texto extraído: ${textoDelCV}`;
+    const datosOfertas = JSON.stringify(ofertasRows.map(o => ({
+      id: o.id_oferta,
+      titulo: o.oferta,
+      descripcion: o.descripcion
+    })));
+
+    const datosCursos = JSON.stringify(cursosRows.map(c => ({
+      id: c.id_curso,
+      titulo: c.curso,
+      descripcion: c.descripcion
+    })));
+
+    const prompt = `Actúa como un Reclutador Experto, Analista de Talento y Asesor de Desarrollo Profesional Multidisciplinario. Tu única tarea es leer el perfil de un estudiante y compararlo con una lista de ofertas laborales y cursos disponibles.
+    REGLA ESTRICTA: No saludes, no expliques. Tu respuesta DEBE SER ÚNICA Y EXCLUSIVAMENTE un objeto JSON válido con esta estructura exacta:
+    {
+      "profile": {
+        "role": "[Título del rol que mejor lo define]",
+        "skills": ["[Skill 1]", "[Skill 2]", "[Skill 3]"],
+        "tip": "[Consejo accionable para mejorar empleabilidad]"
+      },
+      "jobs": [
+        {
+          "id": [ID numérico de la oferta],
+          "match": [Número 0-100],
+          "reason": "[Por qué encaja en 2 líneas]"
+        }
+      ],
+      "courses": [
+        {
+          "id": [ID numérico del curso],
+          "reason": "[Por qué le sirve en 1 línea]"
+        }
+      ]
+    }
+    Filtra y devuelve solo ofertas con match > 60%. Devuelve EXACTAMENTE los 5 cursos que mejor cubran las debilidades del estudiante o potencien su perfil actual.
+    
+    Perfil del estudiante: ${datosEstudiante}
+    Ofertas disponibles: ${datosOfertas}
+    Cursos disponibles: ${datosCursos}`;
+
+    const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+    const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" }); 
+    
+    const result = await model.generateContent(prompt);
+    let responseText = result.response.text();
+    
+    responseText = responseText.replace(/```json/g, '').replace(/```/g, '').trim();
+    const aiData = JSON.parse(responseText);
+
+    const jobsEnriquecidos = aiData.jobs.map(aiJob => {
+      const ofertaOriginal = ofertasRows.find(o => o.id_oferta === aiJob.id);
+      return {
+        id: aiJob.id,
+        title: ofertaOriginal ? ofertaOriginal.oferta : 'Oferta',
+        company: ofertaOriginal ? ofertaOriginal.empresa : 'Empresa',
+        location: ofertaOriginal ? ofertaOriginal.modalidad : 'N/A',
+        match: aiJob.match,
+        reason: aiJob.reason,
+        tags: ['IA MATCH', ofertaOriginal ? ofertaOriginal.modalidad.toUpperCase() : '']
+      };
+    });
+
+    const cursosEnriquecidos = (aiData.courses || []).map(aiCourse => {
+      const cursoOriginal = cursosRows.find(c => c.id_curso === aiCourse.id);
+      let fechaFormateada = 'Reciente';
+      
+      if (cursoOriginal && cursoOriginal.fecha_creacion) {
+        fechaFormateada = new Date(cursoOriginal.fecha_creacion).toISOString().split('T')[0];
+      }
+
+      return {
+        id: aiCourse.id,
+        curso: cursoOriginal ? cursoOriginal.curso : 'Curso Recomendado',
+        ofertante: cursoOriginal ? cursoOriginal.nombre_ofertante : 'Desconocido', 
+        fecha_creacion: fechaFormateada,
+        reason: aiCourse.reason
+      };
+    });
+
+    aiData.jobs = jobsEnriquecidos;
+    aiData.courses = cursosEnriquecidos;
+    
+    res.status(200).json({ success: true, data: aiData });
+
+  } catch (error) {
+    console.error('Error en el análisis de IA:', error);
+    res.status(500).json({ success: false, message: 'La IA no pudo procesar el perfil en este momento' });
+  }
+};

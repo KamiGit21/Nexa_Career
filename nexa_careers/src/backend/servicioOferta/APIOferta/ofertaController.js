@@ -1,25 +1,29 @@
-import db from '../../api-gateway/db.js';
+import db from './db.js';
 
-// Función para obtener una oferta laboral específica por ID
+// se normaliza el objeto oferta para asegurar que siempre tenga el campo motivo_rechazo, incluso si se llama rechazo en la base de datos
+const normalizarOferta = (oferta) => ({
+  ...oferta,
+  motivo_rechazo: oferta.rechazo || oferta.motivo_rechazo || ''
+});
+
 export const obtenerOfertaPorId = async (req, res) => {
   const { id } = req.params;
   try {
-    const [rows] = await db.query('SELECT * FROM oferta WHERE id_oferta = ?', [id]);
+    const [rows] = await db.query('SELECT * FROM oferta.oferta WHERE id_oferta = ?', [id]);
     if (rows.length === 0) {
       return res.status(404).json({ success: false, message: 'Oferta no encontrada' });
     }
 
-    // Obtener las categorías asociadas a la oferta
     const [categoriasRows] = await db.query(
       `SELECT c.id_categoria, c.categoria 
-       FROM categoria_oferta co 
-       INNER JOIN categoria c ON co.id_categoria = c.id_categoria 
+       FROM categoria_oferta.categoria_oferta co 
+       INNER JOIN categoria.categoria c ON co.id_categoria = c.id_categoria 
        WHERE co.id_oferta = ?`,
       [id]
     );
 
-    const ofertaData = rows[0];
-    ofertaData.categorias = categoriasRows; // Array de categorías asociadas
+    const ofertaData = normalizarOferta(rows[0]);
+    ofertaData.categorias = categoriasRows; 
 
     res.status(200).json({ success: true, data: ofertaData });
   } catch (error) {
@@ -28,9 +32,8 @@ export const obtenerOfertaPorId = async (req, res) => {
   }
 };
 
-// Validar campos de oferta
 const isValidDate = (value) => {
-  if (!value) return true; // opcional
+  if (!value) return true; 
   const date = new Date(value);
   return !Number.isNaN(date.getTime());
 };
@@ -62,12 +65,8 @@ const validateOferta = (data) => {
   return { valid: errors.length === 0, errors };
 };
 
-// 1. POST: Crear oferta (estado = 0 y rechazo = '' por defecto)
 export const crearOferta = async (req, res) => {
-  const { descripcion, fecha_apertura, oferta, id_empleador, modalidad, categorias } = req.body;
-
-  console.log('[crearOferta] categorias recibidas en body:', categorias);
-  console.log('[crearOferta] body completo:', req.body);
+  const { descripcion, fecha_apertura, fecha_cierre, oferta, id_empleador, modalidad, categorias } = req.body;
 
   const validation = validateOferta({ descripcion, fecha_apertura, oferta, id_empleador });
   if (!validation.valid) {
@@ -78,23 +77,22 @@ export const crearOferta = async (req, res) => {
   try {
     await connection.beginTransaction();
 
-    const estado = 0; // 0 por defecto al crearse
-    const rechazo = ''; // Blanco por defecto
+    const estado = 0; 
+    const rechazo = ''; 
 
     const [result] = await connection.query(
-      `INSERT INTO oferta (descripcion, fecha_apertura, estado, rechazo, oferta, id_empleador, modalidad) 
-       VALUES (?, ?, ?, ?, ?, ?, ?)`,
-      [descripcion, fecha_apertura, estado, rechazo, oferta, id_empleador, modalidad || 'Presencial']
+      `INSERT INTO oferta.oferta (descripcion, fecha_apertura, fecha_cierre, estado, rechazo, oferta, id_empleador, modalidad) 
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+      [descripcion, fecha_apertura, fecha_cierre, estado, rechazo, oferta, id_empleador, modalidad || 'Presencial']
     );
 
     const idOferta = result.insertId;
 
-    // Insertar categorías en categoria_oferta (puede ser array de IDs)
     if (categorias && Array.isArray(categorias) && categorias.length > 0) {
       for (const idCategoria of categorias) {
         if (idCategoria) {
           await connection.query(
-            'INSERT INTO categoria_oferta (id_categoria, id_oferta) VALUES (?, ?)',
+            'INSERT INTO categoria_oferta.categoria_oferta (id_categoria, id_oferta) VALUES (?, ?)',
             [idCategoria, idOferta]
           );
         }
@@ -112,33 +110,30 @@ export const crearOferta = async (req, res) => {
   }
 };
 
-// 2. GET: Listar todas las ofertas
 export const listarOfertas = async (req, res) => {
   try {
-    const [rows] = await db.query('SELECT * FROM oferta');
-    res.status(200).json({ success: true, data: rows });
+    const [rows] = await db.query('SELECT * FROM oferta.oferta');
+    res.status(200).json({ success: true, data: rows.map(normalizarOferta) });
   } catch (error) {
     console.error('Error al listar ofertas:', error);
     res.status(500).json({ success: false, message: 'Error al listar ofertas' });
   }
 };
 
-// 2.1. GET: Listar ofertas en estado pendiente (estado = 0)
 export const listarOfertasPendientes = async (req, res) => {
   try {
-    const [rows] = await db.query('SELECT * FROM oferta WHERE estado = 0');
-    res.status(200).json({ success: true, data: rows });
+    const [rows] = await db.query('SELECT * FROM oferta.oferta WHERE estado = 0');
+    res.status(200).json({ success: true, data: rows.map(normalizarOferta) });
   } catch (error) {
     console.error('Error al listar ofertas pendientes:', error);
     res.status(500).json({ success: false, message: 'Error al listar ofertas pendientes' });
   }
 };
 
-// 3. GET: Buscar oferta por ID
 export const buscarOfertaPorId = async (req, res) => {
   const { id } = req.params;
   try {
-    const [rows] = await db.query('SELECT * FROM oferta WHERE id_oferta = ?', [id]);
+    const [rows] = await db.query('SELECT * FROM oferta.oferta WHERE id_oferta = ?', [id]);
     if (rows.length === 0) return res.status(404).json({ success: false, message: 'Oferta no encontrada' });
     res.status(200).json({ success: true, data: rows[0] });
   } catch (error) {
@@ -147,32 +142,29 @@ export const buscarOfertaPorId = async (req, res) => {
   }
 };
 
-// 4. GET: Buscar por título de oferta
 export const buscarOfertaPorTitulo = async (req, res) => {
   const { oferta } = req.params;
   try {
-    const [rows] = await db.query('SELECT * FROM oferta WHERE oferta LIKE ?', [`%${oferta}%`]);
+    const [rows] = await db.query('SELECT * FROM oferta.oferta WHERE oferta LIKE ?', [`%${oferta}%`]);
     if (rows.length === 0) return res.status(404).json({ success: false, message: 'No se encontraron ofertas con ese título' });
-    res.status(200).json({ success: true, data: rows });
+    res.status(200).json({ success: true, data: rows.map(normalizarOferta) });
   } catch (error) {
     console.error('Error al buscar por título:', error);
     res.status(500).json({ success: false, message: 'Error al buscar ofertas' });
   }
 };
 
-// 5. GET: Buscar ofertas por id de empleador
 export const buscarOfertasPorEmpleador = async (req, res) => {
   const { id_empleador } = req.params;
   try {
-    const [rows] = await db.query('SELECT * FROM oferta WHERE id_empleador = ?', [id_empleador]);
-    res.status(200).json({ success: true, data: rows || [] });
+    const [rows] = await db.query('SELECT * FROM oferta.oferta WHERE id_empleador = ?', [id_empleador]);
+    res.status(200).json({ success: true, data: (rows || []).map(normalizarOferta) });
   } catch (error) {
     console.error('Error al buscar por empleador:', error);
     res.status(500).json({ success: false, message: 'Error al buscar ofertas del empleador' });
   }
 };
 
-// 6. PUT: Editar detalles de la oferta (incluye categorías)
 export const editarOferta = async (req, res) => {
   const { id } = req.params;
   const { descripcion, fecha_apertura, rechazo, oferta, modalidad, categorias } = req.body;
@@ -181,9 +173,8 @@ export const editarOferta = async (req, res) => {
   try {
     await connection.beginTransaction();
 
-    // Actualizar datos de la oferta
     const [result] = await connection.query(
-      `UPDATE oferta SET descripcion = ?, fecha_apertura = ?, rechazo = ?, oferta = ?, modalidad = ? WHERE id_oferta = ?`,
+      `UPDATE oferta.oferta SET descripcion = ?, fecha_apertura = ?, rechazo = ?, oferta = ?, modalidad = ? WHERE id_oferta = ?`,
       [descripcion, fecha_apertura, rechazo, oferta, modalidad, id]
     );
     if (result.affectedRows === 0) {
@@ -191,17 +182,14 @@ export const editarOferta = async (req, res) => {
       return res.status(404).json({ success: false, message: 'Oferta no encontrada para editar' });
     }
 
-    // Actualizar categorías si se proporcionan
     if (categorias !== undefined) {
-      // Eliminar categorías existentes
-      await connection.query('DELETE FROM categoria_oferta WHERE id_oferta = ?', [id]);
+      await connection.query('DELETE FROM categoria_oferta.categoria_oferta WHERE id_oferta = ?', [id]);
 
-      // Insertar nuevas categorías
       if (Array.isArray(categorias) && categorias.length > 0) {
         for (const idCategoria of categorias) {
           if (idCategoria) {
             await connection.query(
-              'INSERT INTO categoria_oferta (id_categoria, id_oferta) VALUES (?, ?)',
+              'INSERT INTO categoria_oferta.categoria_oferta (id_categoria, id_oferta) VALUES (?, ?)',
               [idCategoria, id]
             );
           }
@@ -220,10 +208,9 @@ export const editarOferta = async (req, res) => {
   }
 };
 
-// 7. PATCH: Cambiar estado de la oferta (usado por el supervisor)
 export const cambiarEstadoOferta = async (req, res) => {
   const { id } = req.params;
-  const { estado, rechazo } = req.body; // rechazo es opcional
+  const { estado, rechazo } = req.body;
 
   if (estado === undefined || estado === null) {
     return res.status(400).json({ success: false, message: 'El estado es obligatorio' });
@@ -239,7 +226,7 @@ export const cambiarEstadoOferta = async (req, res) => {
 
   try {
     const [result] = await db.query(
-      'UPDATE oferta SET estado = ?, rechazo = ? WHERE id_oferta = ?',
+      'UPDATE oferta.oferta SET estado = ?, rechazo = ? WHERE id_oferta = ?',
       [Number(estado), rechazo || null, id]
     );
     if (result.affectedRows === 0) {
@@ -258,12 +245,11 @@ export const cambiarEstadoOferta = async (req, res) => {
   }
 };
 
-// 7.1 PUT: Cambiar el estado de una oferta a Archivado (estado = 3)
 export const cambiarEstadoOfertaAPendiente = async (req, res) => {
   const { id } = req.params;
 
   try {
-    const [result] = await db.query('UPDATE oferta SET estado = 3 WHERE id_oferta = ?', [id]);
+    const [result] = await db.query('UPDATE oferta.oferta SET estado = 3 WHERE id_oferta = ?', [id]);
     if (result.affectedRows === 0) {
       return res.status(404).json({ success: false, message: 'Oferta no encontrada' });
     }
@@ -279,8 +265,6 @@ export const cambiarEstadoOfertaAPendiente = async (req, res) => {
   }
 };
 
-// 8. GET: Obtener postulantes de una oferta con tabla postulante 
-//ESTO NO DEBERIA ESTAR AQUI Atm:Santi
 export const obtenerPostulantesPorOferta = async (req, res) => {
   const { id } = req.params;
   try {
@@ -296,9 +280,9 @@ export const obtenerPostulantesPorOferta = async (req, res) => {
         e.cv,
         e.telefono,
         c.carrera
-      FROM postulante p
-      INNER JOIN estudiante e ON p.id_estudiante = e.id_estudiante
-      LEFT JOIN carrera c ON e.id_carrera = c.id_carrera
+      FROM postulante.postulante p
+      INNER JOIN estudiante.estudiante e ON p.id_estudiante = e.id_estudiante
+      LEFT JOIN carrera.carrera c ON e.id_carrera = c.id_carrera
       WHERE p.id_oferta = ?
       ORDER BY p.id_postulante DESC
     `;
@@ -311,24 +295,23 @@ export const obtenerPostulantesPorOferta = async (req, res) => {
   }
 };
 
-//9. Obtener ofertas por paginacion 
 export const obtenerOfertasPaginacion = async (req, res) => {
   const pagina = parseInt(req.params.pagina) || 1;
   const limite = parseInt(req.params.size) || 15;
   const offset = (pagina - 1) * limite;
 
   try {
-    const [countResult] = await db.query('SELECT COUNT(*) as total FROM oferta');
+    const [countResult] = await db.query('SELECT COUNT(*) as total FROM oferta.oferta');
     const totalOfertas = countResult[0].total;
     const totalPaginas = Math.ceil(totalOfertas / limite);
 
     const [rows] = await db.query(
-      'SELECT * FROM oferta LIMIT ? OFFSET ?',
+      'SELECT * FROM oferta.oferta LIMIT ? OFFSET ?',
       [limite, offset]
     );
     res.status(200).json({
       success: true,
-      data: rows,
+      data: rows.map(normalizarOferta),
       paginas: totalPaginas
     });
 
@@ -338,7 +321,6 @@ export const obtenerOfertasPaginacion = async (req, res) => {
   }
 }
 
-//10. Obtener ofertas por paginacion por estado
 export const obtenerOfertasPaginacionPorEstado = async (req, res) => {
   const pagina = parseInt(req.params.pagina) || 1;
   const limite = parseInt(req.params.size) || 15;
@@ -346,12 +328,12 @@ export const obtenerOfertasPaginacionPorEstado = async (req, res) => {
   const estado = req.params.estado;
 
   try {
-    const [countResult] = await db.query('SELECT COUNT(*) as total FROM oferta WHERE estado = ?', [estado]);
+    const [countResult] = await db.query('SELECT COUNT(*) as total FROM oferta.oferta WHERE estado = ?', [estado]);
     const totalOfertas = countResult[0].total;
     const totalPaginas = Math.ceil(totalOfertas / limite);
 
     const [rows] = await db.query(
-      'SELECT * FROM oferta WHERE estado = ? LIMIT ? OFFSET ?',
+      'SELECT * FROM oferta.oferta WHERE estado = ? LIMIT ? OFFSET ?',
       [estado, limite, offset]
     );
     res.status(200).json({
@@ -366,19 +348,18 @@ export const obtenerOfertasPaginacionPorEstado = async (req, res) => {
   }
 }
 
-//11. Obtener ofertas por paginacion ordenado por fecha de apertura ascendente
 export const obtenerOfertasPaginacionPorFechaAscendente = async (req, res) => {
   const pagina = parseInt(req.params.pagina) || 1;
   const limite = parseInt(req.params.size) || 15;
   const offset = (pagina - 1) * limite;
 
   try {
-    const [countResult] = await db.query('SELECT COUNT(*) as total FROM oferta WHERE estado = ?', [estado]);
+    const [countResult] = await db.query('SELECT COUNT(*) as total FROM oferta.oferta');
     const totalOfertas = countResult[0].total;
     const totalPaginas = Math.ceil(totalOfertas / limite);
 
     const [rows] = await db.query(
-      'SELECT * FROM oferta ORDER BY fecha_apertura ASC LIMIT ? OFFSET ?',
+      'SELECT * FROM oferta.oferta ORDER BY fecha_apertura ASC, id_oferta ASC LIMIT ? OFFSET ?',
       [limite, offset]
     );
     res.status(200).json({
@@ -393,18 +374,17 @@ export const obtenerOfertasPaginacionPorFechaAscendente = async (req, res) => {
   }
 }
 
-//12. Obtener ofertas por paginacion ordenado por fecha de apertura descendente
 export const obtenerOfertasPaginacionPorFechaDescendente = async (req, res) => {
   const pagina = parseInt(req.params.pagina) || 1;
   const limite = parseInt(req.params.size) || 15;
   const offset = (pagina - 1) * limite;
 
   try {
-    const [countResult] = await db.query('SELECT COUNT(*) as total FROM oferta');
+    const [countResult] = await db.query('SELECT COUNT(*) as total FROM oferta.oferta');
     const totalPaginas = Math.ceil(countResult[0].total / limite);
 
     const [rows] = await db.query(
-      'SELECT * FROM oferta ORDER BY fecha_apertura DESC LIMIT ? OFFSET ?',
+      'SELECT * FROM oferta.oferta ORDER BY fecha_apertura DESC, id_oferta DESC LIMIT ? OFFSET ?',
       [limite, offset]
     );
     res.status(200).json({ success: true, data: rows, paginas: totalPaginas });
@@ -413,7 +393,6 @@ export const obtenerOfertasPaginacionPorFechaDescendente = async (req, res) => {
   }
 }
 
-//13. Obtener ofertas por paginacion ordenado por fecha de apertura y con estado 
 export const obtenerOfertasPaginacionPorEstadoYFechaAscendente = async (req, res) => {
   const pagina = parseInt(req.params.pagina) || 1;
   const limite = parseInt(req.params.size) || 15;
@@ -421,12 +400,12 @@ export const obtenerOfertasPaginacionPorEstadoYFechaAscendente = async (req, res
   const estado = req.params.estado;
 
   try {
-    const [countResult] = await db.query('SELECT COUNT(*) as total FROM oferta WHERE estado = ?', [estado]);
+    const [countResult] = await db.query('SELECT COUNT(*) as total FROM oferta.oferta WHERE estado = ?', [estado]);
     const totalOfertas = countResult[0].total;
     const totalPaginas = Math.ceil(totalOfertas / limite);
 
     const [rows] = await db.query(
-      'SELECT * FROM oferta WHERE estado = ? ORDER BY fecha_apertura ASC LIMIT ? OFFSET ? ',
+      'SELECT * FROM oferta.oferta WHERE estado = ? ORDER BY fecha_apertura ASC, id_oferta ASC LIMIT ? OFFSET ? ',
       [estado, limite, offset]
     );
     res.status(200).json({
@@ -436,12 +415,11 @@ export const obtenerOfertasPaginacionPorEstadoYFechaAscendente = async (req, res
     });
 
   } catch (error) {
-    console.error('Error al obtener ofertas paginadas:', error);
+    console.error('Error al obtener ofertas paginados:', error);
     res.status(500).json({ success: false, message: 'Error interno al paginar las ofertas' });
   }
 }
 
-//14. Obtener ofertas por paginacion ordenado por fecha de apertura y con estado 
 export const obtenerOfertasPaginacionPorEstadoYFechaDescendente = async (req, res) => {
   const pagina = parseInt(req.params.pagina) || 1;
   const limite = parseInt(req.params.size) || 15;
@@ -449,12 +427,12 @@ export const obtenerOfertasPaginacionPorEstadoYFechaDescendente = async (req, re
   const estado = req.params.estado;
 
   try {
-    const [countResult] = await db.query('SELECT COUNT(*) as total FROM oferta WHERE estado = ?', [estado]);
+    const [countResult] = await db.query('SELECT COUNT(*) as total FROM oferta.oferta WHERE estado = ?', [estado]);
     const totalOfertas = countResult[0].total;
     const totalPaginas = Math.ceil(totalOfertas / limite);
 
     const [rows] = await db.query(
-      'SELECT * FROM oferta WHERE estado = ? ORDER BY fecha_apertura DESC LIMIT ? OFFSET ? ',
+      'SELECT * FROM oferta.oferta WHERE estado = ? ORDER BY fecha_apertura DESC, id_oferta DESC LIMIT ? OFFSET ? ',
       [estado, limite, offset]
     );
     res.status(200).json({
@@ -464,25 +442,20 @@ export const obtenerOfertasPaginacionPorEstadoYFechaDescendente = async (req, re
     });
 
   } catch (error) {
-    console.error('Error al obtener ofertas paginadas:', error);
+    console.error('Error al obtener ofertas paginados:', error);
     res.status(500).json({ success: false, message: 'Error interno al paginar las ofertas' });
   }
 }
 
-//15. Busqueda avanzada de ofertas con filtros (titulo, estado, modalidad y empleador)
 export const buscarOfertasAvanzado = async (req, res) => {
   try {
     const { q, empresa, modalidad, pagina = 1, size = 15, sort = 'desc' } = req.query;
     const limite = parseInt(size);
     const offset = (parseInt(pagina) - 1) * limite;
 
-    console.log("Palabra clave (q):", q);
-    console.log("Empresa:", empresa);
-    console.log("Modalidad:", modalidad);
-
     let queryBase = `
-      FROM oferta o
-      INNER JOIN empleador e ON o.id_empleador = e.id_empleador
+      FROM oferta.oferta o
+      INNER JOIN empleador.empleador e ON o.id_empleador = e.id_empleador
       WHERE o.estado = 1
     `;
     const params = [];
@@ -515,5 +488,59 @@ export const buscarOfertasAvanzado = async (req, res) => {
   } catch (error) {
     console.error('Error en búsqueda avanzada:', error);
     res.status(500).json({ success: false, message: 'Error interno en la búsqueda' });
+  }
+};
+
+export const actualizarOfertasVencidas = async (req, res) => {
+  try {
+    const [result] = await db.query(
+      `UPDATE oferta.oferta 
+       SET estado = 4 
+       WHERE estado = 1 AND fecha_cierre < CURDATE()`
+    );
+
+    res.status(200).json({ 
+      success: true, 
+      message: 'Revisión de ofertas vencidas completada',
+      actualizadas: result.affectedRows 
+    });
+  } catch (error) {
+    console.error('Error al actualizar ofertas vencidas:', error);
+    res.status(500).json({ success: false, message: 'Error interno del servidor al actualizar vencimientos' });
+  }
+};
+
+export const buscarOfertasPorEmpleadorConFiltro = async (req, res) => {
+  const { id_empleador } = req.params;
+  const { q, estado } = req.query;
+  
+  if (!id_empleador || isNaN(id_empleador)) {
+    return res.status(400).json({ success: false, message: 'ID de empleador inválido' });
+  }
+  
+  try {
+    let query = 'SELECT * FROM oferta.oferta WHERE id_empleador = ?';
+    const params = [id_empleador];
+    
+    if (q && q.trim() !== '') {
+      query += ' AND oferta LIKE ?';
+      params.push(`%${q.trim()}%`);
+    }
+    
+    if (estado !== undefined && estado !== null && estado !== '') {
+      query += ' AND estado = ?';
+      params.push(parseInt(estado));
+    }
+    
+    query += ' ORDER BY fecha_apertura DESC';
+    
+    const [rows] = await db.query(query, params);
+    res.status(200).json({ success: true, data: rows.map(row => ({
+      ...row,
+      motivo_rechazo: row.rechazo || row.motivo_rechazo || ''
+    })) });
+  } catch (error) {
+    console.error('Error al buscar ofertas del empleador:', error);
+    res.status(500).json({ success: false, message: 'Error al buscar ofertas' });
   }
 };
