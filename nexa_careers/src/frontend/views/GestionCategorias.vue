@@ -5,6 +5,8 @@
     <CategoriasListado
       :categorias="categorias"
       :cargando="cargando"
+      @archivar="abrirModalArchivar"
+      @desarchivar="abrirModalDesarchivar"
     />
 
     <NuevaCategoriaModal
@@ -12,6 +14,15 @@
       :guardando="guardando"
       @cerrar="modalVisible = false"
       @guardada="registrarCategoria"
+    />
+
+    <ArchivarCategoriaModal
+      :visible="modalArchivarVisible"
+      :categoria="categoriaSeleccionada"
+      :es-archivar="accionEsArchivar"
+      :procesando="procesando"
+      @cancelar="cerrarModalArchivar"
+      @confirmar="confirmarArchivar"
     />
   </div>
 </template>
@@ -21,56 +32,53 @@ import { ref, onMounted } from 'vue'
 import CategoriasHeader       from '@/components/gestionCategorias/CategoriasHeader.vue'
 import CategoriasListado      from '@/components/gestionCategorias/CategoriasListado.vue'
 import NuevaCategoriaModal    from '@/components/gestionCategorias/NuevaCategoriaModal.vue'
-import { listarCategorias, registrarCategoria as registrarCategoriaService } from '@/services/cursoService.js'
+import ArchivarCategoriaModal from '@/components/gestionCategorias/ArchivarCategoriaModal.vue'
 
-const categorias = ref([])
-const cargando = ref(true)
-const guardando = ref(false)
-const modalVisible = ref(false)
+const categorias            = ref([])
+const cargando              = ref(false)
+const guardando             = ref(false)
+const procesando            = ref(false)
+const modalVisible          = ref(false)
+const modalArchivarVisible  = ref(false)
+const categoriaSeleccionada = ref(null)
+const accionEsArchivar      = ref(true)
 
-// Cargar categorías al montar el componente
 const cargarCategorias = async () => {
   cargando.value = true
-  try {
-    const res = await listarCategorias()
-    if (res.success) {
-      categorias.value = res.data
-    }
-  } catch (error) {
-    console.error('Error al cargar categorías:', error)
-  } finally {
-    cargando.value = false
-  }
+  // INTEGRACION AQUI
+  cargando.value = false
 }
 
-// Registrar una nueva categoría
 const registrarCategoria = async (nombre) => {
-  // Validar duplicado en frontend (case-insensitive)
   const existe = categorias.value.find(c => c.categoria?.toLowerCase() === nombre.toLowerCase())
-  if (existe) {
-    alert('Ya existe una categoría con ese nombre')
-    return
-  }
-  
+  if (existe) { alert('Ya existe una categoría con ese nombre'); return }
   guardando.value = true
-  try {
-    const res = await registrarCategoriaService(nombre)
-    if (res.success) {
-      await cargarCategorias()
-      modalVisible.value = false
-    } else {
-      alert(res.message || 'Error al registrar categoría')
-    }
-  } catch (error) {
-    console.error('Error al registrar categoría:', error)
-    alert('Error al registrar categoría')
-  } finally {
-    guardando.value = false
-  }
+  // INTEGRACION AQUI
+  guardando.value = false
 }
 
-// Cargar categorías al iniciar
-onMounted(() => {
-  cargarCategorias()
-})
+const abrirModalArchivar = (categoria) => {
+  categoriaSeleccionada.value = categoria
+  accionEsArchivar.value      = true
+  modalArchivarVisible.value  = true
+}
+
+const abrirModalDesarchivar = (categoria) => {
+  categoriaSeleccionada.value = categoria
+  accionEsArchivar.value      = false
+  modalArchivarVisible.value  = true
+}
+
+const cerrarModalArchivar = () => {
+  modalArchivarVisible.value  = false
+  categoriaSeleccionada.value = null
+}
+
+const confirmarArchivar = async (categoria) => {
+  procesando.value = true
+  // INTEGRACION AQUI
+  procesando.value = false
+}
+
+onMounted(cargarCategorias)
 </script>
