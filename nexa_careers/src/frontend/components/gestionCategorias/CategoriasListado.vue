@@ -20,6 +20,7 @@
         v-for="cat in filtradas"
         :key="cat.id_categoria"
         :categoria="cat"
+        @editar="$emit('editar', $event)"
       />
     </div>
   </div>
@@ -34,9 +35,9 @@ const props = defineProps({
   categorias: { type: Array, default: () => [] },
   cargando:   { type: Boolean, default: false },
 })
+defineEmits(['editar'])
 
 const busqueda = ref('')
-
 const filtradas = computed(() =>
   props.categorias.filter(c =>
     c.categoria?.toLowerCase().includes(busqueda.value.toLowerCase())
