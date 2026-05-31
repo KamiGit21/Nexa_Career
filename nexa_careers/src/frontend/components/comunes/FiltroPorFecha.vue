@@ -14,6 +14,7 @@
       <p class="text-xs font-semibold text-gray-400 uppercase mb-2">Acceso rápido</p>
       <FiltroPorFechaPresets
         :seleccionado="modelValue.preset"
+        :opciones="presetsOpciones"
         @seleccionar="seleccionarPreset"
       />
 
@@ -48,7 +49,8 @@ import FiltroPorFechaPresets from './FiltroPorFechaPresets.vue'
 import FiltroPorFechaRango   from './FiltroPorFechaRango.vue'
 
 const props = defineProps({
-  modelValue: { type: Object, default: () => ({ preset: '', desde: '', hasta: '' }) }
+  modelValue:     { type: Object, default: () => ({ preset: '', desde: '', hasta: '' }) },
+  presetsOpciones: { type: Array,  default: null }
 })
 const emit = defineEmits(['update:modelValue'])
 
@@ -56,10 +58,13 @@ const abierto    = ref(false)
 const contenedor = ref(null)
 const limpiando  = ref(false)
 
-const nombresPreset   = { dia: 'Último día', semana: 'Última semana', mes: 'Último mes' }
+const nombresPreset   = { dia: 'Publicados hoy', semana: 'Última semana', mes: 'Último mes' }
 const hayFiltroActivo = computed(() => !!props.modelValue.preset || !!props.modelValue.desde || !!props.modelValue.hasta)
 const etiquetaActiva  = computed(() => {
-  if (props.modelValue.preset) return nombresPreset[props.modelValue.preset]
+  if (props.modelValue.preset) {
+    const match = props.presetsOpciones?.find(o => o.valor === props.modelValue.preset)
+    return match?.etiqueta ?? nombresPreset[props.modelValue.preset] ?? props.modelValue.preset
+  }
   if (props.modelValue.desde && props.modelValue.hasta) return `${props.modelValue.desde} → ${props.modelValue.hasta}`
   if (props.modelValue.desde) return `Desde ${props.modelValue.desde}`
   if (props.modelValue.hasta) return `Hasta ${props.modelValue.hasta}`

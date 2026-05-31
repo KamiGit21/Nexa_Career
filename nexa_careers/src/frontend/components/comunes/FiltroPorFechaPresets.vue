@@ -1,7 +1,7 @@
 <template>
   <div class="flex flex-col gap-1">
     <button
-      v-for="opcion in opciones"
+      v-for="opcion in opcionesActivas"
       :key="opcion.valor"
       @click="$emit('seleccionar', opcion.valor)"
       :class="[
@@ -17,14 +17,19 @@
 </template>
 
 <script setup>
-defineProps({
-  seleccionado: { type: String, default: '' }
+import { computed } from 'vue'
+
+const props = defineProps({
+  seleccionado: { type: String, default: '' },
+  opciones:     { type: Array,  default: null }
 })
 defineEmits(['seleccionar'])
 
-const opciones = [
+const defaultOpciones = [
   { valor: 'dia',    etiqueta: 'Último día' },
   { valor: 'semana', etiqueta: 'Última semana' },
   { valor: 'mes',    etiqueta: 'Último mes' }
 ]
+
+const opcionesActivas = computed(() => props.opciones ?? defaultOpciones)
 </script>
