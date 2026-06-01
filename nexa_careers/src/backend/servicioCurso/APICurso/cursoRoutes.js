@@ -8,11 +8,14 @@ router.post('/registrarPorEstudiante', cursoController.registrarCursoEstudiante)
 router.post('/registrarPorEmpleador', cursoController.registrarCursoEmpleador);
 router.get('/listarDisponibles', cursoController.listarCursosDisponibles);
 router.get('/estudiante/:id_estudiante', cursoController.listarCursosPorEstudiante);
+router.get('/estudiante/:id_estudiante/publicados', cursoController.listarCursosPublicadosPorEstudiante);
 router.get('/estudiante/:id_estudiante/cursos/buscar', cursoController.buscarCursosPorEstudiante);
 router.get('/empleador/:id_empleador', cursoController.listarCursosPorEmpleador);
+router.get('/empleador/:id_empleador/publicados', cursoController.listarCursosPublicadosPorEmpleador);
 router.get('/empleador/:id_empleador/cursos/buscar', cursoController.buscarCursosPorEmpleador);
 router.get('/pendientes', cursoController.listarCursosPendientes);
 router.get('/busqueda/avanzada', cursoController.buscarCursosPublicosAvanzado);
+
 
 // Rutas para categorías de cursos
 router.post('/:id_curso/categorias', cursoController.agregarCategoriaACurso);
