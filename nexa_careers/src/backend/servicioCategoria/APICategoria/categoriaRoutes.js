@@ -10,6 +10,7 @@ router.get('/:id', categoriaController.buscarCategoriaPorId);
 
 router.get('/', categoriaController.listarCategorias);
 router.put('/:id/asociar-oferta', categoriaController.asociarCategoriaAOferta);
+router.patch('/:id/estado', categoriaController.cambiarEstadoCategoria);
 
 
 export default router;

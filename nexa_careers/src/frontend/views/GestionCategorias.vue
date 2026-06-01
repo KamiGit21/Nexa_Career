@@ -33,6 +33,7 @@ import CategoriasHeader       from '@/components/gestionCategorias/CategoriasHea
 import CategoriasListado      from '@/components/gestionCategorias/CategoriasListado.vue'
 import NuevaCategoriaModal    from '@/components/gestionCategorias/NuevaCategoriaModal.vue'
 import ArchivarCategoriaModal from '@/components/gestionCategorias/ArchivarCategoriaModal.vue'
+import { registrarCategoria as apiRegistrarCategoria, listarCategoriasCompleto, cambiarEstadoCategoria } from '@/services/categoriaService.js'
 
 const categorias            = ref([])
 const cargando              = ref(false)
@@ -45,16 +46,40 @@ const accionEsArchivar      = ref(true)
 
 const cargarCategorias = async () => {
   cargando.value = true
-  // INTEGRACION AQUI
-  cargando.value = false
+  try {
+    const response = await listarCategoriasCompleto()
+    if (response.success) {
+      categorias.value = response.data || []
+    } else {
+      alert('Error al cargar las categorías: ' + response.message)
+    }
+  } catch (error) {
+    console.error('Error al cargar categorías:', error)
+    alert('Error al cargar las categorías')
+  } finally {
+    cargando.value = false
+  }
 }
 
 const registrarCategoria = async (nombre) => {
   const existe = categorias.value.find(c => c.categoria?.toLowerCase() === nombre.toLowerCase())
   if (existe) { alert('Ya existe una categoría con ese nombre'); return }
   guardando.value = true
-  // INTEGRACION AQUI
-  guardando.value = false
+  try {
+    const response = await apiRegistrarCategoria({ categoria: nombre })
+    if (response.success) {
+      modalVisible.value = false
+      await cargarCategorias()
+      alert('Categoría registrada correctamente')
+    } else {
+      alert('Error al registrar: ' + response.message)
+    }
+  } catch (error) {
+    console.error('Error al registrar categoría:', error)
+    alert('Error al registrar la categoría')
+  } finally {
+    guardando.value = false
+  }
 }
 
 const abrirModalArchivar = (categoria) => {
@@ -76,8 +101,22 @@ const cerrarModalArchivar = () => {
 
 const confirmarArchivar = async (categoria) => {
   procesando.value = true
-  // INTEGRACION AQUI
-  procesando.value = false
+  try {
+    const nuevoEstado = accionEsArchivar.value ? 0 : 1
+    const response = await cambiarEstadoCategoria(categoria.id_categoria, nuevoEstado)
+    if (response.success) {
+      cerrarModalArchivar()
+      await cargarCategorias()
+      alert(response.message || 'Categoría actualizada correctamente')
+    } else {
+      alert('Error: ' + response.message)
+    }
+  } catch (error) {
+    console.error('Error al cambiar estado:', error)
+    alert('Error al actualizar la categoría')
+  } finally {
+    procesando.value = false
+  }
 }
 
 onMounted(cargarCategorias)
