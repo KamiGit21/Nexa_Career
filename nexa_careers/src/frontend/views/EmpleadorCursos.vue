@@ -170,6 +170,7 @@ const categorias = ref([])
 const busqueda = ref('')
 const categoriaFiltro = ref(null)
 const estadoFiltro = ref(null)
+const fechaFiltro = ref({ preset: '', desde: '', hasta: '' })
 const loading = ref(true)
 
 const modalBajaVisible = ref(false)
@@ -179,6 +180,7 @@ const procesando = ref(false)
 
 const hayFiltrosActivos = computed(() =>
   !!busqueda.value || !!categoriaFiltro.value || estadoFiltro.value !== null
+    || !!fechaFiltro.value.preset || !!fechaFiltro.value.desde || !!fechaFiltro.value.hasta
 )
 
 const cursosFiltrados = computed(() => {
@@ -190,7 +192,19 @@ const cursosFiltrados = computed(() => {
     const porCategoria = !categoriaFiltro.value ||
       (curso.categorias && curso.categorias.some(cat => cat.id_categoria === categoriaFiltro.value))
     const porEstado = estadoFiltro.value === null || curso.estado === estadoFiltro.value
-    return porTexto && porCategoria && porEstado
+    const porFecha = (() => {
+      const { preset, desde, hasta } = fechaFiltro.value
+      if (!preset && !desde && !hasta) return true
+      const fc = new Date(curso.fecha_creacion)
+      const ahora = new Date()
+      if (preset === 'dia')    return fc >= new Date(ahora - 86400000)
+      if (preset === 'semana') return fc >= new Date(ahora - 7 * 86400000)
+      if (preset === 'mes')    return fc >= new Date(ahora - 30 * 86400000)
+      if (desde && fc < new Date(desde)) return false
+      if (hasta) { const h = new Date(hasta); h.setHours(23,59,59,999); if (fc > h) return false }
+      return true
+    })()
+    return porTexto && porCategoria && porEstado && porFecha
   })
 })
 

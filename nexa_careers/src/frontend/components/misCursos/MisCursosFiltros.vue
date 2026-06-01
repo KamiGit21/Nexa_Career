@@ -18,10 +18,9 @@
       >✕</button>
     </div>
 
-    <!-- Filtros por categoría y estado -->
+    <!-- Filtros: categoría, estado y fecha -->
     <div class="flex items-center gap-4 flex-wrap">
 
-      <!-- Filtro por categoría -->
       <div class="flex items-center gap-2">
         <span class="text-sm font-medium text-gray-600">Categoría:</span>
         <select
@@ -36,7 +35,6 @@
         </select>
       </div>
 
-      <!-- Filtro por estado -->
       <div class="flex items-center gap-2">
         <span class="text-sm font-medium text-gray-600">Estado:</span>
         <select
@@ -52,7 +50,13 @@
         </select>
       </div>
 
-      <!-- Chips de filtros activos -->
+      <!-- Filtro por fecha (reutiliza FiltroPorFecha existente) -->
+      <FiltroPorFecha
+        :modelValue="fechaFiltro"
+        @update:modelValue="$emit('update:fechaFiltro', $event)"
+      />
+
+      <!-- Chips activos -->
       <div class="flex items-center gap-2 flex-wrap">
         <span
           v-if="categoriaFiltro"
@@ -71,20 +75,39 @@
       </div>
 
     </div>
+
+    <!-- Acceso rápido: Solo publicados -->
+    <div class="flex items-center gap-2">
+      <span class="text-xs text-gray-400 font-medium">Acceso rápido:</span>
+      <button
+        @click="$emit('update:estadoFiltro', estadoFiltro === 1 ? null : 1)"
+        :class="[
+          'px-3 py-1.5 rounded-xl text-xs font-medium border transition-colors',
+          estadoFiltro === 1
+            ? 'bg-green-100 text-green-700 border-green-300'
+            : 'bg-white text-gray-500 border-gray-300 hover:bg-gray-50'
+        ]"
+      >
+        ✅ Solo publicados
+      </button>
+    </div>
+
   </div>
 </template>
 
 <script setup>
 import { computed } from 'vue'
+import FiltroPorFecha from '../comunes/FiltroPorFecha.vue'
 
 const props = defineProps({
   busqueda:        { type: String, default: '' },
   categoriaFiltro: { default: null },
   estadoFiltro:    { default: null },
-  categorias:      { type: Array, default: () => [] }
+  categorias:      { type: Array, default: () => [] },
+  fechaFiltro:     { type: Object, default: () => ({ preset: '', desde: '', hasta: '' }) }
 })
 
-defineEmits(['update:busqueda', 'update:categoriaFiltro', 'update:estadoFiltro'])
+defineEmits(['update:busqueda', 'update:categoriaFiltro', 'update:estadoFiltro', 'update:fechaFiltro'])
 
 const nombresEstado = { 0: 'Pendiente', 1: 'Aceptado', 2: 'Rechazado', 3: 'Archivado' }
 
