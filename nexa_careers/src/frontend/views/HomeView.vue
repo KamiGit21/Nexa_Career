@@ -2,6 +2,7 @@
   <div class="min-h-screen bg-[#fffffd]">
     
     <HeroSection />
+    <TipsSection />
     <CategoryGrid />
 
   </div>
@@ -11,6 +12,7 @@
 import { ref } from 'vue'
 import { onMounted } from 'vue'
 import HeroSection from '@/components/home/HeroSection.vue'
+import TipsSection from '@/components/home/TipsSection.vue'
 import CategoryGrid from '@/components/home/CategoryGrid.vue'
 import { actualizarVencimientos } from '@/services/ofertaService.js'
 
