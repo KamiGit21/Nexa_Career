@@ -1,5 +1,11 @@
 // src/frontend/services/empleadorService.js
+import axios from 'axios'
 const API_URL = 'http://localhost:3000/api';
+
+const api = axios.create({
+  baseURL: 'http://localhost:3000',
+  headers: { 'Content-Type': 'application/json' },
+})
 
 export const registrarEmpleador = async (data) => {
   try {
@@ -106,3 +112,8 @@ export const desbloquearEmpleador = async (idEmpleador) => {
     return { success: false, message: error.message };
   }
 };
+
+export const contarEmpleadoresPorActivo = async (activo) => {
+  const { data } = await api.get(`/api/empleadores/contar/${activo}`);
+  return data;
+}

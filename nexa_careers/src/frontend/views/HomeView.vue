@@ -10,9 +10,20 @@
 
 <script setup>
 import { ref } from 'vue'
+import { onMounted } from 'vue'
 import HeroSection from '@/components/home/HeroSection.vue'
 import TipsSection from '@/components/home/TipsSection.vue'
 import CategoryGrid from '@/components/home/CategoryGrid.vue'
+import { actualizarVencimientos } from '@/services/ofertaService.js'
+
+onMounted(async () => {
+  try {
+    await actualizarVencimientos()
+    console.log("Vencimientos actualizados desde el Home")
+  } catch (error) {
+    console.error("No se pudieron actualizar los vencimientos en el Home:", error)
+  }
+})
 
 </script>
 

@@ -14,4 +14,5 @@ router.put('/:id/estado', ofertanteController.cambiarEstadoOfertante);
 
 // para obtener postulantes con información de CV del punto 6 de ofertanteController
 router.get('/oferta/:id_oferta/con-cv', ofertanteController.obtenerPostulantesConCV);
+router.get('/contar/:estado', ofertanteController.contarPostulante);
 export default router;
