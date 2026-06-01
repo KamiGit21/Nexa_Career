@@ -242,3 +242,34 @@ export const enviarCodigoEmpleador = async (req, res) => {
     res.status(500).json({ success: false, message: 'Error interno del servidor' });
   }
 };
+
+export const contarEmpleadores = async (req, res) => {
+  const { activo } = req.params;
+  if (activo === undefined) {
+    return res.status(400).json({ 
+      success: false, 
+      message: 'Debes proporcionar un valor de activo para contar los empleadores.' 
+    });
+  }
+
+  try {
+    const [result] = await db.query(
+      'SELECT COUNT(*) as total FROM empleador.empleador WHERE activo = ?',
+      [activo]
+    );
+    res.status(200).json({
+      success: true,
+      data: {
+        activo: parseInt(activo),
+        total: result[0].total
+      }
+    });
+
+  } catch (error) {
+    console.error('❌ Error al contar empleadores:', error);
+    res.status(500).json({ 
+      success: false, 
+      message: 'Error interno al intentar contar los empleadores' 
+    });
+  }
+};

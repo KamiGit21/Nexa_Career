@@ -28,6 +28,7 @@ router.get('/pagina/:pagina/size/:size/apertura/abajo', ofertaController.obtener
 router.get('/pagina/:pagina/size/:size/apertura/arriba/estado/:estado/', ofertaController.obtenerOfertasPaginacionPorEstadoYFechaAscendente);
 router.get('/pagina/:pagina/size/:size/apertura/abajo/estado/:estado/', ofertaController.obtenerOfertasPaginacionPorEstadoYFechaDescendente);
 router.patch('/vencidas', ofertaController.actualizarOfertasVencidas);
+router.get('/contar/:estado', ofertaController.contarOfertas);
 
 
 export default router;

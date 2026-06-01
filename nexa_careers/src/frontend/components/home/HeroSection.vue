@@ -33,6 +33,10 @@
 
 <script setup>
 import { ref, onMounted } from 'vue'
+import { contarOfertasPorEstado } from '../../services/ofertaService.js'
+import { contarCursosPorEstado } from '../../services/cursoService.js'
+import { contarEmpleadoresPorActivo } from '../../services/empleadorService.js'
+import { contarPostulacionesPorEstado } from '../../services/postulacionService.js'
 
 const stats = ref([])
 const loading = ref(true)
@@ -40,17 +44,28 @@ const loading = ref(true)
 const cargarStats = async () => {
   loading.value = true
   try {
-    // const res = await fetch('/api/stats')
-    // stats.value = await res.json()
-    
+    const [ofertasRes, cursosRes, empleadoresRes, postulacionesRes] = await Promise.all([
+      contarOfertasPorEstado(1),
+      contarCursosPorEstado(1),
+      contarEmpleadoresPorActivo(1),
+      contarPostulacionesPorEstado(1)
+    ])
+
     stats.value = [
-      { value: '+530', label: 'Ofertas laborales activas' },
-      { value: '+120', label: 'Cursos publicados' },
-      { value: '+156', label: 'Empresas aliadas' },
-      { value: '+820', label: 'Entrevistas conseguidas' }
+      { value: `${ofertasRes.data.total}`, label: 'Ofertas laborales activas' },
+      { value: `${cursosRes.data.total}`, label: 'Cursos publicados' },
+      { value: `${empleadoresRes.data.total}`, label: 'Empresas aliadas' },
+      { value: `${postulacionesRes.data.total}`, label: 'Entrevistas conseguidas' } 
     ]
+    
   } catch (e) {
-    console.error(e)
+    console.error('❌ Error al cargar las estadísticas del Home:', e)
+    stats.value = [
+      { value: '0', label: 'Ofertas laborales activas' },
+      { value: '0', label: 'Cursos publicados' },
+      { value: '0', label: 'Empresas aliadas' },
+      { value: '0', label: 'Entrevistas conseguidas' }
+    ]
   } finally {
     loading.value = false
   }
