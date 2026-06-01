@@ -21,7 +21,7 @@
 
     <div class="mt-4">
       <router-link 
-        :to="`/ofertas/${oferta.id}`"
+        :to="`/ofertas/${oferta.id}`" 
         class="block w-full text-center py-2 bg-gray-900 text-white rounded-xl text-sm font-medium hover:bg-[#b5943a] transition-colors duration-300"
       >
         Ver detalle
