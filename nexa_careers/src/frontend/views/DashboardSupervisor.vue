@@ -14,7 +14,7 @@
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-10">
           <StatCard label="Empleadores registrados" :value="estadisticas.empleadores" color="#1B2A4A" />
           <StatCard label="Estudiantes registrados" :value="estadisticas.estudiantes" color="#B5943A" />
-          <StatCard label="Ofertas activas" :value="estadisticas.ofertas" color="#3B6D11" />
+          <StatCard label="Ofertas creadas" :value="estadisticas.ofertas" color="#3B6D11" />
           <StatCard label="Cursos creados" :value="estadisticas.cursos" color="#534AB7" />
         </div>
 

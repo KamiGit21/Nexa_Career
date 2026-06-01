@@ -54,3 +54,8 @@ export async function cambiarEstadoPostulacion(idPostulante, estado) {
   const { data } = await api.put(`/api/ofertantes/${idPostulante}/estado`, { estado });
   return data;
 }
+
+export async function contarPostulacionesPorEstado(estado) {
+  const { data } = await api.get(`/api/ofertantes/contar/${estado}`);
+  return data;
+}

@@ -179,3 +179,34 @@ export const obtenerPostulantesConCV = async (req, res) => {
     res.status(500).json({ success: false, message: 'Error al obtener los postulantes de la oferta', error: error.message });
   }
 };
+
+export const contarPostulante = async (req, res) => {
+  const { estado } = req.params;
+  if (estado === undefined) {
+    return res.status(400).json({ 
+      success: false, 
+      message: 'Debes proporcionar un estado para contar los postulantes.' 
+    });
+  }
+
+  try {
+    const [result] = await db.query(
+      'SELECT COUNT(*) as total FROM postulante.postulante WHERE estado = ?',
+      [estado]
+    );
+    res.status(200).json({
+      success: true,
+      data: {
+        estado: parseInt(estado),
+        total: result[0].total
+      }
+    });
+
+  } catch (error) {
+    console.error('❌ Error al contar postulantes:', error);
+    res.status(500).json({ 
+      success: false, 
+      message: 'Error interno al intentar contar los postulantes' 
+    });
+  }
+};
