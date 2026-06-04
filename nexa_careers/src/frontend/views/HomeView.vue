@@ -4,6 +4,7 @@
     <HeroSection />
     <TipsSection />
     <OfertasCarousel />
+    <CursoCarousel />
     <CategoryGrid />
 
   </div>
@@ -17,6 +18,7 @@ import TipsSection from '@/components/home/TipsSection.vue'
 import CategoryGrid from '@/components/home/CategoryGrid.vue'
 import { actualizarVencimientos } from '@/services/ofertaService.js'
 import OfertasCarousel from '@/components/home/OfertasCarousel.vue'
+import CursoCarousel from '@/components/home/CursoCarousel.vue'
 
 onMounted(async () => {
   try {
