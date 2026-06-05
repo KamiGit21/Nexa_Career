@@ -1,5 +1,5 @@
 import db from './db.js';
-import { enviarCodigo } from './correoService.js';
+import { enviarCodigo, enviarNotificacion } from './correoService.js';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { uploadDir } from './cvController.js';
 import path from 'path';
@@ -491,5 +491,66 @@ export const analizarPerfilConIA = async (req, res) => {
   } catch (error) {
     console.error('Error en el análisis de IA:', error);
     res.status(500).json({ success: false, message: 'La IA no pudo procesar el perfil en este momento' });
+  }
+};
+
+export const enviarNotificacionEstudiante = async (req, res) => {
+  const { postulacion } = req.params;
+  console.log(`\n --- PROCESANDO NOTIFICACIÓN AUTOMÁTICA DE POSTULACIÓN ---`);
+  console.log(`Postulación ID: ${postulacion}`);
+
+  try {
+    // La consulta SQL sigue uniendo las tablas para traer toda la información necesaria de forma directa
+    const [rows] = await db.query(`
+      SELECT 
+        p.id_estudiante,
+        p.estado,
+        e.nombre,
+        e.apellido,
+        e.gmail AS correo_estudiante,
+        o.oferta,
+        emp.empresa AS empleador
+      FROM postulante.postulante p
+      JOIN estudiante.estudiante e ON p.id_estudiante = e.id_estudiante
+      JOIN oferta.oferta o ON p.id_oferta = o.id_oferta
+      JOIN empleador.empleador emp ON o.id_empleador = emp.id_empleador
+      WHERE p.id_postulante = ?
+    `, [postulacion]);
+
+    if (rows.length === 0) {
+      return res.status(404).json({ success: false, message: 'No se encontró ningún registro para la postulación especificada.' });
+    }
+
+    const datosPostulacion = rows[0];
+
+    // Validar que el estado de la postulación
+    if (Number(datosPostulacion.estado) !== 1) {
+      return res.status(400).json({ 
+        success: false, 
+        message: 'Validación fallida: La postulación no se encuentra en estado aceptado (1).' 
+      });
+    }
+
+    if (!datosPostulacion.correo_estudiante) {
+      return res.status(444).json({ success: false, message: 'El estudiante no posee un correo electrónico válido registrado.' });
+    }
+
+    // envío del correo electrónico 
+    const correoResult = await enviarNotificacion(
+      datosPostulacion.correo_estudiante,
+      datosPostulacion.nombre,
+      datosPostulacion.apellido,
+      datosPostulacion.oferta
+    );
+
+    if (correoResult.success) {
+      return res.status(200).json({ success: true, message: 'Notificación de aceptación enviada correctamente.' });
+    } else {
+      return res.status(500).json({ success: false, message: correoResult.message });
+    }
+
+  } catch (error) {
+    console.error('❌ Error interno en enviarNotificacionEstudiante:', error);
+    return res.status(500).json({ success: false, message: 'Error interno en el servidor al intentar procesar la notificación.' });
   }
 };

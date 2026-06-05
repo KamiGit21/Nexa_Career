@@ -52,6 +52,15 @@ export async function obtenerNumeroPostulacionesPorOferta(idOferta) {
 // Cambiar estado de la postulación 
 export async function cambiarEstadoPostulacion(idPostulante, estado) {
   const { data } = await api.put(`/api/ofertantes/${idPostulante}/estado`, { estado });
+
+  if (data.success && (estado === 1 || estado === '1')) {
+    try {
+      await api.get(`/api/estudiantes/notificacion/postulacion/${idPostulante}`);
+      console.log('✉️ Notificación automática de aceptación disparada con éxito.');
+    } catch (notifError) {
+      console.error('⚠️ No se pudo enviar la notificación automática por correo:', notifError);
+    }
+  }
   return data;
 }
 
