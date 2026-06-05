@@ -312,8 +312,8 @@ export const postularAOferta = async (req, res) => {
 export const analizarPerfilConIA = async (req, res) => {
   const { id } = req.params;
   console.log(`\n --- INICIANDO ANÁLISIS IA PARA ESTUDIANTE ${id} ---`);
-  if (process.env.GEMINI_API_KEY) {
-    const terminacion = process.env.GEMINI_API_KEY.slice(-4);
+  if (process.env.GROQ_API_KEY) {
+    const terminacion = process.env.GROQ_API_KEY.slice(-4);
     console.log(`🔑 API KEY DETECTADA: ✅ SÍ (Termina en ...${terminacion})`);
   } else {
     console.log(`🔑 API KEY DETECTADA: ❌ NO ESTÁ LEYENDO EL .env`);
