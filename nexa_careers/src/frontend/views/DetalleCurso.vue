@@ -1,4 +1,3 @@
-<!-- C:\xampp\htdocs\Nexa_Career\nexa_careers\src\frontend\views\DetalleCurso.vue -->
 <template>
   <div class="min-h-screen bg-[#f8f5f0]">
     <div class="max-w-7xl mx-auto px-6 py-10">
@@ -22,22 +21,19 @@
 
         <!-- Badge para supervisor si el curso está pendiente -->
         <div v-if="esSupervisor && curso.estado === 0" class="mb-4">
-          <div class="bg-yellow-50 border border-yellow-200 rounded-xl p-3 flex items-center justify-between flex-wrap gap-2">
+          <div
+            class="bg-yellow-50 border border-yellow-200 rounded-xl p-3 flex items-center justify-between flex-wrap gap-2">
             <div class="flex items-center gap-2">
               <span class="text-yellow-600 text-xl">⏳</span>
               <span class="text-sm text-yellow-700">Este curso está en revisión pendiente</span>
             </div>
             <div class="flex gap-2">
-              <button 
-                @click="moderarCurso(1)"
-                class="px-4 py-1.5 bg-green-600 text-white text-sm rounded-lg hover:bg-green-700 transition"
-              >
+              <button @click="moderarCurso(1)"
+                class="px-4 py-1.5 bg-green-600 text-white text-sm rounded-lg hover:bg-green-700 transition">
                 ✓ Aprobar
               </button>
-              <button 
-                @click="abrirModalRechazo"
-                class="px-4 py-1.5 bg-red-500 text-white text-sm rounded-lg hover:bg-red-600 transition"
-              >
+              <button @click="abrirModalRechazo"
+                class="px-4 py-1.5 bg-red-500 text-white text-sm rounded-lg hover:bg-red-600 transition">
                 ✗ Rechazar
               </button>
             </div>
@@ -51,15 +47,8 @@
           <!-- Columna principal -->
           <div class="flex-1 min-w-0">
             <DetalleCursoInfo :curso="curso" />
-            
-            <!-- Mostrar el publicador (útil para supervisores) -->
-            <div v-if="esSupervisor && curso.nombre_publicador" class="mt-4 p-4 bg-gray-50 rounded-xl">
-              <h3 class="text-sm font-semibold text-gray-700 mb-2">👤 Publicado por:</h3>
-              <p class="text-gray-600">
-                {{ curso.tipo_ofertante === 0 ? 'Estudiante' : 'Empleador' }}: {{ curso.nombre_publicador }}
-              </p>
-            </div>
-            
+
+
             <DetalleCursoContacto :curso="curso" />
           </div>
 
@@ -91,12 +80,9 @@
           </p>
         </div>
         <div class="text-left">
-          <input 
-            v-model="motivoRechazo" 
-            type="text" 
+          <input v-model="motivoRechazo" type="text"
             placeholder="Ej. Contenido inapropiado, información insuficiente..."
-            class="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-red-200 focus:border-red-400 outline-none transition-all" 
-          />
+            class="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-red-200 focus:border-red-400 outline-none transition-all" />
         </div>
         <div class="flex gap-3 pt-1">
           <button @click="cerrarModalRechazo"
@@ -118,16 +104,16 @@ import { ref, onMounted, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { obtenerCursoPorId } from '../services/cursoService.js'
 import { cambiarEstadoCurso } from '../services/supervisorService.js'
-import DetalleCursoHeader   from '../components/detalleCurso/DetalleCursoHeader.vue'
-import DetalleCursoInfo     from '../components/detalleCurso/DetalleCursoInfo.vue'
+import DetalleCursoHeader from '../components/detalleCurso/DetalleCursoHeader.vue'
+import DetalleCursoInfo from '../components/detalleCurso/DetalleCursoInfo.vue'
 import DetalleCursoContacto from '../components/detalleCurso/DetalleCursoContacto.vue'
-import DetalleCursoSidebar  from '../components/detalleCurso/DetalleCursoSidebar.vue'
+import DetalleCursoSidebar from '../components/detalleCurso/DetalleCursoSidebar.vue'
 
-const route   = useRoute()
-const router  = useRouter()
-const curso   = ref(null)
+const route = useRoute()
+const router = useRouter()
+const curso = ref(null)
 const loading = ref(true)
-const error   = ref(null)
+const error = ref(null)
 const mostrarModalRechazo = ref(false)
 const motivoRechazo = ref('')
 
@@ -142,6 +128,14 @@ const rutaVolver = computed(() => {
   }
   return '/cursos'
 })
+
+const irAlPerfil = (id, tipo) => {
+  if (tipo === 0) {
+    router.push(`/estudiante/${id}`)
+  } else {
+    router.push(`/empleador/${id}`)
+  }
+}
 
 const cargarCurso = async () => {
   try {
@@ -161,7 +155,7 @@ const cargarCurso = async () => {
 
 const moderarCurso = async (estado) => {
   if (!curso.value) return
-  
+
   try {
     const response = await cambiarEstadoCurso(curso.value.id_curso, estado, null)
     if (response.success) {
@@ -187,7 +181,7 @@ const cerrarModalRechazo = () => {
 
 const confirmarRechazo = async () => {
   if (!motivoRechazo.value.trim() || !curso.value) return
-  
+
   try {
     const response = await cambiarEstadoCurso(curso.value.id_curso, 2, motivoRechazo.value)
     if (response.success) {
@@ -211,6 +205,7 @@ onMounted(() => {
 .modal-fade-leave-active {
   transition: all 0.3s ease;
 }
+
 .modal-fade-enter-from,
 .modal-fade-leave-to {
   opacity: 0;

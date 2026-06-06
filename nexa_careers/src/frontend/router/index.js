@@ -109,16 +109,16 @@ const routes = [
 
   //Ver Perfiles
   {
-    path: '/postulante/:id',
+    path: '/estudiante/:id',
     name: 'PerfilEstudianteView',
     component: PerfilEstudianteView,
-    meta: { requiereRol: ['empleador', 'supervisor'] }
+    //meta: { requiereRol: ['empleador', 'supervisor'] }
   },
   {
     path: '/empleador/:id',
     name: 'PerfilEmpleadorView',
-    component: () => import('@/views/PerfilEmpleador.vue'), // O el nombre que le des al archivo
-    meta: { requiereRol: ['estudiante', 'empleador', 'supervisor'] }
+    component: () => import('@/views/PerfilEmpleador.vue'),
+    //meta: { requiereRol: ['estudiante', 'empleador', 'supervisor'] }
   },
 
   { path: '/mis-ofertas/:ofertaId/editar', name: 'EditarOferta', component: EditarOferta, meta: { requiereRol: ['empleador'] } },
