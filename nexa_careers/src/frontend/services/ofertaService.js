@@ -28,6 +28,15 @@ export async function buscarOfertasPorTitulo(titulo) {
 
 export async function crearOferta(payload) {
   const { data } = await api.post('/api/ofertas/crear', payload)
+  if (data.success && (data.id_oferta || data.id)) {
+    const idNuevaOferta = data.id_oferta || data.id;
+    try {
+      await api.get(`/api/supervisores/notificacion/oferta/${idNuevaOferta}`);
+      console.log('✉️ Notificación masiva despachada con éxito al equipo de supervisores.');
+    } catch (notifError) {
+      console.error('⚠️ No se pudo completar el envío de correos automáticos a los supervisores:', notifError);
+    }
+  }
   return data
 }
 
