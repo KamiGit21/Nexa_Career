@@ -67,7 +67,10 @@
                     class="w-6 h-6 rounded-full bg-amber-500 flex items-center justify-center text-white text-xs font-bold">
                     {{ inicialEmpresa }}
                   </div>
-                  <span class="font-semibold text-gray-700">{{ nombreEmpresa }}</span>
+                  <span @click="irAlPerfil"
+                    class="font-semibold text-gray-700 hover:text-[#b5943a] cursor-pointer transition-colors duration-200">
+                    {{ nombreEmpresa }}
+                  </span>
                   <span class="text-gray-400">· Empleador</span>
                 </div>
               </div>
@@ -125,9 +128,9 @@
                     class="w-12 h-12 rounded-full bg-amber-500 flex items-center justify-center text-white text-sm font-bold">
                     {{ inicialEmpresa }}
                   </div>
-                  <div>
+                  <div @click="irAlPerfil"
+                    class="cursor-pointer hover:bg-gray-50 p-2 rounded-xl transition-colors duration-200">
                     <p class="font-semibold text-gray-800">{{ nombreEmpresa }}</p>
-                    <p v-if="oferta.especialidad" class="text-xs text-gray-500">{{ oferta.especialidad }}</p>
                     <p class="text-xs text-gray-400 capitalize">Empleador activo en Nexa Careers</p>
                   </div>
                 </div>
@@ -245,6 +248,11 @@ import RechazoOfertaModal from '../components/misOfertas/RechazoOfertaModal.vue'
 const route = useRoute()
 const router = useRouter()
 
+const irAlPerfil = () => {
+  if (oferta.value?.id_empleador) {
+    router.push(`/empleador/${oferta.value.id_empleador}`)
+  }
+}
 
 
 const sesion = JSON.parse(localStorage.getItem('sesion') || '{}')

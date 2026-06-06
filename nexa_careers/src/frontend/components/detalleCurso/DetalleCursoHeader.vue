@@ -1,6 +1,6 @@
 <template>
   <div class="mb-6">
-    
+
     <router-link to="/cursos" class="text-sm text-[#2e6da4] hover:underline">
       ← Volver al catálogo de cursos
     </router-link>
@@ -23,15 +23,17 @@
         <div class="flex items-center gap-2 flex-wrap text-sm text-gray-500">
           <span>Publicado por:</span>
           <div class="flex items-center gap-1.5">
-            <div
-              class="w-6 h-6 rounded-full flex items-center justify-center text-white text-xs font-bold"
-              :class="colorAvatar"
-            >
+            <div class=" w-6 h-6 rounded-full flex items-center justify-center text-white text-xs font-bold"
+              :class="colorAvatar">
               {{ iniciales(curso.nombre_publicador) }}
             </div>
-            <span class="font-semibold text-gray-700">{{ curso.nombre_publicador }}</span>
-            <span class="capitalize text-gray-400">· {{ curso.tipo_publicador }}</span>
+            <span @click="irAlPerfil(curso.id_estudiante || curso.id_empleador, curso.tipo_ofertante)"
+              class="font-semibold text-gray-700 hover:text-[#b5943a] cursor-pointer transition-colors duration-200">
+              {{ curso.nombre_publicador }}
+            </span>
           </div>
+          <span class="capitalize text-gray-400">· {{ curso.tipo_publicador }}</span>
+
         </div>
 
         <p class="text-xs text-gray-400 mt-2">
@@ -44,21 +46,38 @@
 
 <script setup>
 import { computed } from 'vue'
+import { useRouter } from 'vue-router'
 import CursoEstadoBadge from '../misCursos/CursoEstadoBadge.vue'
 
 const props = defineProps({
   curso: { type: Object, required: true }
 })
 
+const router = useRouter()
+
 const COLORES_CAT = [
   'bg-purple-100 text-purple-700', 'bg-yellow-100 text-yellow-700',
-  'bg-red-100 text-red-700',       'bg-blue-100 text-blue-700',
+  'bg-red-100 text-red-700', 'bg-blue-100 text-blue-700',
   'bg-green-100 text-green-700',
 ]
 const COLORES_AVATAR = [
-  'bg-indigo-500','bg-amber-500','bg-emerald-500',
-  'bg-red-500','bg-blue-500','bg-violet-500'
+  'bg-indigo-500', 'bg-amber-500', 'bg-emerald-500',
+  'bg-red-500', 'bg-blue-500', 'bg-violet-500'
 ]
+
+const irAlPerfil = (id, tipo) => {
+  if (!id) {
+    console.error("No se puede redirigir: id_publicador no está definido en el objeto curso.");
+    return
+  }
+  const tipoNumerico = Number(tipo)
+
+  if (tipoNumerico === 0) {
+    router.push(`/estudiante/${id}`)
+  } else {
+    router.push(`/empleador/${id}`)
+  }
+}
 
 const colorCategoria = computed(() => {
   const idx = (categoriaPrincipal.value || '').charCodeAt(0) % COLORES_CAT.length
