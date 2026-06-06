@@ -24,6 +24,14 @@ export async function postularAOferta(idEstudiante, idOferta) {
     id_oferta: idOferta,
     id_estudiante: idEstudiante
   })
+  if (data.success && data.id_postulante) {
+    try {
+      await api.get(`/api/empleadores/notificacion/postulacion/${data.id_postulante}`);
+      console.log('✉️ Notificación automática enviada al empleador con éxito.');
+    } catch (notifError) {
+      console.error('⚠️ No se pudo procesar la notificación por correo para el empleador:', notifError);
+    }
+  }
   return data
 }
 
