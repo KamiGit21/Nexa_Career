@@ -41,6 +41,37 @@
           </div>
 
           <hr class="my-10 border-gray-100">
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-6 my-10">
+            <div class="bg-[#F8FAFC] border border-gray-100 rounded-2xl p-5 flex items-center gap-4">
+              <div class="w-12 h-12 bg-[#1b2a4a]/5 rounded-xl flex items-center justify-center text-2xl">
+                💼
+              </div>
+              <div>
+                <p class="text-2xl font-black text-[#1b2a4a]">{{ stats.total_ofertas }}</p>
+                <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider">Ofertas Publicadas</p>
+              </div>
+            </div>
+
+            <div class="bg-[#F8FAFC] border border-gray-100 rounded-2xl p-5 flex items-center gap-4">
+              <div class="w-12 h-12 bg-[#b5943a]/5 rounded-xl flex items-center justify-center text-2xl">
+                🎓
+              </div>
+              <div>
+                <p class="text-2xl font-black text-[#1b2a4a]">{{ stats.total_cursos }}</p>
+                <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider">Cursos Publicados</p>
+              </div>
+            </div>
+
+            <div class="bg-[#F8FAFC] border border-gray-100 rounded-2xl p-5 flex items-center gap-4">
+              <div class="w-12 h-12 bg-green-500/5 rounded-xl flex items-center justify-center text-2xl">
+                ✨
+              </div>
+              <div>
+                <p class="text-2xl font-black text-[#1b2a4a]">{{ stats.estudiantes_seleccionados }}</p>
+                <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider">Alumnos Seleccionados</p>
+              </div>
+            </div>
+          </div>
 
           <div class="grid grid-cols-1 md:grid-cols-3 gap-12">
             
@@ -127,6 +158,12 @@ const loading = ref(true)
 
 const ofertas = ref([])
 const loadingOfertas = ref(true)
+
+const stats = ref({
+  total_ofertas: 52,
+  total_cursos: 17,
+  estudiantes_seleccionados: 21
+})
 
 const perfil = ref({
   id_empleador: null,
