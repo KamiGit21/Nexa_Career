@@ -25,7 +25,10 @@
       </div>
     </div>
 
-    <div class="mt-5 pt-5 border-t border-gray-100">
+    <div 
+    @click="irAlPerfil(curso.id_estudiante || curso.id_empleador, curso.tipo_ofertante)"
+     v-if="curso.nombre_publicador"
+    class="mt-5 pt-5 border-t border-gray-100 cursor-pointer">
       <h3 class="text-sm font-bold text-[#1b2a4a] mb-3">Sobre el ofertante</h3>
       <div class="flex items-center gap-3">
         <div
@@ -47,12 +50,22 @@
 
 <script setup>
 import { computed } from 'vue'
+import { useRouter } from 'vue-router'
 import MotivoRechazoBanner from '../comunes/MotivoRechazoBanner.vue'
 
 const props = defineProps({
   curso: { type: Object, required: true }
 })
 
+const router = useRouter()
+
+const irAlPerfil = (id, tipo) => {
+  if (tipo === 0) {
+    router.push(`/estudiante/${id}`)
+  } else {
+    router.push(`/empleador/${id}`)
+  }
+}
 const tags = computed(() => {
   if (!props.curso.categorias || !props.curso.categorias.length) return []
   return props.curso.categorias

@@ -21,22 +21,19 @@
 
         <!-- Badge para supervisor si la oferta está pendiente -->
         <div v-if="esSupervisor && oferta.estado === 0" class="mb-4">
-          <div class="bg-yellow-50 border border-yellow-200 rounded-xl p-3 flex items-center justify-between flex-wrap gap-2">
+          <div
+            class="bg-yellow-50 border border-yellow-200 rounded-xl p-3 flex items-center justify-between flex-wrap gap-2">
             <div class="flex items-center gap-2">
               <span class="text-yellow-600 text-xl">⏳</span>
               <span class="text-sm text-yellow-700">Esta oferta está en revisión pendiente</span>
             </div>
             <div class="flex gap-2">
-              <button 
-                @click="moderarOferta(1)"
-                class="px-4 py-1.5 bg-green-600 text-white text-sm rounded-lg hover:bg-green-700 transition"
-              >
+              <button @click="moderarOferta(1)"
+                class="px-4 py-1.5 bg-green-600 text-white text-sm rounded-lg hover:bg-green-700 transition">
                 ✓ Aprobar
               </button>
-              <button 
-                @click="abrirModalRechazo"
-                class="px-4 py-1.5 bg-red-500 text-white text-sm rounded-lg hover:bg-red-600 transition"
-              >
+              <button @click="abrirModalRechazo"
+                class="px-4 py-1.5 bg-red-500 text-white text-sm rounded-lg hover:bg-red-600 transition">
                 ✗ Rechazar
               </button>
             </div>
@@ -53,10 +50,7 @@
             <div class="flex-1 min-w-[260px]">
               <!-- Estado badge -->
               <div class="flex items-center gap-2 mb-3 flex-wrap">
-                <span
-                  class="text-xs font-semibold px-3 py-1 rounded-full"
-                  :class="estiloEstado"
-                >
+                <span class="text-xs font-semibold px-3 py-1 rounded-full" :class="estiloEstado">
                   {{ textoEstado }}
                 </span>
               </div>
@@ -69,10 +63,14 @@
               <div class="flex items-center gap-2 flex-wrap text-sm text-gray-500">
                 <span>Publicado por:</span>
                 <div class="flex items-center gap-1.5">
-                  <div class="w-6 h-6 rounded-full bg-amber-500 flex items-center justify-center text-white text-xs font-bold">
+                  <div
+                    class="w-6 h-6 rounded-full bg-amber-500 flex items-center justify-center text-white text-xs font-bold">
                     {{ inicialEmpresa }}
                   </div>
-                  <span class="font-semibold text-gray-700">{{ nombreEmpresa }}</span>
+                  <span @click="irAlPerfil"
+                    class="font-semibold text-gray-700 hover:text-[#b5943a] cursor-pointer transition-colors duration-200">
+                    {{ nombreEmpresa }}
+                  </span>
                   <span class="text-gray-400">· Empleador</span>
                 </div>
               </div>
@@ -105,8 +103,9 @@
                 </span>
               </div>
 
-<!-- Motivo de rechazo -->
-              <div v-if="oferta.rechazo || oferta.motivo_rechazo" class="mt-5 p-4 bg-red-50 border border-red-100 rounded-xl">
+              <!-- Motivo de rechazo -->
+              <div v-if="oferta.rechazo || oferta.motivo_rechazo"
+                class="mt-5 p-4 bg-red-50 border border-red-100 rounded-xl">
                 <h3 class="text-sm font-bold text-red-700 mb-1">Motivo de rechazo</h3>
                 <p class="text-sm text-red-600">{{ oferta.rechazo || oferta.motivo_rechazo }}</p>
               </div>
@@ -115,44 +114,50 @@
               <div v-if="oferta.categorias && oferta.categorias.length > 0" class="mt-5">
                 <h3 class="text-sm font-bold text-[#1b2a4a] mb-2">Categoría(s)</h3>
                 <div class="flex flex-wrap gap-2">
-                  <span
-                    v-for="cat in oferta.categorias"
-                    :key="cat.id_categoria"
-                    class="text-xs font-semibold px-3 py-1 rounded-full bg-[#1b2a4a]/10 text-[#1b2a4a]"
-                  >
+                  <span v-for="cat in oferta.categorias" :key="cat.id_categoria"
+                    class="text-xs font-semibold px-3 py-1 rounded-full bg-[#1b2a4a]/10 text-[#1b2a4a]">
                     📂 {{ cat.categoria }}
                   </span>
+                </div>
+              </div>
+
+              <div class="mt-5 pt-5 border-t border-gray-100">
+                <h3 class="text-sm font-bold text-[#1b2a4a] mb-3">Sobre el ofertante</h3>
+                <div class="flex items-center gap-3">
+                  <div
+                    class="w-12 h-12 rounded-full bg-amber-500 flex items-center justify-center text-white text-sm font-bold">
+                    {{ inicialEmpresa }}
+                  </div>
+                  <div @click="irAlPerfil"
+                    class="cursor-pointer hover:bg-gray-50 p-2 rounded-xl transition-colors duration-200">
+                    <p class="font-semibold text-gray-800">{{ nombreEmpresa }}</p>
+                    <p class="text-xs text-gray-400 capitalize">Empleador activo en Nexa Careers</p>
+                  </div>
                 </div>
               </div>
             </div>
 
             <!-- Acción principal (postular - solo para estudiantes y ofertas activas) -->
-            <div v-if="!esSupervisor && oferta.estado === 1" class="bg-white rounded-2xl border border-gray-200 p-6 mb-5">
+            <div v-if="!esSupervisor && oferta.estado === 1"
+              class="bg-white rounded-2xl border border-gray-200 p-6 mb-5">
               <h2 class="text-lg font-bold text-[#1b2a4a] mb-1">¿Te interesa esta oferta?</h2>
               <p class="text-xs text-gray-400 mb-4">Postúlate directamente desde la plataforma.</p>
 
               <template v-if="sesion.rol === 'estudiante'">
-                <button
-                  v-if="!yaPostulado"
+                <button v-if="!yaPostulado"
                   class="w-full py-3 rounded-xl bg-[#1b2a4a] hover:bg-[#0f1a2e] text-white font-semibold transition disabled:opacity-50"
-                  :disabled="postulando"
-                  @click="abrirModal"
-                >
+                  :disabled="postulando" @click="abrirModal">
                   {{ postulando ? 'Postulando...' : 'Postular ahora' }}
                 </button>
-                <div
-                  v-else
-                  class="w-full py-3 rounded-xl bg-green-50 border border-green-200 text-green-700 font-semibold text-center text-sm"
-                >
+                <div v-else
+                  class="w-full py-3 rounded-xl bg-green-50 border border-green-200 text-green-700 font-semibold text-center text-sm">
                   ✓ Ya postulaste a esta oferta
                 </div>
               </template>
 
               <template v-else>
-                <button
-                  @click="irALogin"
-                  class="w-full py-3 rounded-xl bg-[#1b2a4a] hover:bg-[#0f1a2e] text-white font-semibold transition"
-                >
+                <button @click="irALogin"
+                  class="w-full py-3 rounded-xl bg-[#1b2a4a] hover:bg-[#0f1a2e] text-white font-semibold transition">
                   Inicia sesión como estudiante para postular
                 </button>
               </template>
@@ -199,11 +204,8 @@
 
     <!-- Modal confirmar postulación -->
     <Transition name="fade">
-      <div
-        v-if="modalVisible"
-        class="fixed inset-0 bg-black/40 flex items-center justify-center z-50 px-4"
-        @click.self="cerrarModal"
-      >
+      <div v-if="modalVisible" class="fixed inset-0 bg-black/40 flex items-center justify-center z-50 px-4"
+        @click.self="cerrarModal">
         <div class="bg-white rounded-2xl shadow-xl p-8 w-full max-w-md space-y-4">
           <h2 class="text-lg font-bold text-slate-800">Confirmar postulación</h2>
           <p class="text-sm text-slate-600">
@@ -215,15 +217,12 @@
           <div class="flex gap-3 pt-2">
             <button
               class="flex-1 py-2.5 rounded-xl border border-gray-200 text-slate-600 hover:bg-slate-50 text-sm transition"
-              @click="cerrarModal"
-            >
+              @click="cerrarModal">
               Cancelar
             </button>
             <button
               class="flex-1 py-2.5 rounded-xl bg-[#1b2a4a] hover:bg-[#0f1a2e] text-white text-sm font-semibold transition disabled:opacity-50"
-              :disabled="postulando"
-              @click="confirmarPostulacion"
-            >
+              :disabled="postulando" @click="confirmarPostulacion">
               {{ postulando ? 'Enviando...' : 'Confirmar' }}
             </button>
           </div>
@@ -232,12 +231,8 @@
     </Transition>
 
     <!-- Modal de rechazo para supervisor -->
-    <RechazoOfertaModal
-  :visible="mostrarModalRechazo"
-  :nombre-oferta="oferta?.oferta || ''"
-  @cancelar="cerrarModalRechazo"
-  @confirmar="confirmarRechazo"
-/>
+    <RechazoOfertaModal :visible="mostrarModalRechazo" :nombre-oferta="oferta?.oferta || ''"
+      @cancelar="cerrarModalRechazo" @confirmar="confirmarRechazo" />
   </div>
 </template>
 
@@ -250,19 +245,26 @@ import { obtenerEmpleadorPorId } from '@/services/empleadorService.js'
 import { obtenerPostulaciones, postularAOferta } from '@/services/postulacionService.js'
 import RechazoOfertaModal from '../components/misOfertas/RechazoOfertaModal.vue'
 
-const route  = useRoute()
+const route = useRoute()
 const router = useRouter()
+
+const irAlPerfil = () => {
+  if (oferta.value?.id_empleador) {
+    router.push(`/empleador/${oferta.value.id_empleador}`)
+  }
+}
+
 
 const sesion = JSON.parse(localStorage.getItem('sesion') || '{}')
 const esSupervisor = computed(() => sesion.rol === 'supervisor')
 
-const oferta           = ref(null)
-const empresaData      = ref(null)
-const cargando         = ref(true)
-const error            = ref(null)
-const modalVisible     = ref(false)
-const postulando       = ref(false)
-const yaPostulado      = ref(false)
+const oferta = ref(null)
+const empresaData = ref(null)
+const cargando = ref(true)
+const error = ref(null)
+const modalVisible = ref(false)
+const postulando = ref(false)
+const yaPostulado = ref(false)
 const errorPostulacion = ref(null)
 const mostrarModalRechazo = ref(false)
 const motivoRechazo = ref('')
@@ -310,12 +312,12 @@ const formatearFechaCorta = (fecha) => {
   return new Date(fecha).toISOString().slice(0, 10)
 }
 
-const irALogin    = () => router.push('/login')
-const abrirModal  = () => { modalVisible.value = true }
+const irALogin = () => router.push('/login')
+const abrirModal = () => { modalVisible.value = true }
 const cerrarModal = () => { modalVisible.value = false; errorPostulacion.value = null }
 
 const confirmarPostulacion = async () => {
-  postulando.value       = true
+  postulando.value = true
   errorPostulacion.value = null
   try {
     await postularAOferta(sesion.id, route.params.id)
@@ -331,7 +333,7 @@ const confirmarPostulacion = async () => {
 // Funciones para supervisor
 const moderarOferta = async (estado) => {
   if (!oferta.value) return
-  
+
   try {
     const response = await cambiarEstadoOferta(oferta.value.id_oferta, estado, null)
     if (response.success) {
@@ -380,7 +382,7 @@ onMounted(async () => {
       (async () => {
         if (sesion.id && sesion.rol === 'estudiante' && oferta.value.estado === 1) {
           const posRes = await obtenerPostulaciones(sesion.id)
-          const lista  = posRes.data ?? []
+          const lista = posRes.data ?? []
           yaPostulado.value = lista.some(
             p => String(p.id_oferta) === String(route.params.id)
           )
@@ -400,6 +402,13 @@ onMounted(async () => {
 </script>
 
 <style scoped>
-.fade-enter-active, .fade-leave-active { transition: opacity 0.2s ease; }
-.fade-enter-from, .fade-leave-to       { opacity: 0; }
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.2s ease;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}
 </style>
