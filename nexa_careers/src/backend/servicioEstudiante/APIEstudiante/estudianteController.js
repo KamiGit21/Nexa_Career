@@ -1,6 +1,6 @@
 import db from './db.js';
 import { enviarCodigo } from './correoService.js';
-import { GoogleGenerativeAI } from '@google/generative-ai';
+import Groq from 'groq-sdk';
 import { uploadDir } from './cvController.js';
 import path from 'path';
 import fs from 'fs';
@@ -312,8 +312,8 @@ export const postularAOferta = async (req, res) => {
 export const analizarPerfilConIA = async (req, res) => {
   const { id } = req.params;
   console.log(`\n --- INICIANDO ANÁLISIS IA PARA ESTUDIANTE ${id} ---`);
-  if (process.env.GEMINI_API_KEY) {
-    const terminacion = process.env.GEMINI_API_KEY.slice(-4);
+  if (process.env.GROQ_API_KEY) {
+    const terminacion = process.env.GROQ_API_KEY.slice(-4);
     console.log(`🔑 API KEY DETECTADA: ✅ SÍ (Termina en ...${terminacion})`);
   } else {
     console.log(`🔑 API KEY DETECTADA: ❌ NO ESTÁ LEYENDO EL .env`);
@@ -444,11 +444,13 @@ export const analizarPerfilConIA = async (req, res) => {
     Ofertas disponibles: ${datosOfertas}
     Cursos disponibles: ${datosCursos}`;
 
-    const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-    const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" }); 
-    
-    const result = await model.generateContent(prompt);
-    let responseText = result.response.text();
+    const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
+
+    const result = await groq.chat.completions.create({
+    model: "llama-3.3-70b-versatile",
+    messages: [{ role: "user", content: prompt }],
+  });
+    let responseText = result.choices[0].message.content;
     
     responseText = responseText.replace(/```json/g, '').replace(/```/g, '').trim();
     const aiData = JSON.parse(responseText);
