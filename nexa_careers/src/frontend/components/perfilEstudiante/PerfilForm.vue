@@ -39,15 +39,21 @@
       </p>
     </div>
 
-    <!--<div class="password-group">
-      <div class="flex-between">
-        <label class="label-main">Contraseña:</label>
+    <div class="bg-gradient-to-br from-amber-50/50 to-orange-50/30 border border-amber-200/70 rounded-2xl p-6 my-6 space-y-3">
+      <div class="flex items-center gap-2">
+        <span class="text-xl">✨</span>
+        <h4 class="text-sm font-bold text-[#1b2a4a] uppercase tracking-wider">Sugerencias para mejorar tu perfil por IA</h4>
       </div>
-      <PasswordField v-model="formData.contrasena" />
-    </div>
+      
+      <div v-if="analizandoCV" class="flex items-center gap-3 text-sm text-gray-500 py-2">
+        <div class="animate-spin rounded-full h-4 w-4 border-b-2 border-[#b5943a]"></div>
+        <span>Analizando estructura de tu currículum...</span>
+      </div>
 
-    <InputField v-model="formData.confirmarContrasena" label="Confirmar Contraseña:" type="password"
-      placeholder="********" />-->
+      <div v-else class="text-sm text-gray-600 leading-relaxed bg-white/80 p-4 rounded-xl border border-amber-100">
+        <p class="whitespace-pre-line">{{ sugerenciaIA || 'Utiliza la herramienta de análisis por IA para mejorar tu currículum.' }}</p>
+      </div>
+    </div>
 
     <div class="submit-container">
       <SaveButton label="Guardar Cambios" class="btn-submit" />
@@ -71,6 +77,17 @@ import {
 
 const route = useRoute();
 const idEstudiante = ref(parseInt(route.params.id));
+
+
+const analizandoCV = ref(false);
+const sugerenciaIA = ref(
+  `💡 Tu perfil está muy bien orientado al desarrollo de software, pero aquí tienes 3 sugerencias clave:
+  
+  1. En la sección de Habilidades, especifica qué metodologías ágiles o estándares dominas (ej: Scrum, alineación a SGSI).
+  2. Integra proyectos reales en tu portafolio de GitHub como tus desarrollos en Vue.js o arquitecturas basadas en microservicios.
+  3. Asegúrate de añadir palabras clave de ciberseguridad si buscas roles de infraestructura o backend.`
+);
+
 
 // Datos del formulario
 const formData = reactive({
