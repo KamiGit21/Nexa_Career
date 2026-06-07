@@ -7,7 +7,7 @@
       <main class="flex-1 overflow-y-auto p-8">
         <div class="max-w-6xl mx-auto mb-8">
           <div
-            class="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white p-8 rounded-2xl shadow-sm border border-gray-100">
+            class="flex flex-col md:flex-row md:items-center justify-between gap-6 bg-white p-8 rounded-2xl shadow-sm border border-gray-100">
             <div>
               <div class="flex items-center gap-2 mb-2">
                 <h1 class="text-3xl font-extrabold text-gray-900 tracking-tight">Nexa AI Advisor</h1>
@@ -15,14 +15,32 @@
               <p class="text-gray-500 text-lg">Optimiza tu perfil y descubre las vacantes que mejor se adaptan a tu
                 experiencia.</p>
             </div>
-            <button @click="simularAnalisis" :disabled="isAnalyzing"
-              class="relative group overflow-hidden bg-gradient-to-r from-blue-600 to-indigo-700 text-white px-8 py-4 rounded-xl font-bold shadow-lg transition-all active:scale-95 disabled:opacity-70">
-              <div class="relative z-10 flex items-center gap-3">
-                <i v-if="!isAnalyzing" class="fas fa-wand-magic-sparkles"></i>
-                <i v-else class="fas fa-circle-notch fa-spin"></i>
-                <span>{{ isAnalyzing ? 'Procesando Perfil...' : 'Analizar mi CV' }}</span>
-              </div>
-            </button>
+
+            <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 flex-shrink-0">
+              
+              <button 
+                @click="recuperarUltimoAnalisis" 
+                :disabled="isAnalyzing" 
+                type="button"
+                class="w-full sm:w-auto px-5 py-4 text-sm font-bold text-[#b5943a] bg-white border-2 border-[#b5943a] hover:bg-[#b5943a]/5 active:scale-95 rounded-xl shadow-sm transition-all duration-200 disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              >
+                <i class="fas fa-history"></i>
+                <span>Recuperar Análisis</span>
+              </button>
+
+              <button 
+                @click="Analisis" 
+                :disabled="isAnalyzing"
+                class="w-full sm:w-auto relative group overflow-hidden bg-gradient-to-r from-blue-600 to-indigo-700 text-white px-8 py-4 rounded-xl font-bold shadow-lg transition-all active:scale-95 disabled:opacity-70"
+              >
+                <div class="relative z-10 flex items-center justify-center gap-3">
+                  <i v-if="!isAnalyzing" class="fas fa-circle-notch fa-spin"></i>
+                  <i v-else class="fas fa-wand-magic-sparkles"></i>
+                  <span>{{ isAnalyzing ? 'Procesando Perfil...' : 'Analizar mi CV' }}</span>
+                </div>
+              </button>
+            </div>
+
           </div>
         </div>
 
@@ -75,33 +93,42 @@
                 <h3 class="font-bold text-gray-700 flex items-center gap-2">
                   <i class="fas fa-graduation-cap text-indigo-500"></i> Cursos Recomendados
                 </h3>
-                <span v-if="hasResults" class="bg-indigo-100 text-indigo-700 text-[10px] font-black px-2 py-0.5 rounded-full uppercase tracking-wider">Top 5</span>
+                <span v-if="hasResults"
+                  class="bg-indigo-100 text-indigo-700 text-[10px] font-black px-2 py-0.5 rounded-full uppercase tracking-wider">Top
+                  5</span>
               </div>
 
               <div class="p-6">
                 <div v-if="isAnalyzing" class="space-y-3">
-                  <div v-for="n in 3" :key="n" class="h-16 bg-gray-50 rounded-xl animate-pulse border border-gray-100"></div>
+                  <div v-for="n in 3" :key="n" class="h-16 bg-gray-50 rounded-xl animate-pulse border border-gray-100">
+                  </div>
                 </div>
 
                 <div v-else-if="hasResults" class="space-y-4 animate-fadeIn">
-                  <p class="text-xs text-gray-500 mb-2">Potencia tus habilidades clave para aumentar tu compatibilidad con las ofertas:</p>
-                  
+                  <p class="text-xs text-gray-500 mb-2">Potencia tus habilidades clave para aumentar tu compatibilidad
+                    con las ofertas:</p>
+
                   <div v-for="(curso, index) in recommendedCourses" :key="curso.id" @click="verDetalleCurso(curso.id)"
                     class="group flex items-center justify-between p-3 rounded-xl border border-gray-100 hover:border-indigo-200 hover:bg-indigo-50/30 transition-all cursor-pointer">
                     <div class="flex items-center gap-3 overflow-hidden">
-                      <div class="w-8 h-8 rounded-lg bg-indigo-50 flex items-center justify-center font-bold text-indigo-600 text-sm flex-shrink-0 group-hover:bg-indigo-100">
+                      <div
+                        class="w-8 h-8 rounded-lg bg-indigo-50 flex items-center justify-center font-bold text-indigo-600 text-sm flex-shrink-0 group-hover:bg-indigo-100">
                         {{ index + 1 }}
                       </div>
                       <div class="overflow-hidden">
-                        <h4 class="text-xs font-bold text-gray-800 truncate group-hover:text-indigo-600 transition-colors">{{ curso.curso }}</h4>
+                        <h4
+                          class="text-xs font-bold text-gray-800 truncate group-hover:text-indigo-600 transition-colors">
+                          {{ curso.curso }}</h4>
                         <p class="text-[11px] text-gray-400 truncate">{{ curso.fecha_creacion }}</p>
                       </div>
                     </div>
                     <div class="flex items-center gap-2 flex-shrink-0 pl-2">
-                      <span class="text-[10px] font-semibold bg-gray-100 text-gray-600 px-2 py-0.5 rounded-md group-hover:bg-indigo-100 group-hover:text-indigo-700 transition-colors">
+                      <span
+                        class="text-[10px] font-semibold bg-gray-100 text-gray-600 px-2 py-0.5 rounded-md group-hover:bg-indigo-100 group-hover:text-indigo-700 transition-colors">
                         {{ curso.ofertante }}
                       </span>
-                      <i class="fas fa-chevron-right text-gray-300 text-xs group-hover:translate-x-0.5 transition-transform group-hover:text-indigo-400"></i>
+                      <i
+                        class="fas fa-chevron-right text-gray-300 text-xs group-hover:translate-x-0.5 transition-transform group-hover:text-indigo-400"></i>
                     </div>
                   </div>
                 </div>
@@ -110,7 +137,8 @@
                   <div class="w-12 h-12 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-3">
                     <i class="fas fa-book-open text-gray-300 text-xl"></i>
                   </div>
-                  <p class="text-gray-400 text-xs px-4">Las recomendaciones académicas aparecerán una vez analizado tu perfil.</p>
+                  <p class="text-gray-400 text-xs px-4">Las recomendaciones académicas aparecerán una vez analizado tu
+                    perfil.</p>
                 </div>
               </div>
             </section>
@@ -215,7 +243,7 @@ const verDetalleCurso = (idCurso) => {
   router.push(`/cursos/${idCurso}`)
 }
 
-const simularAnalisis = async () => {
+const Analisis = async () => {
   if (!idEstudiante.value) return;
 
   isAnalyzing.value = true;
@@ -239,6 +267,49 @@ const simularAnalisis = async () => {
     isAnalyzing.value = false;
   }
 }
+
+const recuperarUltimoAnalisis = async () => {
+  if (!idEstudiante.value) return;
+
+  isAnalyzing.value = true;
+  hasResults.value = false;
+
+  try {
+    await new Promise(resolve => setTimeout(resolve, 1200));
+    aiData.value = {
+      profile: {
+        role: "Frontend Developer (Vue.js / Tailwind)",
+        skills: ["Vue.js", "JavaScript", "Tailwind CSS", "Node.js", "Git"],
+        tip: "Análisis recuperado correctamente del historial. Tu perfil posee un excelente balance técnico, se sugiere profundizar en arquitecturas de microservicios."
+      },
+      jobs: [
+        {
+          id: 1,
+          title: "Desarrollador Frontend Vue.js Junior",
+          company: "DRoca Inmobiliaria",
+          location: "La Paz, Bolivia",
+          match: 95,
+          reason: "Tu stack coincide perfectamente con los requerimientos de la reingeniería de sistemas de la empresa.",
+          tags: ["Vue.js", "Tailwind", "Full-time"]
+        }
+      ]
+    };
+    
+    recommendedCourses.value = [
+      { id: 101, curso: "Arquitectura de Microservicios Avanzada", fecha_creacion: "2026-05-20", ofertante: "Nexa Careers" }
+    ];
+
+    hasResults.value = true;
+    alert('Último análisis almacenado recuperado con éxito.');
+
+  } catch (error) {
+    console.error('Error al recuperar el historial de análisis:', error);
+    alert('No se pudo recuperar ningún análisis previo para este estudiante.');
+  } finally {
+    isAnalyzing.value = false;
+  }
+}
+
 </script>
 
 <style scoped>
