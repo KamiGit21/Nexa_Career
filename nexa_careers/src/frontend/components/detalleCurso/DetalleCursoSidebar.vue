@@ -3,6 +3,18 @@
 
     <h2 class="text-lg font-bold text-[#1b2a4a] mb-4">Detalles del curso</h2>
 
+    <button
+      v-if="esEstudiante"
+      @click="toggleFavorito"
+      class="w-full mb-4 py-2.5 flex items-center justify-center gap-2 rounded-xl font-semibold text-sm transition-colors border"
+      :class="favorito
+        ? 'bg-red-50 border-red-200 text-red-600 hover:bg-red-100'
+        : 'bg-gray-50 border-gray-200 text-gray-600 hover:bg-gray-100'"
+    >
+      <span>{{ favorito ? '❤️' : '🤍' }}</span>
+      {{ favorito ? 'Guardado en favoritos' : 'Guardar en favoritos' }}
+    </button>
+
     <ul class="flex flex-col gap-3">
       <li class="flex justify-between items-center text-sm">
         <span class="text-gray-400">Estado:</span>
@@ -42,12 +54,27 @@
 </template>
 
 <script setup>
-import { computed } from 'vue'
+import { ref, computed } from 'vue'
 import CursoEstadoBadge from '../misCursos/CursoEstadoBadge.vue'
+import { guardarFavorito, eliminarFavorito } from '../../services/CursoFavoritos.js'
 
 const props = defineProps({
   curso: { type: Object, required: true }
 })
+
+const sesion = JSON.parse(localStorage.getItem('sesion') || '{}')
+const esEstudiante = sesion.rol === 'estudiante'
+const favorito = ref(false)
+// TODO (integración): inicializar con esCursoFavorito(sesion.id, props.curso.id_curso)
+
+const toggleFavorito = async () => {
+  if (favorito.value) {
+    await eliminarFavorito(sesion.id, props.curso.id_curso)
+  } else {
+    await guardarFavorito(sesion.id, props.curso.id_curso)
+  }
+  favorito.value = !favorito.value
+}
 
 const categorias = computed(() => {
   return props.curso.categorias || []

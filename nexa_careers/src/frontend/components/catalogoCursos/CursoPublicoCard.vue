@@ -8,7 +8,13 @@
         {{ categoriaPrincipal || 'General' }}
       </span>
 
-      <div class="flex flex-col items-end gap-1">
+      <div class="flex items-center gap-1">
+        <BotonFavorito
+          v-if="esEstudiante"
+          :activo="favorito"
+          tamano="sm"
+          @toggle="toggleFavorito"
+        />
         <span :class="['text-[10px] font-bold px-2 py-1 rounded-full', estadoConfig.bg, estadoConfig.text]">
           {{ estadoConfig.label }}
         </span>
@@ -59,7 +65,9 @@
 </template>
 
 <script setup>
-import { computed } from 'vue'
+import { ref, computed } from 'vue'
+import BotonFavorito from '../comunes/BotonFavorito.vue'
+import { guardarFavorito, eliminarFavorito } from '../../services/CursoFavoritos.js'
 
 const props = defineProps({
   curso: { type: Object, required: true },
@@ -67,6 +75,20 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['ver', 'dar-baja'])
+
+const sesion = JSON.parse(localStorage.getItem('sesion') || '{}')
+const esEstudiante = sesion.rol === 'estudiante'
+const favorito = ref(false)
+// TODO (integración): inicializar con esCursoFavorito(sesion.id, props.curso.id_curso)
+
+const toggleFavorito = async () => {
+  if (favorito.value) {
+    await eliminarFavorito(sesion.id, props.curso.id_curso)
+  } else {
+    await guardarFavorito(sesion.id, props.curso.id_curso)
+  }
+  favorito.value = !favorito.value
+}
 
 // Lógica de estados para cursos
 const ESTADOS = {
