@@ -24,6 +24,7 @@ import PerfilEmpleador from '@/views/EditarPerfilEmpleador.vue'
 
 // Dashboard
 import DashboardSupervisor from '@/views/DashboardSupervisor.vue'
+import IndicadoresDashboard from '@/views/IndicadoresDashboard.vue'
 
 // Cursos
 import PublicarCurso from '@/views/PublicarCurso.vue'
@@ -194,6 +195,13 @@ const routes = [
     component: DashboardSupervisor,
     meta: { requiereRol: ['supervisor'] }
   },
+
+  {
+  path: '/supervisor/indicadores',
+  name: 'IndicadoresDashboard',
+  component: IndicadoresDashboard,
+  meta: { requiereRol: ['supervisor'] }
+},
 
   //Logs del supervisor
   {
