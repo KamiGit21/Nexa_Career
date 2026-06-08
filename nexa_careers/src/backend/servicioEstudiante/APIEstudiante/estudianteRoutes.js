@@ -19,7 +19,7 @@ router.post('/enviarCodigo', estudianteController.enviarCodigoEstudiante);
 router.get('/:id/postulaciones', estudianteController.obtenerPostulacionesPorEstudiante);
 router.post('/:id/postulaciones', estudianteController.postularAOferta);//nuevooooo
 router.get('/analisis-ia/:id', estudianteController.analizarPerfilConIA);
-
+router.get('/notificacion/postulacion/:postulacion', estudianteController.enviarNotificacionEstudiante);
 
 
 export default router;
