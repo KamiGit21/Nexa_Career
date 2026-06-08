@@ -6,15 +6,18 @@
       <div class="w-12 h-12 bg-[#1b2a4a]/10 rounded-lg flex items-center justify-center text-2xl">
         💼
       </div>
-      <div class="flex flex-col items-end gap-1">
-        <span v-if="!mostrarEstado && esNueva" class="bg-green-100 text-green-700 text-[10px] font-bold px-2 py-1 rounded-full">
-          Nueva
-        </span>
-        <template v-if="mostrarEstado">
-          <span :class="['text-[10px] font-bold px-2 py-1 rounded-full', estadoConfig.bg, estadoConfig.text]">
-            {{ estadoConfig.label }}
+      <div class="flex items-start gap-1">
+        <BotonFavorito v-if="esEstudiante" :activo="favorito" tamano="sm" @toggle="toggleFavorito" />
+        <div class="flex flex-col items-end gap-1">
+          <span v-if="!mostrarEstado && esNueva" class="bg-green-100 text-green-700 text-[10px] font-bold px-2 py-1 rounded-full">
+            Nueva
           </span>
-        </template>
+          <template v-if="mostrarEstado">
+            <span :class="['text-[10px] font-bold px-2 py-1 rounded-full', estadoConfig.bg, estadoConfig.text]">
+              {{ estadoConfig.label }}
+            </span>
+          </template>
+        </div>
       </div>
     </div>
 
@@ -56,7 +59,9 @@
 </template>
 
 <script setup>
-import { computed } from 'vue'
+import { ref, computed } from 'vue'
+import BotonFavorito from '../comunes/BotonFavorito.vue'
+import { guardarFavorito, eliminarFavorito } from '../../services/OfertasFavoritos.js'
 
 const props = defineProps({
   oferta: Object,
@@ -65,6 +70,16 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['click-detalle', 'dar-baja'])
+
+const sesion       = JSON.parse(localStorage.getItem('sesion') || '{}')
+const esEstudiante = sesion.rol === 'estudiante'
+const favorito     = ref(false)
+// TODO (integración): inicializar con esOfertaFavorita(sesion.id, props.oferta.id_oferta)
+const toggleFavorito = async () => {
+  if (favorito.value) await eliminarFavorito(sesion.id, props.oferta.id_oferta)
+  else await guardarFavorito(sesion.id, props.oferta.id_oferta)
+  favorito.value = !favorito.value
+}
 
 const ESTADOS = {
   0: { label: 'Pendiente', bg: 'bg-yellow-100', text: 'text-yellow-800' },

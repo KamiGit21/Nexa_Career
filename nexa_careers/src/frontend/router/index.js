@@ -32,6 +32,7 @@ import DetalleCurso from '@/views/DetalleCurso.vue'
 import EmpleadorCursos from '@/views/EmpleadorCursos.vue'
 import EstudianteCursos from '@/views/EstudianteCursos.vue'
 import MisCursosFavoritos from '@/views/MisCursosFavoritos.vue'
+import MisOfertasFavoritas from '@/views/MisOfertasFavoritas.vue'
 
 //Logs del supervisor
 import ListaEstudiantes from '@/views/ListaEstudiantes.vue'
@@ -144,11 +145,17 @@ const routes = [
   },
 
   {
-  path: '/mis-favoritos',
-  name: 'MisCursosFavoritos',
-  component: MisCursosFavoritos,
-  meta: { requiereRol: ['estudiante'] }
-},
+    path: '/mis-favoritos',
+    name: 'MisCursosFavoritos',
+    component: MisCursosFavoritos,
+    meta: { requiereRol: ['estudiante'] }
+  },
+  {
+    path: '/mis-ofertas-favoritas',
+    name: 'MisOfertasFavoritas',
+    component: MisOfertasFavoritas,
+    meta: { requiereRol: ['estudiante'] }
+  },
 
   // Editar curso - ambos roles (de GPA-29/53)
   {
@@ -227,10 +234,10 @@ const routes = [
 
   //Categorias ofertas laborales
   {
-  path: '/supervisor/categorias',
-  name: 'GestionCategorias',
-  component: GestionCategorias,
-  meta: { requiereRol: ['supervisor'] }
+    path: '/supervisor/categorias',
+    name: 'GestionCategorias',
+    component: GestionCategorias,
+    meta: { requiereRol: ['supervisor'] }
   },
 
   //Analisis IA CV
