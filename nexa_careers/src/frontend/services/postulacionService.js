@@ -24,6 +24,14 @@ export async function postularAOferta(idEstudiante, idOferta) {
     id_oferta: idOferta,
     id_estudiante: idEstudiante
   })
+  if (data.success && data.id_postulante) {
+    try {
+      await api.get(`/api/empleadores/notificacion/postulacion/${data.id_postulante}`);
+      console.log('✉️ Notificación automática enviada al empleador con éxito.');
+    } catch (notifError) {
+      console.error('⚠️ No se pudo procesar la notificación por correo para el empleador:', notifError);
+    }
+  }
   return data
 }
 
@@ -52,6 +60,15 @@ export async function obtenerNumeroPostulacionesPorOferta(idOferta) {
 // Cambiar estado de la postulación 
 export async function cambiarEstadoPostulacion(idPostulante, estado) {
   const { data } = await api.put(`/api/ofertantes/${idPostulante}/estado`, { estado });
+
+  if (data.success && (estado === 1 || estado === '1')) {
+    try {
+      await api.get(`/api/estudiantes/notificacion/postulacion/${idPostulante}`);
+      console.log('✉️ Notificación automática de aceptación disparada con éxito.');
+    } catch (notifError) {
+      console.error('⚠️ No se pudo enviar la notificación automática por correo:', notifError);
+    }
+  }
   return data;
 }
 
