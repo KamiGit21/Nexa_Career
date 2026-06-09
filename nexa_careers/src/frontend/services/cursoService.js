@@ -242,3 +242,25 @@ export const desarchivarCurso = async (idCurso) => {
     return { success: false, message: 'Error de conexión' }
   }
 }
+
+// obtener SOLO cursos publicados estudiante
+export const listarCursosPublicadosPorEstudiante = async (id) => {
+  try {
+    const res = await fetch(`${API_URL}/cursos/estudiante/${id}/publicados`)
+    return await res.json()
+  } catch (error) {
+    console.error('Error en listarCursosPublicadosPorEstudiante:', error)
+    return { success: false, message: error.message }
+  }
+}
+
+// obtener SOLO cursos publicados empleador
+export const listarCursosPublicadosPorEmpleador = async (id) => {
+  try {
+    const res = await fetch(`${API_URL}/cursos/empleador/${id}/publicados`)
+    return await res.json()
+  } catch (error) {
+    console.error('Error en listarCursosPublicadosPorEmpleador:', error)
+    return { success: false, message: error.message }
+  }
+}
