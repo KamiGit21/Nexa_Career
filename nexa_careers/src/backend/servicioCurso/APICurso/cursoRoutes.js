@@ -15,6 +15,7 @@ router.get('/empleador/:id_empleador/publicados', cursoController.listarCursosPu
 router.get('/empleador/:id_empleador/cursos/buscar', cursoController.buscarCursosPorEmpleador);
 router.get('/pendientes', cursoController.listarCursosPendientes);
 router.get('/busqueda/avanzada', cursoController.buscarCursosPublicosAvanzado);
+router.get('/filtrar-por-fechas', cursoController.filtrarCursosPorRangoFechas);
 
 
 // Rutas para categorías de cursos
