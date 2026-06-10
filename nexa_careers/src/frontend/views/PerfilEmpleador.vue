@@ -150,7 +150,9 @@ import { ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 
 import { obtenerEmpleadorPorId } from '@/services/empleadorService.js'
-import { listarOfertasPorEmpleador } from '@/services/ofertaService.js'
+import { buscarOfertasPorEmpleadorConFiltro, contarOfertasEmpleador } from '@/services/ofertaService.js'
+import { contarCursosEmpleador } from '@/services/cursoService.js'
+import { contarOfertantesEmpleador } from '@/services/postulacionService.js'
 
 const route = useRoute()
 const router = useRouter()
@@ -160,9 +162,9 @@ const ofertas = ref([])
 const loadingOfertas = ref(true)
 
 const stats = ref({
-  total_ofertas: 52,
-  total_cursos: 17,
-  estudiantes_seleccionados: 21
+  total_ofertas: 0,
+  total_cursos: 0,
+  estudiantes_seleccionados: 0
 })
 
 const perfil = ref({
@@ -190,6 +192,7 @@ const obtenerTextoEstado = (estado) => {
     case 1: return 'Activa'
     case 2: return 'Rechazada'
     case 3: return 'Archivada'
+    case 4: return 'Vencida'
     default: return 'Desconocido'
   }
 }
@@ -200,6 +203,7 @@ const obtenerColorEstado = (estado) => {
     case 1: return 'bg-green-50 text-green-600 border-green-200'    // Aceptado
     case 2: return 'bg-red-50 text-red-600 border-red-200'          // Rechazado
     case 3: return 'bg-gray-100 text-gray-600 border-gray-300'      // Archivado
+    case 4: return 'bg-orange-50 text-orange-600 border-orange-200' // Vencida
     default: return 'bg-slate-50 text-slate-600 border-slate-200'
   }
 }
@@ -232,8 +236,28 @@ const cargarDatos = async () => {
       Object.assign(perfil.value, datosEmpresa);
 
       try {
+        const [resOfertas, resCursos, resPostulantes] = await Promise.all([
+          contarOfertasEmpleador(id),
+          contarCursosEmpleador(id),
+          contarOfertantesEmpleador(id)
+        ]);
+
+        if (resOfertas && resOfertas.success && resOfertas.data) {
+          stats.value.total_ofertas = resOfertas.data.total;
+        }
+        if (resCursos && resCursos.success && resCursos.data) {
+          stats.value.total_cursos = resCursos.data.total;
+        }
+        if (resPostulantes && resPostulantes.success && resPostulantes.data) {
+          stats.value.estudiantes_seleccionados = resPostulantes.data.total;
+        }
+      } catch (errStats) {
+        console.error("Error al cargar las estadísticas del empleador:", errStats);
+      }
+
+      try {
         loadingOfertas.value = true;
-        const respuestaOfertas = await listarOfertasPorEmpleador(id);
+        const respuestaOfertas = await buscarOfertasPorEmpleadorConFiltro(id, '', 1);
         
         if (respuestaOfertas && respuestaOfertas.success && Array.isArray(respuestaOfertas.data)) {
           ofertas.value = respuestaOfertas.data;

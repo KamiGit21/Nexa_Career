@@ -76,3 +76,13 @@ export async function contarPostulacionesPorEstado(estado) {
   const { data } = await api.get(`/api/ofertantes/contar/${estado}`);
   return data;
 }
+
+export async function contarOfertantesEmpleador(idEmpleador) {
+  try {
+    const { data } = await api.get(`/api/ofertantes/contar/empleador/${idEmpleador}`);
+    return data;
+  } catch (error) {
+    console.error('Error en contarOfertantesEmpleador:', error);
+    return { success: false, data: { total: 0 } };
+  }
+}

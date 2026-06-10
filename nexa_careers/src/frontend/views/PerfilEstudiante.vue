@@ -116,6 +116,7 @@ import { useRoute, useRouter } from 'vue-router' // Se añadió useRouter aquí
 
 import * as estudianteService from '@/services/estudianteService'
 import { obtenerCarreraPorId } from '@/services/carreraService'
+import { contarCursosEstudiante } from '@/services/cursoService'
 
 const route = useRoute()
 const router = useRouter() // Ahora sí funcionará
@@ -140,7 +141,7 @@ const estudiante = ref({
 })
 
 const stats = ref({
-  total_cursos: 31,
+  total_cursos: 0,
 })
 
 const urlCV = computed(() => {
@@ -175,7 +176,17 @@ const cargarPostulante = async () => {
       }
     }
 
-    // 2. Si hay ofertaId, verificar estado de postulación en puerto 3004
+    try {
+      const dataCursos = await contarCursosEstudiante(estudianteId);
+      if (dataCursos && dataCursos.success && dataCursos.data) {
+        stats.value.total_cursos = dataCursos.data.total;
+      }
+    } catch (err) {
+      console.error('Error al cargar el total de cursos del estudiante:', err);
+      stats.value.total_cursos = 0;
+    }
+
+    // Si hay ofertaId, verificar estado de postulación en puerto 3004
     if (ofertaId.value) {
       const resOf = await fetch(`http://localhost:3004/api/ofertantes/buscar?id_oferta=${ofertaId.value}&id_estudiante=${estudianteId}`)
       const dataOf = await resOf.json()

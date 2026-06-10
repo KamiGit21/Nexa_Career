@@ -253,3 +253,23 @@ export const contarCursosPorEstado = async (estado) => {
   const { data } = await api.get(`/api/cursos/contar/${estado}`);
   return data;
 }
+
+export const contarCursosEstudiante = async (idEstudiante) => {
+  try {
+    const { data } = await api.get(`/api/cursos/contar/estudiante/${idEstudiante}`);
+    return data;
+  } catch (error) {
+    console.error('Error en contarCursosEstudiante:', error);
+    return { success: false, data: { total: 0 } };
+  }
+}
+
+export const contarCursosEmpleador = async (idEmpleador) => {
+  try {
+    const { data } = await api.get(`/api/cursos/contar/empleador/${idEmpleador}`);
+    return data;
+  } catch (error) {
+    console.error('Error en contarCursosEmpleador:', error);
+    return { success: false, data: { total: 0 } };
+  }
+}
