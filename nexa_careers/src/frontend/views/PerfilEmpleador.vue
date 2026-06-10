@@ -122,21 +122,7 @@
               </section>
             </div>
 
-            <div class="space-y-6">
-              <div class="bg-slate-50 p-6 rounded-2xl border border-slate-100">
-                <h4 class="text-slate-800 font-bold mb-4">Datos de Registro</h4>
-                <div class="space-y-4">
-                  <div>
-                    <p class="text-xs text-gray-400 uppercase font-bold">ID Empleador</p>
-                    <p class="text-slate-700 font-medium">#{{ perfil.id_empleador || '---' }}</p>
-                  </div>
-                  <div>
-                    <p class="text-xs text-gray-400 uppercase font-bold">Correo Corporativo</p>
-                    <p class="text-slate-700 font-medium truncate">{{ perfil.gmail }}</p>
-                  </div>
-                </div>
-              </div>
-            </div>
+            
 
           </div>
         </div>
