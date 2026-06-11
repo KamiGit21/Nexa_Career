@@ -22,13 +22,25 @@
       </div>
     </div>
 
-    <div 
+    <div v-if="loading" class="text-center py-12">
+      <p class="text-gray-500">Cargando cursos...</p>
+    </div>
+
+    <div v-else-if="error" class="text-center py-12">
+      <p class="text-red-500">{{ error }}</p>
+    </div>
+
+    <div v-else-if="cursos.length === 0" class="text-center py-12">
+      <p class="text-gray-500">No hay cursos disponibles en este momento.</p>
+    </div>
+
+    <div v-else
       ref="carouselRef"
       class="flex overflow-x-auto scroll-smooth snap-x snap-mandatory no-scrollbar pb-4 -mx-2"
     >
       <CursoCard 
         v-for="curso in cursos" 
-        :key="curso.id" 
+        :key="curso.id_curso || curso.id" 
         :curso="curso"
         class="snap-start"
       />
@@ -37,37 +49,41 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 import CursoCard from './CursoCard.vue'
+import { listarCursosPublicosPaginadosPorFecha } from '@/services/cursoService'
 
 const carouselRef = ref(null)
+const cursos = ref([])
+const loading = ref(true)
+const error = ref(null)
 
-const cursos = ref([
-  {
-    id: 1,
-    nombre_curso: "Desarrollo Web Moderno con Vue 3",
-    descripcion: "Aprende de cero a experto la composición API, gestión de estado global y despliegue optimizado.",
-    fecha_inicio: "2026-06-15"
-  },
-  {
-    id: 2,
-    nombre_curso: "Arquitectura de Microservicios con Node.js",
-    descripcion: "Diseña sistemas escalables, tolerantes a fallos y domina la comunicación asíncrona entre servicios.",
-    fecha_inicio: "2026-06-22"
-  },
-  {
-    id: 3,
-    nombre_curso: "Fundamentos de Ciberseguridad y Sistemas SGSI",
-    descripcion: "Introduce los estándares internacionales de seguridad de la información y protección de activos digitales.",
-    fecha_inicio: "2026-07-01"
-  },
-  {
-    id: 4,
-    nombre_curso: "Base de Datos Avanzadas y Optimización de Consultas",
-    descripcion: "Domina el modelado complejo, indexación y alta disponibilidad utilizando PostgreSQL y Supabase.",
-    fecha_inicio: "2026-07-10"
+// Obtener cursos más recientes (descendente) con estado 1 (aceptado)
+const cargarCursos = async () => {
+  try {
+    loading.value = true
+    error.value = null
+    // Obtener la primera página de cursos con dirección 'abajo' (descendente/más recientes) y estado 1
+    const response = await listarCursosPublicosPaginadosPorFecha(1, 8, 'abajo')
+    
+    if (response.success && response.data) {
+      cursos.value = response.data
+    } else {
+      error.value = 'No se pudieron cargar los cursos'
+      cursos.value = []
+    }
+  } catch (err) {
+    console.error('Error al cargar cursos:', err)
+    error.value = err.message
+    cursos.value = []
+  } finally {
+    loading.value = false
   }
-])
+}
+
+onMounted(() => {
+  cargarCursos()
+})
 
 const scroll = (direction) => {
   if (carouselRef.value) {
