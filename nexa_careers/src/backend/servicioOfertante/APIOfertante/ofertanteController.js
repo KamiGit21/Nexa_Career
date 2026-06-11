@@ -210,3 +210,37 @@ export const contarPostulante = async (req, res) => {
     });
   }
 };
+
+export const contarOfertantesEmpleador = async (req, res) => {
+  const { empleador } = req.params;
+  if (empleador === undefined) {
+    return res.status(400).json({ 
+      success: false, 
+      message: 'Debes proporcionar un ID de empleador para contar sus postulaciones.' 
+    });
+  }
+
+  try {
+   const [result] = await db.query(
+      `SELECT COUNT(*) as total 
+       FROM postulante.postulante p
+       JOIN oferta.oferta o ON p.id_oferta = o.id_oferta
+       WHERE o.id_empleador = ? AND p.estado = 1`,
+      [empleador]
+    );
+    res.status(200).json({
+      success: true,
+      data: {
+        empleador: parseInt(empleador),
+        total: result[0].total
+      }
+    });
+
+  } catch (error) {
+    console.error('❌ Error al contar postulaciones:', error);
+    res.status(500).json({ 
+      success: false, 
+      message: 'Error interno al intentar contar las postulaciones' 
+    });
+  }
+};

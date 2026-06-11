@@ -1,5 +1,5 @@
 import db from './db.js';
-import { enviarCodigo } from './correoService.js';
+import { enviarCodigo, enviarNotificacionNuevaOferta } from './correoService.js';
 
 export const registrarSupervisor = async (req, res) => {
   const { nombre, telefono, gmail, contrasena } = req.body;
@@ -445,5 +445,55 @@ export const enviarCodigoSupervisor = async (req, res) => {
   } catch (error) {
     console.error('Error en enviarCodigoSupervisor:', error);
     res.status(500).json({ success: false, message: 'Error interno del servidor' });
+  }
+};
+
+export const notificarNuevaOfertaA_Supervisores = async (req, res) => {
+  const { idOferta } = req.params;
+  console.log(`\n --- PROCESANDO NOTIFICACIÓN DE NUEVA OFERTA PARA SUPERVISORES ---`);
+  console.log(`Oferta ID: ${idOferta}`);
+
+  try {
+    const [ofertaRows] = await db.query(`
+      SELECT o.oferta, emp.empresa AS empleador 
+      FROM oferta.oferta o
+      JOIN empleador.empleador emp ON o.id_empleador = emp.id_empleador
+      WHERE o.id_oferta = ?
+    `, [idOferta]);
+
+    if (ofertaRows.length === 0) {
+      return res.status(404).json({ success: false, message: 'No se encontró la oferta especificada.' });
+    }
+
+    const { oferta, empleador } = ofertaRows[0];
+
+    
+    const [supervisores] = await db.query(`
+      SELECT gmail FROM supervisor.supervisor WHERE activo = 1
+    `);
+
+    if (supervisores.length === 0) {
+      console.log('⚠️ No se encontraron supervisores activos registrados en el sistema.');
+      return res.status(200).json({ success: true, message: 'No hay supervisores activos a quienes notificar.' });
+    }
+
+    console.log(`📢 Enviando notificaciones a ${supervisores.length} supervisores activos...`);
+
+   
+    const enviosPromesas = supervisores.map(sup => {
+      if (sup.gmail) {
+        return enviarNotificacionNuevaOferta(sup.gmail, empleador, oferta);
+      }
+      return Promise.resolve({ success: false });
+    });
+
+    await Promise.all(enviosPromesas);
+
+    console.log('✅ Correos masivos enviados correctamente al equipo de supervisión.');
+    return res.status(200).json({ success: true, message: 'Todos los supervisores fueron notificados con éxito.' });
+
+  } catch (error) {
+    console.error('❌ Error interno en notificarNuevaOfertaA_Supervisores:', error);
+    return res.status(500).json({ success: false, message: 'Error interno en el servidor al despachar las notificaciones.' });
   }
 };

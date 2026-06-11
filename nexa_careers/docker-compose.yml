@@ -1,12 +1,10 @@
-version: '3.8'
-
 services:
   # ==========================================
   # API GATEWAY
   # ==========================================
   api-gateway:
-    build: 
-      context: . 
+    build:
+      context: .
       dockerfile: Dockerfile
     container_name: nexa_api_gateway
     ports:
@@ -16,7 +14,7 @@ services:
     volumes:
       - .:/app
       - /app/node_modules
-    command: ["node","--watch", "src/backend/api-gateway/index.js"]
+    command: ["node", "src/backend/api-gateway/index.js"]
     networks:
       - nexa_network
 
@@ -24,115 +22,147 @@ services:
   # MICROSERVICIOS BACKEND
   # ==========================================
   servicio-carrera:
-    build: 
+    build:
       context: .
       dockerfile: Dockerfile
     container_name: nexa_servicio_carrera
+    ports:
+      - "3002:3002"
     env_file:
       - .env
     volumes:
       - .:/app
       - /app/node_modules
-    command: ["node", "--watch", "src/backend/servicioCarrera/APICarrera/indexCarrera.js"] 
+    command: ["node", "src/backend/servicioCarrera/APICarrera/indexCarrera.js"]
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     networks:
       - nexa_network
 
   servicio-estudiante:
-    build: 
+    build:
       context: .
       dockerfile: Dockerfile
     container_name: nexa_servicio_estudiante
+    ports:
+      - "3003:3003"
     env_file:
       - .env
     volumes:
       - ./src/backend/servicioEstudiante/uploads:/app/src/backend/servicioEstudiante/uploads
       - .:/app
       - /app/node_modules
-    command: ["node", "--watch", "src/backend/servicioEstudiante/APIEstudiante/indexEstudiante.js"]
+    command: ["node", "src/backend/servicioEstudiante/APIEstudiante/indexEstudiante.js"]
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     networks:
       - nexa_network
 
   servicio-empleador:
-    build: 
+    build:
       context: .
       dockerfile: Dockerfile
     container_name: nexa_servicio_empleador
+    ports:
+      - "3004:3004"
     env_file:
       - .env
     volumes:
       - .:/app
       - /app/node_modules
-    command: ["node", "--watch", "src/backend/servicioEmpleador/APIEmpleador/indexEmpleador.js"]
+    command: ["node", "src/backend/servicioEmpleador/APIEmpleador/indexEmpleador.js"]
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     networks:
       - nexa_network
 
   servicio-supervisor:
-    build: 
+    build:
       context: .
       dockerfile: Dockerfile
     container_name: nexa_servicio_supervisor
+    ports:
+      - "3005:3005"
     env_file:
       - .env
     volumes:
       - .:/app
       - /app/node_modules
-    command: ["node", "--watch", "src/backend/servicioSupervisor/APISupervisor/indexSupervisor.js"]
+    command: ["node", "src/backend/servicioSupervisor/APISupervisor/indexSupervisor.js"]
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     networks:
       - nexa_network
 
   servicio-oferta:
-    build: 
+    build:
       context: .
       dockerfile: Dockerfile
     container_name: nexa_servicio_oferta
+    ports:
+      - "3006:3006"
     env_file:
       - .env
     volumes:
       - .:/app
       - /app/node_modules
-    command: ["node", "--watch", "src/backend/servicioOferta/APIOferta/indexOferta.js"]
+    command: ["node", "src/backend/servicioOferta/APIOferta/indexOferta.js"]
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     networks:
       - nexa_network
 
   servicio-ofertante:
-    build: 
+    build:
       context: .
       dockerfile: Dockerfile
     container_name: nexa_servicio_ofertante
+    ports:
+      - "3007:3007"
     env_file:
       - .env
     volumes:
       - .:/app
       - /app/node_modules
-    command: ["node", "--watch", "src/backend/servicioOfertante/APIOfertante/indexOfertante.js"]
+    command: ["node", "src/backend/servicioOfertante/APIOfertante/indexOfertante.js"]
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     networks:
       - nexa_network
 
   servicio-curso:
-    build: 
+    build:
       context: .
       dockerfile: Dockerfile
     container_name: nexa_servicio_curso
+    ports:
+      - "3008:3008"
     env_file:
       - .env
     volumes:
       - .:/app
       - /app/node_modules
-    command: ["node", "--watch", "src/backend/servicioCurso/APICurso/indexCurso.js"]
+    command: ["node", "src/backend/servicioCurso/APICurso/indexCurso.js"]
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     networks:
       - nexa_network
 
   servicio-categoria:
-    build: 
+    build:
       context: .
       dockerfile: Dockerfile
     container_name: nexa_servicio_categoria
+    ports:
+      - "3009:3009"
     env_file:
       - .env
     volumes:
       - .:/app
       - /app/node_modules
-    command: ["node", "--watch", "src/backend/servicioCategoria/APICategoria/indexCategoria.js"]
+    command: ["node", "src/backend/servicioCategoria/APICategoria/indexCategoria.js"]
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     networks:
       - nexa_network
 
@@ -140,7 +170,7 @@ services:
   # FRONTEND (VITE)
   # ==========================================
   frontend:
-    build: 
+    build:
       context: .
       dockerfile: src/frontend/Dockerfile
     container_name: nexa_frontend
@@ -148,8 +178,6 @@ services:
       - "5173:5173"
     env_file:
       - .env
-    environment:                          
-      - CHOKIDAR_USEPOLLING=true
     volumes:
       - .:/app
       - /app/node_modules

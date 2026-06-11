@@ -37,3 +37,37 @@ export const enviarCodigo = async (correoDestino, codigo) => {
     return { success: false, message: 'Fallo al enviar el correo' };
   }
 };
+
+export const enviarNotificacion = async (correoDestino, nombre, apellido, oferta) => {
+  try { 
+    const mailOptions = {
+      from: '"Nexa Careers" <nexacareersjobs@gmail.com>',
+      to: correoDestino,
+      subject: `Postulación Aceptada - Nexa Careers`,
+      html: `
+        <div style="font-family: Arial, sans-serif; padding: 20px; color: #333;">
+          <div style="max-w: 600px; margin: 0 auto; border: 1px solid #e2e8f0; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);">
+            <div style="background-color: #1b2a4a; padding: 25px; text-align: center; color: white;">
+              <h2 style="margin: 0; font-size: 22px;">¡Actualización de tu Postulación!</h2>
+            </div>
+            <div style="padding: 30px; background-color: #ffffff;">
+              <p style="font-size: 16px; margin: 0 0 20px 0; line-height: 1.5;">
+                Estimado <b>${nombre} ${apellido}</b> su postulacion a la oferta <b>${oferta}</b> fue aceptada, este atento a contacto posterior.
+              </p>
+              <div style="margin-top: 25px; padding-top: 20px; border-top: 1px solid #edf2f7; text-align: center;">
+                <p style="font-size: 12px; color: #a0aec0; margin: 0;">Este es un mensaje automático enviado por Nexa Careers. Por favor no respondas a este correo.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      `
+    };
+
+    const info = await transporter.sendMail(mailOptions);
+    console.log(`Notificación enviada con éxito a ${correoDestino}: %s`, info.messageId);
+    return { success: true };
+  } catch (error) {
+    console.error('Error al enviar la notificación:', error);
+    return { success: false, message: 'Fallo al enviar la notificación' };
+  }
+};

@@ -23,5 +23,6 @@ router.put('/:id/estado', supervisorController.cambiarEstado);
 router.get('/:id', supervisorController.buscarSupervisorPorId);
 
 router.post('/enviarCodigo', supervisorController.enviarCodigoSupervisor);
+router.get('/notificacion/oferta/:idOferta', supervisorController.notificarNuevaOfertaA_Supervisores);
 
 export default router;

@@ -28,6 +28,15 @@ export async function buscarOfertasPorTitulo(titulo) {
 
 export async function crearOferta(payload) {
   const { data } = await api.post('/api/ofertas/crear', payload)
+  if (data.success && (data.id_oferta || data.id)) {
+    const idNuevaOferta = data.id_oferta || data.id;
+    try {
+      await api.get(`/api/supervisores/notificacion/oferta/${idNuevaOferta}`);
+      console.log('✉️ Notificación masiva despachada con éxito al equipo de supervisores.');
+    } catch (notifError) {
+      console.error('⚠️ No se pudo completar el envío de correos automáticos a los supervisores:', notifError);
+    }
+  }
   return data
 }
 
@@ -109,6 +118,16 @@ export const actualizarVencimientos = async () => {
   }
 };
 
+export async function contarOfertasEmpleador(idEmpleador) {
+  try {
+    const { data } = await api.get(`/api/ofertas/contar/empleador/${idEmpleador}`);
+    return data;
+  } catch (error) {
+    console.error('Error en contarOfertasEmpleador:', error);
+    return { success: false, data: { total: 0 } };
+  }
+}
+
 
 export default {
   listarOfertas,
@@ -124,5 +143,7 @@ export default {
   contarOfertasPorEstado,
   obtenerOfertasPaginacionOrdenada,
   obtenerOfertasPaginacionPorEstadoYFecha,
-  actualizarVencimientos
+  actualizarVencimientos,
+  contarOfertasEmpleador,
+  buscarOfertasPorEmpleadorConFiltro
 }
