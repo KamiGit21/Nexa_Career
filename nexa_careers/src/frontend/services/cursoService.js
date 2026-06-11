@@ -264,3 +264,13 @@ export const listarCursosPublicadosPorEmpleador = async (id) => {
     return { success: false, message: error.message }
   }
 }
+
+export const filtrarCursosPorFechas = async (fechaDesde, fechaHasta) => {
+  try {
+    const res = await fetch(`${API_URL}/cursos/filtrar-por-fechas?fechaDesde=${fechaDesde}&fechaHasta=${fechaHasta}`)
+    return await res.json()
+  } catch (error) {
+    console.error('Error en filtrarCursosPorFechas:', error)
+    return { success: false, message: error.message }
+  }
+}
