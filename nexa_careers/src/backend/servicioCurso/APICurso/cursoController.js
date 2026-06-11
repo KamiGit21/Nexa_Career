@@ -765,3 +765,65 @@ export const contarCursos = async (req, res) => {
     });
   }
 };
+
+export const contarCursosEstudiante = async (req, res) => {
+  const { estudiante } = req.params;
+  if (estudiante === undefined) {
+    return res.status(400).json({ 
+      success: false, 
+      message: 'Debes proporcionar un ID de estudiante para contar sus cursos.' 
+    });
+  }
+
+  try {
+    const [result] = await db.query(
+      'SELECT COUNT(*) as total FROM curso.curso WHERE id_estudiante = ? AND estado = 1',
+      [estudiante]
+    );
+    res.status(200).json({
+      success: true,
+      data: {
+        estudiante: parseInt(estudiante),
+        total: result[0].total
+      }
+    });
+
+  } catch (error) {
+    console.error('❌ Error al contar cursos:', error);
+    res.status(500).json({ 
+      success: false, 
+      message: 'Error interno al intentar contar los cursos' 
+    });
+  }
+};
+
+export const contarCursosEmpleador = async (req, res) => {
+  const { empleador } = req.params;
+  if (empleador === undefined) {
+    return res.status(400).json({ 
+      success: false, 
+      message: 'Debes proporcionar un ID de empleador para contar sus cursos.' 
+    });
+  }
+
+  try {
+    const [result] = await db.query(
+      'SELECT COUNT(*) as total FROM curso.curso WHERE id_empleador = ? AND estado = 1',
+      [empleador]
+    );
+    res.status(200).json({
+      success: true,
+      data: {
+        empleador: parseInt(empleador),
+        total: result[0].total
+      }
+    });
+
+  } catch (error) {
+    console.error('❌ Error al contar cursos:', error);
+    res.status(500).json({ 
+      success: false, 
+      message: 'Error interno al intentar contar los cursos' 
+    });
+  }
+};

@@ -118,6 +118,16 @@ export const actualizarVencimientos = async () => {
   }
 };
 
+export async function contarOfertasEmpleador(idEmpleador) {
+  try {
+    const { data } = await api.get(`/api/ofertas/contar/empleador/${idEmpleador}`);
+    return data;
+  } catch (error) {
+    console.error('Error en contarOfertasEmpleador:', error);
+    return { success: false, data: { total: 0 } };
+  }
+}
+
 
 export default {
   listarOfertas,
@@ -133,5 +143,7 @@ export default {
   contarOfertasPorEstado,
   obtenerOfertasPaginacionOrdenada,
   obtenerOfertasPaginacionPorEstadoYFecha,
-  actualizarVencimientos
+  actualizarVencimientos,
+  contarOfertasEmpleador,
+  buscarOfertasPorEmpleadorConFiltro
 }

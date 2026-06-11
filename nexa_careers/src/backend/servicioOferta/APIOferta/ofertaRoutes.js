@@ -29,6 +29,7 @@ router.get('/pagina/:pagina/size/:size/apertura/arriba/estado/:estado/', ofertaC
 router.get('/pagina/:pagina/size/:size/apertura/abajo/estado/:estado/', ofertaController.obtenerOfertasPaginacionPorEstadoYFechaDescendente);
 router.patch('/vencidas', ofertaController.actualizarOfertasVencidas);
 router.get('/contar/:estado', ofertaController.contarOfertas);
+router.get('/contar/empleador/:empleador', ofertaController.contarOfertasEmpleador);
 
 
 export default router;
