@@ -9,6 +9,7 @@ router.get('/buscar', categoriaController.buscarCategoriaPorNombre);
 router.get('/:id', categoriaController.buscarCategoriaPorId);
 
 router.get('/', categoriaController.listarCategorias);
+router.put('/oferta/:id_oferta', categoriaController.actualizarCategoriasDeOferta);
 router.put('/:id/asociar-oferta', categoriaController.asociarCategoriaAOferta);
 
 

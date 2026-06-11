@@ -30,9 +30,15 @@ export async function asociarCategoriaAOferta(idCategoria, idOferta) {
     return data
 }
 
+export async function actualizarCategoriasOferta(idOferta, categorias) {
+    const { data } = await api.put(`/api/categorias/oferta/${idOferta}`, { categorias })
+    return data
+}
+
 export default {
     listarCategorias,
     obtenerCategoriaPorId,
     buscarCategoriasPorNombre,
-    asociarCategoriaAOferta
+    asociarCategoriaAOferta,
+    actualizarCategoriasOferta
 }

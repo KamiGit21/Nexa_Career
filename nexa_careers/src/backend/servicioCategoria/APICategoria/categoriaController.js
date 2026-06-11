@@ -109,4 +109,48 @@ export const asociarCategoriaAOferta = async (req, res) => {
   }
 };
 
+export const actualizarCategoriasDeOferta = async (req, res) => {
+  const { id_oferta } = req.params;
+  const { categorias } = req.body;
+
+  if (!Array.isArray(categorias)) {
+    return res.status(400).json({ success: false, message: 'El campo categorias debe ser un arreglo de IDs de categoría' });
+  }
+
+  try {
+    const [ofertaRows] = await db.query('SELECT * FROM oferta.oferta WHERE id_oferta = ?', [id_oferta]);
+    if (ofertaRows.length === 0) {
+      return res.status(404).json({ success: false, message: 'Oferta laboral no encontrada' });
+    }
+
+    const connection = await db.getConnection();
+    try {
+      await connection.beginTransaction();
+      await connection.query('DELETE FROM categoria_oferta.categoria_oferta WHERE id_oferta = ?', [id_oferta]);
+
+      const categoriasUnicas = [...new Set(categorias.filter((idCategoria) => idCategoria !== undefined && idCategoria !== null))];
+      for (const idCategoria of categoriasUnicas) {
+        const [categoriaRows] = await connection.query('SELECT * FROM categoria.categoria WHERE id_categoria = ?', [idCategoria]);
+        if (categoriaRows.length === 0) {
+          await connection.rollback();
+          return res.status(404).json({ success: false, message: `Categoría no encontrada: ${idCategoria}` });
+        }
+        await connection.query('INSERT INTO categoria_oferta.categoria_oferta (id_categoria, id_oferta) VALUES (?, ?)', [idCategoria, id_oferta]);
+      }
+
+      await connection.commit();
+      res.status(200).json({ success: true, message: 'Categorías de la oferta laboral actualizadas correctamente' });
+    } catch (error) {
+      await connection.rollback();
+      console.error('Error al actualizar categorías de oferta:', error);
+      res.status(500).json({ success: false, message: 'Error interno del servidor al actualizar categorías' });
+    } finally {
+      connection.release();
+    }
+  } catch (error) {
+    console.error('Error al actualizar las categorías de la oferta:', error);
+    return res.status(500).json({ success: false, message: 'Error interno del servidor al actualizar categorías' });
+  }
+};
+
 export const dummy = null;

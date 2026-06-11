@@ -124,6 +124,24 @@
                   </span>
                 </div>
               </div>
+
+              <div v-if="esSupervisor" class="bg-white rounded-2xl border border-gray-200 p-6 mb-5">
+                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4">
+                  <div>
+                    <h3 class="text-lg font-bold text-[#1b2a4a]">Editar categorías</h3>
+                    <p class="text-sm text-gray-500">Ajusta las etiquetas de esta oferta antes de aprobarla.</p>
+                  </div>
+                  <button
+                    type="button"
+                    @click="mostrarModalConfirmarCategorias = true"
+                    class="px-4 py-2 bg-[#1b2a4a] text-white rounded-xl hover:bg-[#0f1a2e] transition"
+                  >
+                    Guardar categorías
+                  </button>
+                </div>
+                <CategoriaOfertaSelect v-model="categoriaIds" />
+                <p v-if="errorCategorias" class="mt-3 text-sm text-red-500">{{ errorCategorias }}</p>
+              </div>
             </div>
 
             <!-- Acción principal (postular - solo para estudiantes y ofertas activas) -->
@@ -231,6 +249,39 @@
       </div>
     </Transition>
 
+    <Transition name="fade">
+      <div
+        v-if="mostrarModalConfirmarCategorias"
+        class="fixed inset-0 bg-black/40 flex items-center justify-center z-50 px-4"
+        @click.self="mostrarModalConfirmarCategorias = false"
+      >
+        <div class="bg-white rounded-2xl shadow-xl p-8 w-full max-w-md space-y-4">
+          <h2 class="text-lg font-bold text-slate-800">Confirmar actualización de categorías</h2>
+          <p class="text-sm text-slate-600">
+            ¿Deseas aplicar los cambios realizados en las categorías de esta oferta?
+          </p>
+
+          <p v-if="errorCategorias" class="text-sm text-red-500">{{ errorCategorias }}</p>
+
+          <div class="flex gap-3 pt-2">
+            <button
+              class="flex-1 py-2.5 rounded-xl border border-gray-200 text-slate-600 hover:bg-slate-50 text-sm transition"
+              @click="mostrarModalConfirmarCategorias = false"
+            >
+              Cancelar
+            </button>
+            <button
+              class="flex-1 py-2.5 rounded-xl bg-[#1b2a4a] hover:bg-[#0f1a2e] text-white text-sm font-semibold transition disabled:opacity-50"
+              :disabled="guardandoCategorias"
+              @click="guardarCategorias"
+            >
+              {{ guardandoCategorias ? 'Guardando...' : 'Confirmar' }}
+            </button>
+          </div>
+        </div>
+      </div>
+    </Transition>
+
     <!-- Modal de rechazo para supervisor -->
     <RechazoOfertaModal
   :visible="mostrarModalRechazo"
@@ -245,10 +296,12 @@
 import { ref, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { obtenerOfertaPorId } from '@/services/ofertaService.js'
+import { actualizarCategoriasOferta } from '@/services/categoriaService.js'
 import { cambiarEstadoOferta } from '@/services/supervisorService.js'
 import { obtenerEmpleadorPorId } from '@/services/empleadorService.js'
 import { obtenerPostulaciones, postularAOferta } from '@/services/postulacionService.js'
 import RechazoOfertaModal from '../components/misOfertas/RechazoOfertaModal.vue'
+import CategoriaOfertaSelect from '@/components/publicarOferta/CategoriaOfertaSelect.vue'
 
 const route  = useRoute()
 const router = useRouter()
@@ -265,7 +318,11 @@ const postulando       = ref(false)
 const yaPostulado      = ref(false)
 const errorPostulacion = ref(null)
 const mostrarModalRechazo = ref(false)
-const motivoRechazo = ref('')
+const motivoRechazo    = ref('')
+const categoriaIds     = ref([])
+const guardandoCategorias = ref(false)
+const mostrarModalConfirmarCategorias = ref(false)
+const errorCategorias  = ref('')
 
 // Ruta de volver según rol
 const rutaVolver = computed(() => {
@@ -328,6 +385,27 @@ const confirmarPostulacion = async () => {
   }
 }
 
+const guardarCategorias = async () => {
+  if (!oferta.value) return
+  errorCategorias.value = ''
+  guardandoCategorias.value = true
+  try {
+    const response = await actualizarCategoriasOferta(oferta.value.id_oferta, categoriaIds.value.map((id) => Number(id)))
+    if (response.success) {
+      mostrarModalConfirmarCategorias.value = false
+      await cargarOferta()
+      alert('Categorías actualizadas correctamente')
+    } else {
+      errorCategorias.value = response.message || 'Error al actualizar categorías'
+    }
+  } catch (e) {
+    console.error('Error al actualizar categorías:', e)
+    errorCategorias.value = 'Error de conexión con el servidor'
+  } finally {
+    guardandoCategorias.value = false
+  }
+}
+
 // Funciones para supervisor
 const moderarOferta = async (estado) => {
   if (!oferta.value) return
@@ -369,33 +447,31 @@ const confirmarRechazo = async (motivo) => {
   }
 }
 
-onMounted(async () => {
+const cargarOferta = async () => {
   try {
     const res = await obtenerOfertaPorId(route.params.id)
     if (!res.success) throw new Error('Oferta no encontrada')
     oferta.value = res.data
+    categoriaIds.value = oferta.value.categorias ? oferta.value.categorias.map(c => String(c.id_categoria)) : []
 
-    const [empRes] = await Promise.all([
-      obtenerEmpleadorPorId(oferta.value.id_empleador),
-      (async () => {
-        if (sesion.id && sesion.rol === 'estudiante' && oferta.value.estado === 1) {
-          const posRes = await obtenerPostulaciones(sesion.id)
-          const lista  = posRes.data ?? []
-          yaPostulado.value = lista.some(
-            p => String(p.id_oferta) === String(route.params.id)
-          )
-        }
-      })()
-    ])
-
+    const empRes = await obtenerEmpleadorPorId(oferta.value.id_empleador)
     if (empRes.success) empresaData.value = empRes.data
 
+    if (sesion.id && sesion.rol === 'estudiante' && oferta.value.estado === 1) {
+      const posRes = await obtenerPostulaciones(sesion.id)
+      const lista = posRes.data ?? []
+      yaPostulado.value = lista.some(p => String(p.id_oferta) === String(route.params.id))
+    }
   } catch (e) {
     console.error('[DetalleOferta]', e)
     error.value = 'No se pudo cargar la oferta. Intenta de nuevo.'
   } finally {
     cargando.value = false
   }
+}
+
+onMounted(async () => {
+  await cargarOferta()
 })
 </script>
 
