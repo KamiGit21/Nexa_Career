@@ -449,7 +449,7 @@ export const obtenerOfertasPaginacionPorEstadoYFechaDescendente = async (req, re
 
 export const buscarOfertasAvanzado = async (req, res) => {
   try {
-    const { q, empresa, modalidad, pagina = 1, size = 15, sort = 'desc' } = req.query;
+    const { q, empresa, modalidad, pagina = 1, size = 15, sort = 'desc', rangoFecha } = req.query;
     const limite = parseInt(size);
     const offset = (parseInt(pagina) - 1) * limite;
 
@@ -459,7 +459,6 @@ export const buscarOfertasAvanzado = async (req, res) => {
       WHERE o.estado = 1
     `;
     const params = [];
-
     if (q) {
       queryBase += " AND o.oferta LIKE ?";
       params.push(`%${q}%`);
@@ -472,6 +471,74 @@ export const buscarOfertasAvanzado = async (req, res) => {
       queryBase += " AND o.modalidad = ?";
       params.push(modalidad);
     }
+
+    if (rangoFecha) {
+      let fechaDesde = null;
+      let fechaHasta = null;
+      const hoy = new Date();
+      hoy.setHours(0,0,0,0);
+
+      if (typeof rangoFecha === 'object') {
+        const { preset, desde, hasta } = rangoFecha;
+        if (preset) {
+          switch (preset) {
+            case 'dia':
+              fechaDesde = new Date(hoy);
+              fechaHasta = new Date(hoy);
+              break;
+            case 'semana':
+              fechaDesde = new Date(hoy);
+              fechaDesde.setDate(hoy.getDate() - 7);
+              fechaHasta = new Date(hoy);
+              break;
+            case 'mes':
+              fechaDesde = new Date(hoy);
+              fechaDesde.setMonth(hoy.getMonth() - 1);
+              fechaHasta = new Date(hoy);
+              break;
+          }
+        } else if (desde && hasta) {
+          fechaDesde = new Date(desde);
+          fechaHasta = new Date(hasta);
+        } else if (desde) {
+          fechaDesde = new Date(desde);
+          fechaHasta = null;
+        } else if (hasta) {
+          fechaDesde = null;
+          fechaHasta = new Date(hasta);
+        }
+      } 
+      else if (typeof rangoFecha === 'string' && rangoFecha) {
+        switch (rangoFecha) {
+          case 'dia':
+            fechaDesde = new Date(hoy);
+            fechaHasta = new Date(hoy);
+            break;
+          case 'semana':
+            fechaDesde = new Date(hoy);
+            fechaDesde.setDate(hoy.getDate() - 7);
+            fechaHasta = new Date(hoy);
+            break;
+          case 'mes':
+            fechaDesde = new Date(hoy);
+            fechaDesde.setMonth(hoy.getMonth() - 1);
+            fechaHasta = new Date(hoy);
+            break;
+        }
+      }
+
+      if (fechaDesde && fechaHasta) {
+        queryBase += " AND o.fecha_apertura BETWEEN ? AND ?";
+        params.push(fechaDesde.toISOString().slice(0,10), fechaHasta.toISOString().slice(0,10));
+      } else if (fechaDesde) {
+        queryBase += " AND o.fecha_apertura >= ?";
+        params.push(fechaDesde.toISOString().slice(0,10));
+      } else if (fechaHasta) {
+        queryBase += " AND o.fecha_apertura <= ?";
+        params.push(fechaHasta.toISOString().slice(0,10));
+      }
+    }
+
     const [countResult] = await db.query(`SELECT COUNT(*) as total ${queryBase}`, params);
     const totalPaginas = Math.ceil(countResult[0].total / limite);
 
@@ -512,7 +579,7 @@ export const actualizarOfertasVencidas = async (req, res) => {
 
 export const buscarOfertasPorEmpleadorConFiltro = async (req, res) => {
   const { id_empleador } = req.params;
-  const { q, estado } = req.query;
+  const { q, estado, rangoFecha } = req.query;
   
   if (!id_empleador || isNaN(id_empleador)) {
     return res.status(400).json({ success: false, message: 'ID de empleador inválido' });
@@ -530,6 +597,33 @@ export const buscarOfertasPorEmpleadorConFiltro = async (req, res) => {
     if (estado !== undefined && estado !== null && estado !== '') {
       query += ' AND estado = ?';
       params.push(parseInt(estado));
+    }
+
+    if (rangoFecha && typeof rangoFecha === 'string' && rangoFecha) {
+      const hoy = new Date();
+      hoy.setHours(0,0,0,0);
+      let fechaDesde = null;
+      let fechaHasta = null;
+      switch (rangoFecha) {
+        case 'dia':
+          fechaDesde = new Date(hoy);
+          fechaHasta = new Date(hoy);
+          break;
+        case 'semana':
+          fechaDesde = new Date(hoy);
+          fechaDesde.setDate(hoy.getDate() - 7);
+          fechaHasta = new Date(hoy);
+          break;
+        case 'mes':
+          fechaDesde = new Date(hoy);
+          fechaDesde.setMonth(hoy.getMonth() - 1);
+          fechaHasta = new Date(hoy);
+          break;
+      }
+      if (fechaDesde && fechaHasta) {
+        query += ' AND fecha_apertura BETWEEN ? AND ?';
+        params.push(fechaDesde.toISOString().slice(0,10), fechaHasta.toISOString().slice(0,10));
+      }
     }
     
     query += ' ORDER BY fecha_apertura DESC';
