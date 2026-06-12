@@ -14,5 +14,6 @@ router.put('/:id/estado', empleadorController.cambiarEstado);
 
 router.post('/enviarCodigo', empleadorController.enviarCodigoEmpleador);
 router.get('/contar/:activo', empleadorController.contarEmpleadores);
+router.get('/notificacion/postulacion/:idPostulacion', empleadorController.enviarNotificacionPostulacionEmpleador);
 
 export default router;

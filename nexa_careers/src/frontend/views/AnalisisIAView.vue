@@ -15,14 +15,23 @@
               <p class="text-gray-500 text-lg">Optimiza tu perfil y descubre las vacantes que mejor se adaptan a tu
                 experiencia.</p>
             </div>
-            <button @click="simularAnalisis" :disabled="isAnalyzing"
-              class="relative group overflow-hidden bg-gradient-to-r from-blue-600 to-indigo-700 text-white px-8 py-4 rounded-xl font-bold shadow-lg transition-all active:scale-95 disabled:opacity-70">
-              <div class="relative z-10 flex items-center gap-3">
-                <i v-if="!isAnalyzing" class="fas fa-wand-magic-sparkles"></i>
-                <i v-else class="fas fa-circle-notch fa-spin"></i>
-                <span>{{ isAnalyzing ? 'Procesando Perfil...' : 'Analizar mi CV' }}</span>
-              </div>
-            </button>
+            
+            <div class="flex items-center gap-4">
+              <button @click="cargarUltimoAnalisis" :disabled="isAnalyzing"
+                class="bg-white border-2 border-blue-600 text-blue-600 px-6 py-4 rounded-xl font-bold transition-all active:scale-95 hover:bg-blue-50 disabled:opacity-70 disabled:border-gray-300 disabled:text-gray-400">
+                Último Análisis
+              </button>
+
+              <button @click="simularAnalisis" :disabled="isAnalyzing"
+                class="relative group overflow-hidden bg-gradient-to-r from-blue-600 to-indigo-700 text-white px-8 py-4 rounded-xl font-bold shadow-lg transition-all active:scale-95 disabled:opacity-70">
+                <div class="relative z-10 flex items-center gap-3">
+                  <i v-if="!isAnalyzing" class="fas fa-wand-magic-sparkles"></i>
+                  <i v-else class="fas fa-circle-notch fa-spin"></i>
+                  <span>{{ isAnalyzing ? 'Procesando Perfil...' : 'Analizar mi CV' }}</span>
+                </div>
+              </button>
+            </div>
+
           </div>
         </div>
 
@@ -39,14 +48,12 @@
               <div class="p-6">
                 <div v-if="hasResults" class="animate-fadeIn">
                   <div class="mb-6">
-                    <label class="text-[10px] uppercase tracking-widest text-gray-400 font-bold">Rol
-                      Identificado</label>
+                    <label class="text-[10px] uppercase tracking-widest text-gray-400 font-bold">Rol Identificado</label>
                     <p class="text-xl font-bold text-gray-800">{{ aiData.profile.role }}</p>
                   </div>
 
                   <div class="mb-6">
-                    <label class="text-[10px] uppercase tracking-widest text-gray-400 font-bold">Skills
-                      Detectadas</label>
+                    <label class="text-[10px] uppercase tracking-widest text-gray-400 font-bold">Skills Detectadas</label>
                     <div class="flex flex-wrap gap-2 mt-2">
                       <span v-for="skill in aiData.profile.skills" :key="skill"
                         class="bg-blue-50 text-blue-700 text-xs font-semibold px-3 py-1 rounded-full border border-blue-100">
@@ -65,7 +72,7 @@
                   <div class="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-4">
                     <i class="fas fa-file-invoice text-gray-300 text-2xl"></i>
                   </div>
-                  <p class="text-gray-400 text-sm">Presiona "Analizar" para ver los datos de tu CV actual.</p>
+                  <p class="text-gray-400 text-sm">Presiona "Analizar" para ver los datos de tu CV actual o recupera tu "Último Análisis".</p>
                 </div>
               </div>
             </section>
@@ -120,26 +127,24 @@
           <div class="lg:col-span-8 space-y-6">
             <div class="flex items-center justify-between">
               <h3 class="font-bold text-gray-800 text-xl">Ofertas con Mayor Compatibilidad</h3>
-              <span v-if="hasResults" class="text-sm text-gray-500">{{ aiData.jobs.length }} resultados
-                encontrados</span>
+              <span v-if="hasResults" class="text-sm text-gray-500">{{ aiData.jobs.length }} resultados encontrados</span>
             </div>
 
             <div v-if="isAnalyzing" class="space-y-4">
               <div v-for="n in 3" :key="n" class="h-40 bg-white rounded-2xl animate-pulse border border-gray-100"></div>
             </div>
 
-            <div v-else-if="hasResults" class="space-y-4">
+            <div v-else-if="hasResults && aiData.jobs.length > 0" class="space-y-4">
               <div v-for="job in aiData.jobs" :key="job.id" @click="verDetalleOferta(job.id)"
                 class="group bg-white p-6 rounded-2xl border border-gray-100 shadow-sm hover:shadow-md hover:border-blue-200 transition-all cursor-pointer">
                 <div class="flex justify-between items-start gap-4">
                   <div class="flex gap-4">
                     <div
                       class="w-14 h-14 bg-gray-100 rounded-xl flex items-center justify-center font-bold text-gray-400 text-xl group-hover:bg-blue-50 group-hover:text-blue-500 transition-colors">
-                      {{ job.company.charAt(0) }}
+                      {{ job.company ? job.company.charAt(0) : 'N' }}
                     </div>
                     <div>
-                      <h4 class="text-lg font-bold text-gray-900 group-hover:text-blue-600 transition-colors">{{
-                        job.title }}</h4>
+                      <h4 class="text-lg font-bold text-gray-900 group-hover:text-blue-600 transition-colors">{{ job.title }}</h4>
                       <p class="text-gray-500 font-medium">{{ job.company }} • {{ job.location }}</p>
                     </div>
                   </div>
@@ -164,13 +169,11 @@
               </div>
             </div>
 
-
             <div v-else class="bg-white rounded-3xl p-20 text-center border-2 border-dashed border-gray-200">
               <div class="max-w-xs mx-auto">
                 <i class="fas fa-search-dollar text-5xl text-gray-200 mb-6"></i>
                 <h4 class="text-xl font-bold text-gray-700 mb-2">Listo para el análisis</h4>
-                <p class="text-gray-400 text-sm">Nuestro motor de IA comparará tus habilidades con cientos de ofertas
-                  activas en Nexa.</p>
+                <p class="text-gray-400 text-sm">Nuestro motor de IA comparará tus habilidades con cientos de ofertas activas en Nexa.</p>
               </div>
             </div>
           </div>
@@ -183,7 +186,7 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { analizarPerfilIA } from '../services/estudianteService.js'
+import { analizarPerfilIA, obtenerRecomendacionesIA } from '../services/estudianteService.js'
 
 const router = useRouter()
 
@@ -211,8 +214,40 @@ const verDetalleOferta = (idOferta) => {
 }
 
 const verDetalleCurso = (idCurso) => {
-  console.log(`Navegando al detalle del curso recomendado con ID: ${idCurso}`)
   router.push(`/cursos/${idCurso}`)
+}
+
+const cargarUltimoAnalisis = async () => {
+  if (!idEstudiante.value) return;
+
+  isAnalyzing.value = true;
+  hasResults.value = false;
+
+  try {
+    const response = await obtenerRecomendacionesIA(idEstudiante.value);
+
+    // Si tiene éxito y hay datos reales guardados
+    if (response.success && response.data && (response.data.ofertas.length > 0 || response.data.cursos.length > 0)) {
+      aiData.value = {
+        profile: { 
+          role: 'Perfil Analizado', 
+          skills: ['Habilidades Recopiladas'], 
+          tip: response.data.tip || 'No hay consejos adicionales guardados.' 
+        },
+        jobs: response.data.ofertas || []
+      };
+      
+      recommendedCourses.value = response.data.cursos || [];
+      hasResults.value = true;
+    } else {
+      alert('Aún no tienes ningún análisis guardado. Por favor presiona "Analizar mi CV".');
+    }
+  } catch (error) {
+    console.error('Error al recuperar el último análisis:', error);
+    alert('No se pudo conectar con el servidor para recuperar los datos.');
+  } finally {
+    isAnalyzing.value = false;
+  }
 }
 
 const simularAnalisis = async () => {
@@ -222,7 +257,6 @@ const simularAnalisis = async () => {
   hasResults.value = false;
 
   try {
-    // Llamada REAL al backend que ejecuta Gemini
     const response = await analizarPerfilIA(idEstudiante.value);
 
     if (response.success && response.data) {
@@ -251,7 +285,6 @@ const simularAnalisis = async () => {
     opacity: 0;
     transform: translateY(10px);
   }
-
   to {
     opacity: 1;
     transform: translateY(0);

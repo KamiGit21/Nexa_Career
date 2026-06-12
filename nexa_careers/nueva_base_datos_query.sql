@@ -130,3 +130,8 @@ CREATE TABLE `categoria_curso`.`categoria_curso` (
 
 
 ALTER TABLE curso ADD COLUMN rechazo TEXT DEFAULT NULL;
+
+ALTER TABLE estudiante.estudiante 
+ADD COLUMN ofertas_recomendadas JSON DEFAULT NULL,
+ADD COLUMN cursos_recomendados JSON DEFAULT NULL,
+ADD COLUMN recomendaciones TEXT DEFAULT NULL;
