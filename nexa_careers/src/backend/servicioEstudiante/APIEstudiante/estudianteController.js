@@ -488,6 +488,24 @@ export const analizarPerfilConIA = async (req, res) => {
 
     aiData.jobs = jobsEnriquecidos;
     aiData.courses = cursosEnriquecidos;
+
+    try {
+      await db.query(
+        `UPDATE estudiante.estudiante 
+         SET ofertas_recomendadas = ?, cursos_recomendados = ?, recomendaciones = ? 
+         WHERE id_estudiante = ?`,
+        [
+          JSON.stringify(jobsEnriquecidos), 
+          JSON.stringify(cursosEnriquecidos), 
+          aiData.profile.tip, 
+          id
+        ]
+      );
+      console.log(`💾 Análisis IA guardado correctamente en la base de datos para el estudiante ${id}.`);
+    } catch (dbError) {
+      console.error('⚠️ Error al guardar los resultados de la IA en la base de datos:', dbError);
+      // No bloqueamos la respuesta al usuario si falla el guardado
+    }
     
     res.status(200).json({ success: true, data: aiData });
 
@@ -555,5 +573,61 @@ export const enviarNotificacionEstudiante = async (req, res) => {
   } catch (error) {
     console.error('❌ Error interno en enviarNotificacionEstudiante:', error);
     return res.status(500).json({ success: false, message: 'Error interno en el servidor al intentar procesar la notificación.' });
+  }
+};
+
+export const obtenerRecomendacionesIA = async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const [rows] = await db.query(
+      'SELECT ofertas_recomendadas, cursos_recomendados, recomendaciones FROM estudiante.estudiante WHERE id_estudiante = ?',
+      [id]
+    );
+
+    if (rows.length === 0) {
+      return res.status(404).json({ success: false, message: 'Estudiante no encontrado' });
+    }
+
+    const { ofertas_recomendadas, cursos_recomendados, recomendaciones } = rows[0];
+
+    res.status(200).json({
+      success: true,
+      data: {
+        ofertas: typeof ofertas_recomendadas === 'string' ? JSON.parse(ofertas_recomendadas) : (ofertas_recomendadas || []),
+        cursos: typeof cursos_recomendados === 'string' ? JSON.parse(cursos_recomendados) : (cursos_recomendados || []),
+        tip: recomendaciones || null
+      }
+    });
+
+  } catch (error) {
+    console.error('❌ Error al obtener recomendaciones:', error);
+    res.status(500).json({ success: false, message: 'Error al recuperar las recomendaciones del estudiante' });
+  }
+};
+
+export const obtenerTipIA = async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const [rows] = await db.query(
+      'SELECT recomendaciones FROM estudiante.estudiante WHERE id_estudiante = ?',
+      [id]
+    );
+
+    if (rows.length === 0) {
+      return res.status(404).json({ success: false, message: 'Estudiante no encontrado' });
+    }
+
+    res.status(200).json({
+      success: true,
+      data: {
+        tip: rows[0].recomendaciones || null
+      }
+    });
+
+  } catch (error) {
+    console.error('❌ Error al obtener el tip:', error);
+    res.status(500).json({ success: false, message: 'Error al recuperar el tip del estudiante' });
   }
 };
