@@ -176,3 +176,23 @@ export const analizarPerfilIA = async (idEstudiante) => {
     return { success: false, message: error.message };
   }
 };
+
+export const obtenerRecomendacionesIA = async (idEstudiante) => {
+  try {
+    const res = await fetch(`${API_URL}/estudiantes/${idEstudiante}/recomendaciones`);
+    return await res.json();
+  } catch (error) {
+    console.error('Error en obtenerRecomendacionesIA:', error);
+    return { success: false, message: error.message };
+  }
+};
+
+export const obtenerTipIA = async (idEstudiante) => {
+  try {
+    const res = await fetch(`${API_URL}/estudiantes/${idEstudiante}/recomendaciones/tip`);
+    return await res.json();
+  } catch (error) {
+    console.error('Error en obtenerTipIA:', error);
+    return { success: false, message: error.message };
+  }
+};

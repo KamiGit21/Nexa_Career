@@ -1,12 +1,10 @@
 <template>
   <form @submit.prevent="guardar" class="form-grid">
     <div class="avatar-section">
-  <div class="avatar-circle">
-    {{ obtenerIniciales(formData.nombre, formData.apellido) }}
-  </div>
-  
-  <!--<button type="button" class="btn-text-gold">Actualizar Avatar</button>-->
-</div>
+      <div class="avatar-circle">
+        {{ obtenerIniciales(formData.nombre, formData.apellido) }}
+      </div>
+    </div>
 
     <div class="row-2-col">
       <InputField v-model="formData.nombre" label="Nombre:" placeholder="Nombre" />
@@ -30,7 +28,6 @@
         placeholder="Ej: Java, Scrum, Inglés C1..." />
     </div>
 
-    <!-- SECCIÓN DE CV -->
     <div class="cv-section">
       <label class="label-main">Hoja de Vida (CV):</label>
       <CvUpload :idEstudiante="idEstudiante" @cv-subido="handleCVSubido" @cv-eliminado="handleCVEliminado" />
@@ -47,11 +44,11 @@
       
       <div v-if="analizandoCV" class="flex items-center gap-3 text-sm text-gray-500 py-2">
         <div class="animate-spin rounded-full h-4 w-4 border-b-2 border-[#b5943a]"></div>
-        <span>Analizando estructura de tu currículum...</span>
+        <span>Buscando sugerencias guardadas...</span>
       </div>
 
       <div v-else class="text-sm text-gray-600 leading-relaxed bg-white/80 p-4 rounded-xl border border-amber-100">
-        <p class="whitespace-pre-line">{{ sugerenciaIA || 'Utiliza la herramienta de análisis por IA para mejorar tu currículum.' }}</p>
+        <p class="whitespace-pre-line">{{ sugerenciaIA }}</p>
       </div>
     </div>
 
@@ -72,22 +69,15 @@ import {
   actualizarPerfilEstudiante,
   cambiarContrasenaEstudiante,
   obtenerEstudiantePorId,
-  obtenerInfoCV
+  obtenerInfoCV,
+  obtenerTipIA // NUEVA IMPORTACIÓN
 } from '../../services/estudianteService.js';
 
 const route = useRoute();
 const idEstudiante = ref(parseInt(route.params.id));
 
-
-const analizandoCV = ref(false);
-const sugerenciaIA = ref(
-  `💡 Tu perfil está muy bien orientado al desarrollo de software, pero aquí tienes 3 sugerencias clave:
-  
-  1. En la sección de Habilidades, especifica qué metodologías ágiles o estándares dominas (ej: Scrum, alineación a SGSI).
-  2. Integra proyectos reales en tu portafolio de GitHub como tus desarrollos en Vue.js o arquitecturas basadas en microservicios.
-  3. Asegúrate de añadir palabras clave de ciberseguridad si buscas roles de infraestructura o backend.`
-);
-
+const analizandoCV = ref(true);
+const sugerenciaIA = ref('');
 
 // Datos del formulario
 const formData = reactive({
@@ -108,13 +98,29 @@ const obtenerIniciales = (nombre, apellido) => {
   return (n + a).toUpperCase() || '??';
 };
 
-console.log('PerfilForm - ID:', idEstudiante.value);
+// Cargar el Tip o consejo de la IA
+const cargarTipIA = async () => {
+  analizandoCV.value = true;
+  try {
+    const response = await obtenerTipIA(idEstudiante.value);
+    
+    if (response.success && response.data && response.data.tip) {
+      sugerenciaIA.value = response.data.tip;
+    } else {
+      sugerenciaIA.value = 'Aún no hay sugerencias disponibles. Utiliza la herramienta "Nexa AI Advisor" para analizar y mejorar tu perfil.';
+    }
+  } catch (error) {
+    console.error('Error al cargar la sugerencia de la IA:', error);
+    sugerenciaIA.value = 'No se pudieron cargar las sugerencias en este momento.';
+  } finally {
+    analizandoCV.value = false;
+  }
+};
 
 // Cargar datos actuales del estudiante
 const cargarDatosEstudiante = async () => {
   try {
     const response = await obtenerEstudiantePorId(idEstudiante.value);
-    console.log('Datos del estudiante:', response);
 
     if (response.success && response.data) {
       formData.nombre = response.data.nombre || '';
@@ -124,7 +130,6 @@ const cargarDatosEstudiante = async () => {
       formData.descripcion = response.data.descripcion || '';
       formData.educacion = response.data.educacion || '';
       formData.habilidades = response.data.habilidades || '';
-      // No cargamos cv aquí porque lo maneja CvUpload
     }
   } catch (error) {
     console.error('Error al cargar datos:', error);
@@ -132,80 +137,58 @@ const cargarDatosEstudiante = async () => {
 };
 
 const handleCVSubido = (data) => {
-  console.log('CV subido correctamente:', data);
   alert('CV subido correctamente');
 };
 
 const handleCVEliminado = () => {
-  console.log('CV eliminado correctamente');
   alert('CV eliminado correctamente');
 };
 
 const guardar = async () => {
-  console.log('=== GUARDANDO PERFIL ===');
-  console.log('Datos del formulario:', formData);
-
-  // Validar que las contraseñas coincidan si se ingresó una nueva
   if (formData.contrasena && formData.contrasena !== formData.confirmarContrasena) {
     alert('Las contraseñas no coinciden');
     return;
   }
 
   try {
-    // =============================================
-    // OBTENER EL CV ACTUAL (NOMBRE DEL ARCHIVO, NO LA URL)
-    // =============================================
     const infoCV = await obtenerInfoCV(idEstudiante.value);
-    console.log('Info CV:', infoCV);
 
-    // Guardar el filename, NO la URL
     const cvActual = infoCV.success && infoCV.hasCV
-      ? infoCV.data.filename   // Esto es el nombre del archivo: "cv_1_xxx.pdf"
+      ? infoCV.data.filename
       : null;
 
-    console.log('CV Actual (filename):', cvActual);
-
-    // 1. Actualizar perfil (datos básicos + CV como nombre de archivo)
     const perfilData = {
       telefono: formData.telefono,
       gmail: formData.gmail,
       descripcion: formData.descripcion,
       educacion: formData.educacion,
       habilidades: formData.habilidades,
-      cv: cvActual  // ← Ahora envía el nombre del archivo, NO la URL
+      cv: cvActual
     };
 
-    console.log('Enviando al backend:', perfilData);
     const perfilResponse = await actualizarPerfilEstudiante(idEstudiante.value, perfilData);
-    console.log('Respuesta perfil:', perfilResponse);
 
     if (!perfilResponse.success) {
       alert('Error al actualizar perfil: ' + perfilResponse.message);
       return;
     }
 
-    // 2. Cambiar contraseña si se ingresó una nueva
     if (formData.contrasena) {
       const passResponse = await cambiarContrasenaEstudiante(idEstudiante.value, {
         contrasena: formData.contrasena
       });
-
-      console.log('Respuesta contraseña:', passResponse);
 
       if (!passResponse.success) {
         alert('Error al cambiar contraseña: ' + passResponse.message);
         return;
       }
 
-      // Limpiar campos de contraseña después de guardar
       formData.contrasena = '';
       formData.confirmarContrasena = '';
     }
 
     alert('Perfil actualizado correctamente');
-    console.log('✅ Perfil guardado exitosamente');
 
-    // Recargar datos actualizados
     await cargarDatosEstudiante();
 
   } catch (error) {
@@ -214,9 +197,9 @@ const guardar = async () => {
   }
 };
 
-// Cargar datos al montar el componente
 onMounted(() => {
   cargarDatosEstudiante();
+  cargarTipIA(); 
 });
 </script>
 
