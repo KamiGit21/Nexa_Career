@@ -448,7 +448,7 @@ export const analizarPerfilConIA = async (req, res) => {
     const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
 
     const result = await groq.chat.completions.create({
-    model: "llama-3.3-70b-versatile",
+    model: "openai/gpt-oss-120b",
     messages: [{ role: "user", content: prompt }],
   });
     let responseText = result.choices[0].message.content;
@@ -629,5 +629,104 @@ export const obtenerTipIA = async (req, res) => {
   } catch (error) {
     console.error('❌ Error al obtener el tip:', error);
     res.status(500).json({ success: false, message: 'Error al recuperar el tip del estudiante' });
+  }
+};
+
+export const obtenerCursosFavoritos = async (req, res) => {
+  const { id } = req.params;
+  
+  try {
+    const [rows] = await db.query(
+      `SELECT c.*,
+        CASE
+          WHEN c.tipo_ofertante = 0 THEN CONCAT(e.nombre, ' ', e.apellido)
+          WHEN c.tipo_ofertante = 1 THEN emp.empresa
+          ELSE '—'
+        END AS nombre_publicador
+       FROM curso.curso c
+       INNER JOIN favorito_curso.favoritos_cursos f ON c.id_curso = f.id_curso 
+       LEFT JOIN estudiante.estudiante e   ON c.tipo_ofertante = 0 AND c.id_estudiante = e.id_estudiante
+       LEFT JOIN empleador.empleador emp  ON c.tipo_ofertante = 1 AND c.id_empleador  = emp.id_empleador
+       WHERE f.id_estudiante = ? AND f.estado = 0`,
+      [id]
+    );
+
+    // categorías para cada curso favorito
+    for (const curso of rows) {
+      const [categoriasRows] = await db.query(`
+        SELECT cc.id_categoria_curso, cc.id_categoria, cat.categoria 
+        FROM categoria_curso.categoria_curso cc 
+        JOIN categoria.categoria cat ON cc.id_categoria = cat.id_categoria 
+        WHERE cc.id_curso = ?
+        ORDER BY cat.categoria
+      `, [curso.id_curso]);
+      curso.categorias = categoriasRows;
+    }
+
+    res.status(200).json({ success: true, data: rows });
+  } catch (error) {
+    console.error('Error en obtenerCursosFavoritos:', error);
+    res.status(500).json({ success: false, message: 'Error interno al obtener cursos favoritos.' });
+  }
+};
+
+export const agregarCursoFavorito = async (req, res) => {
+  const { id } = req.params;
+  const { id_curso } = req.body;
+  
+  if (!id_curso) {
+    return res.status(400).json({ success: false, message: 'El id_curso es obligatorio en el cuerpo de la petición.' });
+  }
+  
+  try {
+    const [exists] = await db.query(
+      'SELECT * FROM favorito_curso.favoritos_cursos WHERE id_curso = ? AND id_estudiante = ?',
+      [id_curso, id]
+    );
+
+    if (exists.length > 0) {
+      if (exists[0].estado === 0) {
+        // Ya existe y está activo (0)
+        return res.status(200).json({ success: true, message: 'El curso ya se encuentra en favoritos.' });
+      } else {
+        // Existe pero estaba deshabilitado (1), lo pasamos a favorito (0)
+        await db.query(
+          'UPDATE favorito_curso.favoritos_cursos SET estado = 0 WHERE id_curso = ? AND id_estudiante = ?',
+          [id_curso, id]
+        );
+        return res.status(200).json({ success: true, message: 'Curso re-activado en favoritos correctamente.' });
+      }
+    } else {
+      // No existe, se crea como favorito (0)
+      await db.query(
+        'INSERT INTO favorito_curso.favoritos_cursos (id_curso, id_estudiante, estado) VALUES (?, ?, 0)',
+        [id_curso, id]
+      );
+      return res.status(201).json({ success: true, message: 'Curso guardado en favoritos con éxito.' });
+    }
+  } catch (error) {
+    console.error('Error en agregarCursoFavorito:', error);
+    res.status(500).json({ success: false, message: 'Error interno al guardar en favoritos.' });
+  }
+};
+
+export const deshabilitarCursoFavorito = async (req, res) => {
+  const { id, cursoId } = req.params;
+  
+  try {
+    // Cambiamos el estado de favorito (0) a deshabilitado (1)
+    const [result] = await db.query(
+      'UPDATE favorito_curso.favoritos_cursos SET estado = 1 WHERE id_curso = ? AND id_estudiante = ?',
+      [cursoId, id]
+    );
+    
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ success: false, message: 'El favorito no fue localizado para este estudiante.' });
+    }
+    
+    res.status(200).json({ success: true, message: 'Curso deshabilitado de favoritos exitosamente.' });
+  } catch (error) {
+    console.error('Error en deshabilitarCursoFavorito:', error);
+    res.status(500).json({ success: false, message: 'Error interno al remover de favoritos.' });
   }
 };

@@ -31,6 +31,7 @@ import CatalogoCursos from '@/views/CatalogoCursos.vue'
 import DetalleCurso from '@/views/DetalleCurso.vue'
 import EmpleadorCursos from '@/views/EmpleadorCursos.vue'
 import EstudianteCursos from '@/views/EstudianteCursos.vue'
+import MisCursosFavoritos from '@/views/MisCursosFavoritos.vue'
 
 //Logs del supervisor
 import ListaEstudiantes from '@/views/ListaEstudiantes.vue'
@@ -141,6 +142,13 @@ const routes = [
     component: EstudianteCursos,
     meta: { requiereRol: ['estudiante'] }
   },
+
+  {
+  path: '/mis-favoritos',
+  name: 'MisCursosFavoritos',
+  component: MisCursosFavoritos,
+  meta: { requiereRol: ['estudiante'] }
+},
 
   // Editar curso - ambos roles (de GPA-29/53)
   {

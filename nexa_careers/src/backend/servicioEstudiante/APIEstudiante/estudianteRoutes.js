@@ -23,4 +23,9 @@ router.get('/notificacion/postulacion/:postulacion', estudianteController.enviar
 router.get('/:id/recomendaciones', estudianteController.obtenerRecomendacionesIA);
 router.get('/:id/recomendaciones/tip', estudianteController.obtenerTipIA);
 
+//rutas pa cursos favoritos de un estudiante
+router.get('/:id/cursos-favoritos', estudianteController.obtenerCursosFavoritos);
+router.post('/:id/cursos-favoritos/nuevo', estudianteController.agregarCursoFavorito);
+router.put('/:id/cursos-favoritos/deshabilitar/:cursoId', estudianteController.deshabilitarCursoFavorito);
+
 export default router;
