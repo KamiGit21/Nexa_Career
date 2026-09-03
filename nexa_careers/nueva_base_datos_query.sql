@@ -128,6 +128,15 @@ CREATE TABLE `categoria_curso`.`categoria_curso` (
   PRIMARY KEY (`id_categoria_curso`)
 );
 
+CREATE SCHEMA IF NOT EXISTS `favorito_curso`;
+CREATE TABLE `favoritos_cursos`.`favoritos_cursos` (
+  `id_favoritos_curso` INT NOT NULL AUTO_INCREMENT,
+  `id_curso`          INT NOT NULL,
+  `id_estudiante`     INT NOT NULL,
+  `estado`            INT NOT NULL DEFAULT 0,
+  PRIMARY KEY (`id_favoritos_curso`),
+  UNIQUE KEY `unique_favorito_curso` (`id_curso`, `id_estudiante`)
+);
 
 ALTER TABLE curso ADD COLUMN rechazo TEXT DEFAULT NULL;
 
