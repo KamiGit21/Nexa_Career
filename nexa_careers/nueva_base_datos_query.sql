@@ -134,7 +134,7 @@ CREATE TABLE `favorito_curso`.`favoritos_cursos` (
   `id_curso`          INT NOT NULL,
   `id_estudiante`     INT NOT NULL,
   `estado`            INT NOT NULL DEFAULT 0,
-  PRIMARY KEY (`id_favoritos_curso`),
+  PRIMARY KEY (`id_favoritos_curso`)
 );
 
 CREATE SCHEMA IF NOT EXISTS `favorito_oferta`;
@@ -143,10 +143,10 @@ CREATE TABLE `favorito_oferta`.`favoritos_ofertas` (
   `id_oferta`          INT NOT NULL,
   `id_estudiante`     INT NOT NULL,
   `estado`            INT NOT NULL DEFAULT 0,
-  PRIMARY KEY (`id_favoritos_oferta`),
+  PRIMARY KEY (`id_favoritos_oferta`)
 );
 
-ALTER TABLE curso ADD COLUMN rechazo TEXT DEFAULT NULL;
+ALTER TABLE curso.curso ADD COLUMN rechazo TEXT DEFAULT NULL;
 
 ALTER TABLE estudiante.estudiante 
 ADD COLUMN ofertas_recomendadas JSON DEFAULT NULL,
