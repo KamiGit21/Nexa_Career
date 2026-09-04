@@ -60,10 +60,13 @@ export async function listarOfertasPorEmpleador(idEmpleador) {
   return data
 }
 
-export async function buscarOfertasPorEmpleadorConFiltro(idEmpleador, termino, estado = null) {
+export async function buscarOfertasPorEmpleadorConFiltro(idEmpleador, termino, estado = null, rangoFecha = null) {
   let url = `/api/ofertas/empleador/${idEmpleador}/buscar?q=${encodeURIComponent(termino || '')}`;
   if (estado !== null && estado !== '') {
     url += `&estado=${estado}`;
+  }
+  if (rangoFecha) {
+    url += `&rangoFecha=${rangoFecha}`;
   }
   const { data } = await api.get(url);
   return data;
@@ -103,7 +106,13 @@ export async function buscarOfertasAvanzado(filtros) {
     modalidad: filtros.modalidad,
     sort: filtros.orden || 'desc'
   };
-
+  if (filtros.rangoFecha) {
+    if (typeof filtros.rangoFecha === 'object') {
+      params.rangoFecha = JSON.stringify(filtros.rangoFecha);
+    } else {
+      params.rangoFecha = filtros.rangoFecha;
+    }
+  }
   const { data } = await api.get('/api/ofertas/busqueda', { params });
   return data;
 }
