@@ -6,19 +6,32 @@
       <div class="w-12 h-12 bg-[#1b2a4a]/10 rounded-lg flex items-center justify-center text-2xl">
         💼
       </div>
-      <div class="flex flex-col items-end gap-1">
-        <span v-if="!mostrarEstado && esNueva" class="bg-green-100 text-green-700 text-[10px] font-bold px-2 py-1 rounded-full">
-          Nueva
-        </span>
-        <template v-if="mostrarEstado">
-          <span :class="['text-[10px] font-bold px-2 py-1 rounded-full', estadoConfig.bg, estadoConfig.text]">
-            {{ estadoConfig.label }}
+      <div class="flex items-center gap-2">
+        <!-- BOTÓN DE FAVORITOS INTEGRADO -->
+        <button 
+          v-if="esEstudiante" 
+          @click.stop="toggleFavorito" 
+          class="text-xl transition-transform hover:scale-110 focus:outline-none"
+          title="Guardar en favoritos"
+        >
+          <span v-if="favorito" class="drop-shadow-sm">💖</span>
+          <span v-else class="grayscale opacity-50 hover:grayscale-0 hover:opacity-100 transition-all drop-shadow-sm">🤍</span>
+        </button>
+
+        <div class="flex flex-col items-end gap-1">
+          <span v-if="!mostrarEstado && esNueva" class="bg-green-100 text-green-700 text-[10px] font-bold px-2 py-1 rounded-full">
+            Nueva
           </span>
-        </template>
+          <template v-if="mostrarEstado">
+            <span :class="['text-[10px] font-bold px-2 py-1 rounded-full', estadoConfig.bg, estadoConfig.text]">
+              {{ estadoConfig.label }}
+            </span>
+          </template>
+        </div>
       </div>
     </div>
 
-    <div @click="$emit('click-detalle', oferta.id_oferta)">
+    <div @click="$emit('click-detalle', oferta.id_oferta)" class="cursor-pointer">
       <h2 class="text-lg font-bold text-[#1b2a4a] hover:text-[#b89b4d] transition-colors">
         {{ oferta.oferta }}
       </h2>
@@ -37,8 +50,7 @@
       </div>
     </div>
 
-    <!-- bn dar de baja -->
-   <button
+    <button
       v-if="mostrarBotonBaja && ![2, 3, 4, 5].includes(oferta.estado)"
       @click.stop="abrirModalBaja"
       class="mt-4 w-full py-2 bg-red-50 hover:bg-red-100 text-red-600 font-semibold text-sm rounded-lg transition-colors flex items-center justify-center gap-2 border border-red-200"
@@ -56,7 +68,8 @@
 </template>
 
 <script setup>
-import { computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
+import { obtenerOfertasFavoritas, agregarOfertaFavorita, deshabilitarOfertaFavorita } from '../../services/estudianteService.js'
 
 const props = defineProps({
   oferta: Object,
@@ -65,6 +78,38 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['click-detalle', 'dar-baja'])
+
+const sesion       = JSON.parse(localStorage.getItem('sesion') || '{}')
+const esEstudiante = sesion.rol === 'estudiante'
+const favorito     = ref(false)
+
+onMounted(async () => {
+  if (esEstudiante) {
+    if (props.oferta.isFavorito !== undefined) {
+      favorito.value = props.oferta.isFavorito;
+    } else {
+      const res = await obtenerOfertasFavoritas(sesion.id);
+      if (res.success && res.data) {
+        favorito.value = res.data.some(o => o.id_oferta === props.oferta.id_oferta);
+      }
+    }
+  }
+})
+
+const toggleFavorito = async () => {
+  favorito.value = !favorito.value;
+  
+  try {
+    if (!favorito.value) {
+      await deshabilitarOfertaFavorita(sesion.id, props.oferta.id_oferta);
+    } else {
+      await agregarOfertaFavorita(sesion.id, props.oferta.id_oferta);
+    }
+  } catch (error) {
+    favorito.value = !favorito.value;
+    console.error("Error al actualizar favorito", error);
+  }
+}
 
 const ESTADOS = {
   0: { label: 'Pendiente', bg: 'bg-yellow-100', text: 'text-yellow-800' },

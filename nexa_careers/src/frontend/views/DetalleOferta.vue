@@ -67,7 +67,10 @@
                     class="w-6 h-6 rounded-full bg-amber-500 flex items-center justify-center text-white text-xs font-bold">
                     {{ inicialEmpresa }}
                   </div>
-                  <span class="font-semibold text-gray-700">{{ nombreEmpresa }}</span>
+                  <span @click="irAlPerfil"
+                    class="font-semibold text-gray-700 hover:text-[#b5943a] cursor-pointer transition-colors duration-200">
+                    {{ nombreEmpresa }}
+                  </span>
                   <span class="text-gray-400">· Empleador</span>
                 </div>
               </div>
@@ -125,12 +128,28 @@
                     class="w-12 h-12 rounded-full bg-amber-500 flex items-center justify-center text-white text-sm font-bold">
                     {{ inicialEmpresa }}
                   </div>
-                  <div>
+                  <div @click="irAlPerfil"
+                    class="cursor-pointer hover:bg-gray-50 p-2 rounded-xl transition-colors duration-200">
                     <p class="font-semibold text-gray-800">{{ nombreEmpresa }}</p>
-                    <p v-if="oferta.especialidad" class="text-xs text-gray-500">{{ oferta.especialidad }}</p>
                     <p class="text-xs text-gray-400 capitalize">Empleador activo en Nexa Careers</p>
                   </div>
                 </div>
+              <div v-if="esSupervisor" class="bg-white rounded-2xl border border-gray-200 p-6 mb-5">
+                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4">
+                  <div>
+                    <h3 class="text-lg font-bold text-[#1b2a4a]">Editar categorías</h3>
+                    <p class="text-sm text-gray-500">Ajusta las etiquetas de esta oferta antes de aprobarla.</p>
+                  </div>
+                  <button
+                    type="button"
+                    @click="mostrarModalConfirmarCategorias = true"
+                    class="px-4 py-2 bg-[#1b2a4a] text-white rounded-xl hover:bg-[#0f1a2e] transition"
+                  >
+                    Guardar categorías
+                  </button>
+                </div>
+                <CategoriaOfertaSelect v-model="categoriaIds" />
+                <p v-if="errorCategorias" class="mt-3 text-sm text-red-500">{{ errorCategorias }}</p>
               </div>
             </div>
 
@@ -167,6 +186,18 @@
             <div class="bg-white rounded-2xl border border-gray-200 p-6">
               <h2 class="text-lg font-bold text-[#1b2a4a] mb-4">Detalles de la oferta</h2>
 
+              <button
+                v-if="sesion.rol === 'estudiante'"
+                @click="toggleFavorito"
+                class="w-full mb-4 py-2.5 rounded-xl border font-semibold text-sm flex items-center justify-center gap-2 transition-all transform active:scale-95"
+                :class="favorito ? 'bg-red-50 border-red-200 text-red-500' : 'bg-gray-50 border-gray-200 text-gray-600 hover:bg-red-50 hover:border-red-200 hover:text-red-400'"
+              >
+                <span :class="favorito ? 'drop-shadow-sm' : 'grayscale opacity-50'">
+                  {{ favorito ? '❤️' : '🤍' }}
+                </span>
+                {{ favorito ? 'Guardado en favoritos' : 'Guardar en favoritos' }}
+              </button>
+
               <ul class="flex flex-col gap-3">
                 <li class="flex justify-between items-center text-sm">
                   <span class="text-gray-400">Estado:</span>
@@ -194,6 +225,7 @@
             </div>
           </div>
 
+        </div>
         </div>
       </template>
 
@@ -227,6 +259,39 @@
       </div>
     </Transition>
 
+    <Transition name="fade">
+      <div
+        v-if="mostrarModalConfirmarCategorias"
+        class="fixed inset-0 bg-black/40 flex items-center justify-center z-50 px-4"
+        @click.self="mostrarModalConfirmarCategorias = false"
+      >
+        <div class="bg-white rounded-2xl shadow-xl p-8 w-full max-w-md space-y-4">
+          <h2 class="text-lg font-bold text-slate-800">Confirmar actualización de categorías</h2>
+          <p class="text-sm text-slate-600">
+            ¿Deseas aplicar los cambios realizados en las categorías de esta oferta?
+          </p>
+
+          <p v-if="errorCategorias" class="text-sm text-red-500">{{ errorCategorias }}</p>
+
+          <div class="flex gap-3 pt-2">
+            <button
+              class="flex-1 py-2.5 rounded-xl border border-gray-200 text-slate-600 hover:bg-slate-50 text-sm transition"
+              @click="mostrarModalConfirmarCategorias = false"
+            >
+              Cancelar
+            </button>
+            <button
+              class="flex-1 py-2.5 rounded-xl bg-[#1b2a4a] hover:bg-[#0f1a2e] text-white text-sm font-semibold transition disabled:opacity-50"
+              :disabled="guardandoCategorias"
+              @click="guardarCategorias"
+            >
+              {{ guardandoCategorias ? 'Guardando...' : 'Confirmar' }}
+            </button>
+          </div>
+        </div>
+      </div>
+    </Transition>
+
     <!-- Modal de rechazo para supervisor -->
     <RechazoOfertaModal :visible="mostrarModalRechazo" :nombre-oferta="oferta?.oferta || ''"
       @cancelar="cerrarModalRechazo" @confirmar="confirmarRechazo" />
@@ -237,15 +302,23 @@
 import { ref, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { obtenerOfertaPorId } from '@/services/ofertaService.js'
+import { guardarFavorito, eliminarFavorito } from '@/services/OfertasFavoritos.js'
+import { actualizarCategoriasOferta } from '@/services/categoriaService.js'
 import { cambiarEstadoOferta } from '@/services/supervisorService.js'
 import { obtenerEmpleadorPorId } from '@/services/empleadorService.js'
 import { obtenerPostulaciones, postularAOferta } from '@/services/postulacionService.js'
 import RechazoOfertaModal from '../components/misOfertas/RechazoOfertaModal.vue'
+import CategoriaOfertaSelect from '@/components/publicarOferta/CategoriaOfertaSelect.vue'
+import { obtenerOfertasFavoritas, agregarOfertaFavorita, deshabilitarOfertaFavorita } from '@/services/estudianteService.js'
 
 const route = useRoute()
 const router = useRouter()
 
-
+const irAlPerfil = () => {
+  if (oferta.value?.id_empleador) {
+    router.push(`/empleador/${oferta.value.id_empleador}`)
+  }
+}
 
 const sesion = JSON.parse(localStorage.getItem('sesion') || '{}')
 const esSupervisor = computed(() => sesion.rol === 'supervisor')
@@ -260,6 +333,26 @@ const yaPostulado = ref(false)
 const errorPostulacion = ref(null)
 const mostrarModalRechazo = ref(false)
 const motivoRechazo = ref('')
+const favorito = ref(false)
+// TODO (integración): inicializar con esOfertaFavorita(sesion.id, route.params.id)
+const toggleFavorito = async () => {
+ favorito.value = !favorito.value;
+  try {
+    if (!favorito.value) {
+      await deshabilitarOfertaFavorita(sesion.id, route.params.id);
+    } else {
+      await agregarOfertaFavorita(sesion.id, route.params.id);
+    }
+  } catch (err) {
+    favorito.value = !favorito.value;
+    console.error("Error al cambiar favorito:", err);
+  }
+}
+
+const categoriaIds     = ref([])
+const guardandoCategorias = ref(false)
+const mostrarModalConfirmarCategorias = ref(false)
+const errorCategorias  = ref('')
 
 // Ruta de volver según rol
 const rutaVolver = computed(() => {
@@ -322,10 +415,30 @@ const confirmarPostulacion = async () => {
   }
 }
 
+const guardarCategorias = async () => {
+  if (!oferta.value) return
+  errorCategorias.value = ''
+  guardandoCategorias.value = true
+  try {
+    const response = await actualizarCategoriasOferta(oferta.value.id_oferta, categoriaIds.value.map((id) => Number(id)))
+    if (response.success) {
+      mostrarModalConfirmarCategorias.value = false
+      await cargarOferta()
+      alert('Categorías actualizadas correctamente')
+    } else {
+      errorCategorias.value = response.message || 'Error al actualizar categorías'
+    }
+  } catch (e) {
+    console.error('Error al actualizar categorías:', e)
+    errorCategorias.value = 'Error de conexión con el servidor'
+  } finally {
+    guardandoCategorias.value = false
+  }
+}
+
 // Funciones para supervisor
 const moderarOferta = async (estado) => {
   if (!oferta.value) return
-
   try {
     const response = await cambiarEstadoOferta(oferta.value.id_oferta, estado, null)
     if (response.success) {
@@ -363,21 +476,29 @@ const confirmarRechazo = async (motivo) => {
   }
 }
 
-onMounted(async () => {
+const cargarOferta = async () => {
   try {
     const res = await obtenerOfertaPorId(route.params.id)
     if (!res.success) throw new Error('Oferta no encontrada')
     oferta.value = res.data
+    categoriaIds.value = oferta.value.categorias ? oferta.value.categorias.map(c => String(c.id_categoria)) : []
 
     const [empRes] = await Promise.all([
       obtenerEmpleadorPorId(oferta.value.id_empleador),
       (async () => {
-        if (sesion.id && sesion.rol === 'estudiante' && oferta.value.estado === 1) {
-          const posRes = await obtenerPostulaciones(sesion.id)
-          const lista = posRes.data ?? []
-          yaPostulado.value = lista.some(
-            p => String(p.id_oferta) === String(route.params.id)
-          )
+        if (sesion.id && sesion.rol === 'estudiante') {
+          if (oferta.value.estado === 1) {
+            const posRes = await obtenerPostulaciones(sesion.id)
+            const lista = posRes.data ?? []
+            yaPostulado.value = lista.some(
+              p => String(p.id_oferta) === String(route.params.id)
+            )
+          }
+
+          const favRes = await obtenerOfertasFavoritas(sesion.id)
+          if(favRes.success && favRes.data) {
+             favorito.value = favRes.data.some(o => String(o.id_oferta) === String(route.params.id));
+          }
         }
       })()
     ])
@@ -390,6 +511,10 @@ onMounted(async () => {
   } finally {
     cargando.value = false
   }
+}
+
+onMounted(async () => {
+  await cargarOferta()
 })
 </script>
 

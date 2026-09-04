@@ -16,14 +16,14 @@ export const obtenerOfertaPorId = async (req, res) => {
 
     const [categoriasRows] = await db.query(
       `SELECT c.id_categoria, c.categoria 
-       FROM categoria_oferta.categoria_oferta co 
-       INNER JOIN categoria.categoria c ON co.id_categoria = c.id_categoria 
-       WHERE co.id_oferta = ?`,
+        FROM categoria_oferta.categoria_oferta co 
+        INNER JOIN categoria.categoria c ON co.id_categoria = c.id_categoria
+        WHERE co.id_oferta = ? AND c.estado = 1`,
       [id]
     );
 
     const ofertaData = normalizarOferta(rows[0]);
-    ofertaData.categorias = categoriasRows; 
+    ofertaData.categorias = categoriasRows;
 
     res.status(200).json({ success: true, data: ofertaData });
   } catch (error) {
@@ -33,7 +33,7 @@ export const obtenerOfertaPorId = async (req, res) => {
 };
 
 const isValidDate = (value) => {
-  if (!value) return true; 
+  if (!value) return true;
   const date = new Date(value);
   return !Number.isNaN(date.getTime());
 };
@@ -65,6 +65,27 @@ const validateOferta = (data) => {
   return { valid: errors.length === 0, errors };
 };
 
+// Validar que las categorías no estén archivadas
+const validarCategoriasActivas = async (categorias) => {
+  if (!categorias || !Array.isArray(categorias) || categorias.length === 0) {
+    return { valid: true, errors: [] };
+  }
+
+  const errors = [];
+  for (const idCategoria of categorias) {
+    if (idCategoria) {
+      const [rows] = await db.query('SELECT estado FROM categoria.categoria WHERE id_categoria = ?', [idCategoria]);
+      if (rows.length === 0) {
+        errors.push(`Categoría con ID ${idCategoria} no existe`);
+      } else if (rows[0].estado === 0) {
+        errors.push(`No se puede usar categorías archivadas (ID: ${idCategoria})`);
+      }
+    }
+  }
+
+  return { valid: errors.length === 0, errors };
+};
+
 export const crearOferta = async (req, res) => {
   const { descripcion, fecha_apertura, fecha_cierre, oferta, id_empleador, modalidad, categorias } = req.body;
 
@@ -73,12 +94,18 @@ export const crearOferta = async (req, res) => {
     return res.status(400).json({ success: false, message: validation.errors.join('; ') });
   }
 
+  // Validar que las categorías no estén archivadas
+  const categoriasValidation = await validarCategoriasActivas(categorias);
+  if (!categoriasValidation.valid) {
+    return res.status(400).json({ success: false, message: categoriasValidation.errors.join('; ') });
+  }
+
   const connection = await db.getConnection();
   try {
     await connection.beginTransaction();
 
-    const estado = 0; 
-    const rechazo = ''; 
+    const estado = 0;
+    const rechazo = '';
 
     const [result] = await connection.query(
       `INSERT INTO oferta.oferta (descripcion, fecha_apertura, fecha_cierre, estado, rechazo, oferta, id_empleador, modalidad) 
@@ -168,6 +195,12 @@ export const buscarOfertasPorEmpleador = async (req, res) => {
 export const editarOferta = async (req, res) => {
   const { id } = req.params;
   const { descripcion, fecha_apertura, rechazo, oferta, modalidad, categorias } = req.body;
+
+  // Validar que las categorías no estén archivadas
+  const categoriasValidation = await validarCategoriasActivas(categorias);
+  if (!categoriasValidation.valid) {
+    return res.status(400).json({ success: false, message: categoriasValidation.errors.join('; ') });
+  }
 
   const connection = await db.getConnection();
   try {
@@ -270,7 +303,7 @@ export const obtenerPostulantesPorOferta = async (req, res) => {
   try {
     const query = `
       SELECT 
-       p.id_postulante,
+        p.id_postulante,
         p.id_estudiante,
         p.id_oferta,
         p.estado as estado_postulacion,
@@ -499,10 +532,10 @@ export const actualizarOfertasVencidas = async (req, res) => {
        WHERE estado = 1 AND fecha_cierre < CURDATE()`
     );
 
-    res.status(200).json({ 
-      success: true, 
+    res.status(200).json({
+      success: true,
       message: 'Revisión de ofertas vencidas completada',
-      actualizadas: result.affectedRows 
+      actualizadas: result.affectedRows
     });
   } catch (error) {
     console.error('Error al actualizar ofertas vencidas:', error);
@@ -513,32 +546,34 @@ export const actualizarOfertasVencidas = async (req, res) => {
 export const buscarOfertasPorEmpleadorConFiltro = async (req, res) => {
   const { id_empleador } = req.params;
   const { q, estado } = req.query;
-  
+
   if (!id_empleador || isNaN(id_empleador)) {
     return res.status(400).json({ success: false, message: 'ID de empleador inválido' });
   }
-  
+
   try {
     let query = 'SELECT * FROM oferta.oferta WHERE id_empleador = ?';
     const params = [id_empleador];
-    
+
     if (q && q.trim() !== '') {
       query += ' AND oferta LIKE ?';
       params.push(`%${q.trim()}%`);
     }
-    
+
     if (estado !== undefined && estado !== null && estado !== '') {
       query += ' AND estado = ?';
       params.push(parseInt(estado));
     }
-    
+
     query += ' ORDER BY fecha_apertura DESC';
-    
+
     const [rows] = await db.query(query, params);
-    res.status(200).json({ success: true, data: rows.map(row => ({
-      ...row,
-      motivo_rechazo: row.rechazo || row.motivo_rechazo || ''
-    })) });
+    res.status(200).json({
+      success: true, data: rows.map(row => ({
+        ...row,
+        motivo_rechazo: row.rechazo || row.motivo_rechazo || ''
+      }))
+    });
   } catch (error) {
     console.error('Error al buscar ofertas del empleador:', error);
     res.status(500).json({ success: false, message: 'Error al buscar ofertas' });
@@ -563,6 +598,37 @@ export const contarOfertas = async (req, res) => {
       success: true,
       data: {
         estado: parseInt(estado),
+        total: result[0].total
+      }
+    });
+
+  } catch (error) {
+    console.error('❌ Error al contar ofertas:', error);
+    res.status(500).json({ 
+      success: false, 
+      message: 'Error interno al intentar contar las ofertas' 
+    });
+  }
+};
+
+export const contarOfertasEmpleador = async (req, res) => {
+  const { empleador } = req.params;
+  if (empleador === undefined) {
+    return res.status(400).json({ 
+      success: false, 
+      message: 'Debes proporcionar un ID de empleador para contar sus ofertas.' 
+    });
+  }
+
+  try {
+    const [result] = await db.query(
+      'SELECT COUNT(*) as total FROM oferta.oferta WHERE id_empleador = ? AND estado = 1',
+      [empleador]
+    );
+    res.status(200).json({
+      success: true,
+      data: {
+        empleador: parseInt(empleador),
         total: result[0].total
       }
     });

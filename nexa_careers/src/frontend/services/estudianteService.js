@@ -176,3 +176,97 @@ export const analizarPerfilIA = async (idEstudiante) => {
     return { success: false, message: error.message };
   }
 };
+
+export const obtenerRecomendacionesIA = async (idEstudiante) => {
+  try {
+    const res = await fetch(`${API_URL}/estudiantes/${idEstudiante}/recomendaciones`);
+    return await res.json();
+  } catch (error) {
+    console.error('Error en obtenerRecomendacionesIA:', error);
+    return { success: false, message: error.message };
+  }
+};
+
+export const obtenerTipIA = async (idEstudiante) => {
+  try {
+    const res = await fetch(`${API_URL}/estudiantes/${idEstudiante}/recomendaciones/tip`);
+    return await res.json();
+  } catch (error) {
+    console.error('Error en obtenerTipIA:', error);
+    return { success: false, message: error.message };
+  }
+};
+
+export const obtenerCursosFavoritos = async (idEstudiante) => {
+  try {
+    const res = await fetch(`${API_URL}/estudiantes/${idEstudiante}/cursos-favoritos`);
+    return await res.json();
+  } catch (error) {
+    console.error('Error en obtenerCursosFavoritos:', error);
+    return { success: false, data: [] };
+  }
+};
+
+export const agregarCursoFavorito = async (idEstudiante, idCurso) => {
+  try {
+    const res = await fetch(`${API_URL}/estudiantes/${idEstudiante}/cursos-favoritos/nuevo`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id_curso: idCurso })
+    });
+    return await res.json();
+  } catch (error) {
+    console.error('Error en agregarCursoFavorito:', error);
+    return { success: false, message: error.message };
+  }
+};
+
+export const deshabilitarCursoFavorito = async (idEstudiante, idCurso) => {
+  try {
+    const res = await fetch(`${API_URL}/estudiantes/${idEstudiante}/cursos-favoritos/deshabilitar/${idCurso}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' }
+    });
+    return await res.json();
+  } catch (error) {
+    console.error('Error en deshabilitarCursoFavorito:', error);
+    return { success: false, message: error.message };
+  }
+};
+
+export const obtenerOfertasFavoritas = async (idEstudiante) => {
+  try {
+    const res = await fetch(`${API_URL}/estudiantes/${idEstudiante}/ofertas-favoritas`);
+    return await res.json();
+  } catch (error) {
+    console.error('Error en obtenerOfertasFavoritas:', error);
+    return { success: false, data: [] };
+  }
+};
+
+export const agregarOfertaFavorita = async (idEstudiante, idOferta) => {
+  try {
+    const res = await fetch(`${API_URL}/estudiantes/${idEstudiante}/ofertas-favoritas/nueva`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id_oferta: idOferta })
+    });
+    return await res.json();
+  } catch (error) {
+    console.error('Error en agregarOfertaFavorita:', error);
+    return { success: false, message: error.message };
+  }
+};
+
+export const deshabilitarOfertaFavorita = async (idEstudiante, idOferta) => {
+  try {
+    const res = await fetch(`${API_URL}/estudiantes/${idEstudiante}/ofertas-favoritas/deshabilitar/${idOferta}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' }
+    });
+    return await res.json();
+  } catch (error) {
+    console.error('Error en deshabilitarOfertaFavorita:', error);
+    return { success: false, message: error.message };
+  }
+};

@@ -24,6 +24,7 @@ import PerfilEmpleador from '@/views/EditarPerfilEmpleador.vue'
 
 // Dashboard
 import DashboardSupervisor from '@/views/DashboardSupervisor.vue'
+import IndicadoresDashboard from '@/views/IndicadoresDashboard.vue'
 
 // Cursos
 import PublicarCurso from '@/views/PublicarCurso.vue'
@@ -31,6 +32,8 @@ import CatalogoCursos from '@/views/CatalogoCursos.vue'
 import DetalleCurso from '@/views/DetalleCurso.vue'
 import EmpleadorCursos from '@/views/EmpleadorCursos.vue'
 import EstudianteCursos from '@/views/EstudianteCursos.vue'
+import MisCursosFavoritos from '@/views/MisCursosFavoritos.vue'
+import MisOfertasFavoritas from '@/views/MisOfertasFavoritas.vue'
 
 //Logs del supervisor
 import ListaEstudiantes from '@/views/ListaEstudiantes.vue'
@@ -109,16 +112,16 @@ const routes = [
 
   //Ver Perfiles
   {
-    path: '/postulante/:id',
+    path: '/estudiante/:id',
     name: 'PerfilEstudianteView',
     component: PerfilEstudianteView,
-    meta: { requiereRol: ['empleador', 'supervisor'] }
+    //meta: { requiereRol: ['empleador', 'supervisor'] }
   },
   {
     path: '/empleador/:id',
     name: 'PerfilEmpleadorView',
-    component: () => import('@/views/PerfilEmpleador.vue'), // O el nombre que le des al archivo
-    meta: { requiereRol: ['estudiante', 'empleador', 'supervisor'] }
+    component: () => import('@/views/PerfilEmpleador.vue'),
+    //meta: { requiereRol: ['estudiante', 'empleador', 'supervisor'] }
   },
 
   { path: '/mis-ofertas/:ofertaId/editar', name: 'EditarOferta', component: EditarOferta, meta: { requiereRol: ['empleador'] } },
@@ -139,6 +142,19 @@ const routes = [
     path: '/mis-cursos',
     name: 'EstudianteCursos',
     component: EstudianteCursos,
+    meta: { requiereRol: ['estudiante'] }
+  },
+
+  {
+    path: '/mis-favoritos',
+    name: 'MisCursosFavoritos',
+    component: MisCursosFavoritos,
+    meta: { requiereRol: ['estudiante'] }
+  },
+  {
+    path: '/mis-ofertas-favoritas',
+    name: 'MisOfertasFavoritas',
+    component: MisOfertasFavoritas,
     meta: { requiereRol: ['estudiante'] }
   },
 
@@ -180,6 +196,13 @@ const routes = [
     meta: { requiereRol: ['supervisor'] }
   },
 
+  {
+  path: '/supervisor/indicadores',
+  name: 'IndicadoresDashboard',
+  component: IndicadoresDashboard,
+  meta: { requiereRol: ['supervisor'] }
+},
+
   //Logs del supervisor
   {
     path: '/supervisor/estudiantes',
@@ -219,10 +242,10 @@ const routes = [
 
   //Categorias ofertas laborales
   {
-  path: '/supervisor/categorias',
-  name: 'GestionCategorias',
-  component: GestionCategorias,
-  meta: { requiereRol: ['supervisor'] }
+    path: '/supervisor/categorias',
+    name: 'GestionCategorias',
+    component: GestionCategorias,
+    meta: { requiereRol: ['supervisor'] }
   },
 
   //Analisis IA CV

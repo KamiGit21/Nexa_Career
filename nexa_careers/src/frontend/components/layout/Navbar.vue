@@ -10,12 +10,10 @@
 
     <!-- Enlaces centrales -->
     <div class="flex-1 flex justify-center gap-10 text-lg">
-
       <router-link to="/home" class="hover:text-[#d0b06d] transition-colors">
         Inicio
       </router-link>
 
-      <!-- Públicos -->
       <router-link to="/ofertas" class="hover:text-[#d0b06d] transition-colors">
         Ofertas Laborales
       </router-link>
@@ -24,7 +22,6 @@
         Catálogo de Cursos
       </router-link>
 
-      <!-- Con sesión -->
       <template v-if="authState.rol">
 
         <!-- EMPLEADOR -->
@@ -55,7 +52,6 @@
         </router-link>
 
       </template>
-
     </div>
 
     <!-- Zona derecha -->
@@ -74,6 +70,7 @@
         <!-- Menú desplegable -->
         <div v-if="menuAbierto"
           class="absolute right-0 top-16 w-48 bg-white rounded-2xl shadow-xl py-2 z-50 border border-gray-100 overflow-hidden">
+
           <router-link v-if="authState.rol !== 'supervisor'"
             :to="authState.rol === 'estudiante' ? `/perfil-estudiante/${authState.id}` : `/perfil-empleador/${authState.id}`"
             @click="menuAbierto = false"
@@ -81,7 +78,20 @@
             👤 Mi Perfil
           </router-link>
 
-          <router-link v-else to="/dashboard-supervisor" @click="menuAbierto = false"
+          <router-link v-if="authState.rol === 'estudiante'" to="/mis-favoritos"
+            @click="menuAbierto = false"
+            class="block px-4 py-3 text-gray-700 hover:bg-gray-50 hover:text-[#1b2a4a] transition-colors text-sm font-medium">
+            ❤️ Mis Cursos Favoritos
+          </router-link>
+
+          <router-link v-if="authState.rol === 'estudiante'" to="/mis-ofertas-favoritas"
+            @click="menuAbierto = false"
+            class="block px-4 py-3 text-gray-700 hover:bg-gray-50 hover:text-[#1b2a4a] transition-colors text-sm font-medium">
+            💼 Mis Ofertas Favoritas
+          </router-link>
+
+          <router-link v-else-if="authState.rol === 'supervisor'" to="/dashboard-supervisor"
+            @click="menuAbierto = false"
             class="block px-4 py-3 text-gray-700 hover:bg-gray-50 hover:text-[#1b2a4a] transition-colors text-sm font-medium">
             📊 Dashboard
           </router-link>

@@ -24,9 +24,10 @@ export const listarCursos = async (req, res) => {
       const [categoriasRows] = await db.query(`
         SELECT cc.id_categoria_curso, cc.id_categoria, cat.categoria 
         FROM categoria_curso.categoria_curso cc 
-        JOIN categoria.categoria cat ON cc.id_categoria = cat.id_categoria 
-        WHERE cc.id_curso = ?
-        ORDER BY cat.categoria
+        JOIN categoria.categoria cat ON cc.id_categoria = cat.id_categoria
+      
+      WHERE cc.id_curso = ? AND cat.estado = 1
+      ORDER BY cat.categoria
       `, [curso.id_curso]);
       curso.categorias = categoriasRows;
     }
@@ -63,7 +64,7 @@ export const listarCursosDisponibles = async (req, res) => {
       const [categoriasRows] = await db.query(`
         SELECT cc.id_categoria_curso, cc.id_categoria, cat.categoria 
         FROM categoria_curso.categoria_curso cc 
-        JOIN categoria.categoria cat ON cc.id_categoria = cat.id_categoria 
+        JOIN categoria.categoria cat ON cc.id_categoria = cat.id_categoria AND cat.estado = 1 
         WHERE cc.id_curso = ?
         ORDER BY cat.categoria
       `, [curso.id_curso]);
@@ -89,7 +90,7 @@ export const listarCursosPorEstudiante = async (req, res) => {
       const [categoriasRows] = await db.query(`
         SELECT cc.id_categoria_curso, cc.id_categoria, cat.categoria 
         FROM categoria_curso.categoria_curso cc 
-        JOIN categoria.categoria cat ON cc.id_categoria = cat.id_categoria 
+        JOIN categoria.categoria cat ON cc.id_categoria = cat.id_categoria AND cat.estado = 1 
         WHERE cc.id_curso = ?
         ORDER BY cat.categoria
       `, [curso.id_curso]);
@@ -160,7 +161,7 @@ export const listarCursosPorEmpleador = async (req, res) => {
       const [categoriasRows] = await db.query(`
         SELECT cc.id_categoria_curso, cc.id_categoria, cat.categoria 
         FROM categoria_curso.categoria_curso cc 
-        JOIN categoria.categoria cat ON cc.id_categoria = cat.id_categoria 
+        JOIN categoria.categoria cat ON cc.id_categoria = cat.id_categoria AND cat.estado = 1 
         WHERE cc.id_curso = ?
         ORDER BY cat.categoria
       `, [curso.id_curso]);
@@ -448,7 +449,8 @@ export const listarCategoriasDeCurso = async (req, res) => {
       SELECT cc.id_categoria_curso, cc.id_categoria, cat.categoria 
       FROM categoria_curso.categoria_curso cc 
       JOIN categoria.categoria cat ON cc.id_categoria = cat.id_categoria 
-      WHERE cc.id_curso = ?
+      WHERE cc.id_curso = ? 
+      AND cat.estado = 1 
       ORDER BY cat.categoria
     `, [id_curso]);
     res.status(200).json({ success: true, data: rows });
@@ -903,6 +905,68 @@ export const contarCursos = async (req, res) => {
       success: true,
       data: {
         estado: parseInt(estado),
+        total: result[0].total
+      }
+    });
+
+  } catch (error) {
+    console.error('❌ Error al contar cursos:', error);
+    res.status(500).json({ 
+      success: false, 
+      message: 'Error interno al intentar contar los cursos' 
+    });
+  }
+};
+
+export const contarCursosEstudiante = async (req, res) => {
+  const { estudiante } = req.params;
+  if (estudiante === undefined) {
+    return res.status(400).json({ 
+      success: false, 
+      message: 'Debes proporcionar un ID de estudiante para contar sus cursos.' 
+    });
+  }
+
+  try {
+    const [result] = await db.query(
+      'SELECT COUNT(*) as total FROM curso.curso WHERE id_estudiante = ? AND estado = 1',
+      [estudiante]
+    );
+    res.status(200).json({
+      success: true,
+      data: {
+        estudiante: parseInt(estudiante),
+        total: result[0].total
+      }
+    });
+
+  } catch (error) {
+    console.error('❌ Error al contar cursos:', error);
+    res.status(500).json({ 
+      success: false, 
+      message: 'Error interno al intentar contar los cursos' 
+    });
+  }
+};
+
+export const contarCursosEmpleador = async (req, res) => {
+  const { empleador } = req.params;
+  if (empleador === undefined) {
+    return res.status(400).json({ 
+      success: false, 
+      message: 'Debes proporcionar un ID de empleador para contar sus cursos.' 
+    });
+  }
+
+  try {
+    const [result] = await db.query(
+      'SELECT COUNT(*) as total FROM curso.curso WHERE id_empleador = ? AND estado = 1',
+      [empleador]
+    );
+    res.status(200).json({
+      success: true,
+      data: {
+        empleador: parseInt(empleador),
         total: result[0].total
       }
     });

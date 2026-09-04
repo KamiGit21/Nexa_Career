@@ -8,7 +8,18 @@
         {{ categoriaPrincipal || 'General' }}
       </span>
 
-      <div class="flex flex-col items-end gap-1">
+      <div class="flex items-center gap-2">
+        <!-- BOTÓN DE FAVORITOS INTEGRADO -->
+        <button 
+          v-if="esEstudiante" 
+          @click.stop="toggleFavorito" 
+          class="text-xl transition-transform hover:scale-110 focus:outline-none"
+          title="Guardar en favoritos"
+        >
+          <span v-if="favorito" class="drop-shadow-sm">💖</span>
+          <span v-else class="grayscale opacity-50 hover:grayscale-0 hover:opacity-100 transition-all drop-shadow-sm">🤍</span>
+        </button>
+
         <span :class="['text-[10px] font-bold px-2 py-1 rounded-full', estadoConfig.bg, estadoConfig.text]">
           {{ estadoConfig.label }}
         </span>
@@ -59,7 +70,8 @@
 </template>
 
 <script setup>
-import { computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
+import { obtenerCursosFavoritos, agregarCursoFavorito, deshabilitarCursoFavorito } from '../../services/estudianteService.js'
 
 const props = defineProps({
   curso: { type: Object, required: true },
@@ -67,6 +79,42 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['ver', 'dar-baja'])
+
+const sesion = JSON.parse(localStorage.getItem('sesion') || '{}')
+const esEstudiante = sesion.rol === 'estudiante'
+const favorito = ref(false)
+
+onMounted(async () => {
+  if (esEstudiante) {
+    // Si viene marcado desde Mis Favoritos, evitamos doble consulta
+    if (props.curso.isFavorito !== undefined) {
+      favorito.value = props.curso.isFavorito;
+    } else {
+      // Verificamos si existe en la base de datos
+      const res = await obtenerCursosFavoritos(sesion.id);
+      if (res.success && res.data) {
+        favorito.value = res.data.some(c => c.id_curso === props.curso.id_curso);
+      }
+    }
+  }
+})
+
+const toggleFavorito = async () => {
+  // Actualización UI optimista para sensación instantánea
+  favorito.value = !favorito.value;
+  
+  try {
+    if (!favorito.value) {
+      await deshabilitarCursoFavorito(sesion.id, props.curso.id_curso);
+    } else {
+      await agregarCursoFavorito(sesion.id, props.curso.id_curso);
+    }
+  } catch (error) {
+    // Revertir si hay fallo en DB
+    favorito.value = !favorito.value;
+    console.error("Error al actualizar favorito", error);
+  }
+}
 
 // Lógica de estados para cursos
 const ESTADOS = {
