@@ -170,6 +170,15 @@
             <div class="bg-white rounded-2xl border border-gray-200 p-6">
               <h2 class="text-lg font-bold text-[#1b2a4a] mb-4">Detalles de la oferta</h2>
 
+              <button
+                v-if="sesion.rol === 'estudiante'"
+                @click="toggleFavorito"
+                class="w-full mb-4 py-2.5 rounded-xl border font-semibold text-sm flex items-center justify-center gap-2 transition"
+                :class="favorito ? 'bg-red-50 border-red-200 text-red-500' : 'bg-gray-50 border-gray-200 text-gray-600 hover:bg-red-50 hover:border-red-200 hover:text-red-400'"
+              >
+                {{ favorito ? '❤️ Guardado en favoritos' : '🤍 Guardar en favoritos' }}
+              </button>
+
               <ul class="flex flex-col gap-3">
                 <li class="flex justify-between items-center text-sm">
                   <span class="text-gray-400">Estado:</span>
@@ -240,6 +249,7 @@
 import { ref, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { obtenerOfertaPorId } from '@/services/ofertaService.js'
+import { guardarFavorito, eliminarFavorito } from '@/services/OfertasFavoritos.js'
 import { cambiarEstadoOferta } from '@/services/supervisorService.js'
 import { obtenerEmpleadorPorId } from '@/services/empleadorService.js'
 import { obtenerPostulaciones, postularAOferta } from '@/services/postulacionService.js'
@@ -254,7 +264,6 @@ const irAlPerfil = () => {
   }
 }
 
-
 const sesion = JSON.parse(localStorage.getItem('sesion') || '{}')
 const esSupervisor = computed(() => sesion.rol === 'supervisor')
 
@@ -268,6 +277,13 @@ const yaPostulado = ref(false)
 const errorPostulacion = ref(null)
 const mostrarModalRechazo = ref(false)
 const motivoRechazo = ref('')
+const favorito = ref(false)
+// TODO (integración): inicializar con esOfertaFavorita(sesion.id, route.params.id)
+const toggleFavorito = async () => {
+  if (favorito.value) await eliminarFavorito(sesion.id, route.params.id)
+  else await guardarFavorito(sesion.id, route.params.id)
+  favorito.value = !favorito.value
+}
 
 // Ruta de volver según rol
 const rutaVolver = computed(() => {
@@ -333,7 +349,6 @@ const confirmarPostulacion = async () => {
 // Funciones para supervisor
 const moderarOferta = async (estado) => {
   if (!oferta.value) return
-
   try {
     const response = await cambiarEstadoOferta(oferta.value.id_oferta, estado, null)
     if (response.success) {

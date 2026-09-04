@@ -730,3 +730,84 @@ export const deshabilitarCursoFavorito = async (req, res) => {
     res.status(500).json({ success: false, message: 'Error interno al remover de favoritos.' });
   }
 };
+
+export const obtenerOfertasFavoritas = async (req, res) => {
+  const { id } = req.params;
+  
+  try {
+    const [rows] = await db.query(
+      `SELECT o.*, emp.empresa AS nombre_empleador, emp.empresa AS nombre_empresa
+       FROM oferta.oferta o
+       INNER JOIN favorito_oferta.favoritos_ofertas f ON o.id_oferta = f.id_oferta 
+       LEFT JOIN empleador.empleador emp ON o.id_empleador = emp.id_empleador
+       WHERE f.id_estudiante = ? AND f.estado = 0`,
+      [id]
+    );
+
+    res.status(200).json({ success: true, data: rows });
+  } catch (error) {
+    console.error('Error en obtenerOfertasFavoritas:', error);
+    res.status(500).json({ success: false, message: 'Error interno al obtener ofertas favoritas.' });
+  }
+};
+
+export const agregarOfertaFavorita = async (req, res) => {
+  const { id } = req.params; // id_estudiante
+  const { id_oferta } = req.body;
+  
+  if (!id_oferta) {
+    return res.status(400).json({ success: false, message: 'El id_oferta es obligatorio en el cuerpo de la petición.' });
+  }
+  
+  try {
+    const [exists] = await db.query(
+      'SELECT * FROM favorito_oferta.favoritos_ofertas WHERE id_oferta = ? AND id_estudiante = ?',
+      [id_oferta, id]
+    );
+
+    if (exists.length > 0) {
+      if (exists[0].estado === 0) {
+        // Ya existe y está activo (0)
+        return res.status(200).json({ success: true, message: 'La oferta ya se encuentra en favoritos.' });
+      } else {
+        // Existe pero estaba deshabilitado (1), lo pasamos a favorito (0)
+        await db.query(
+          'UPDATE favorito_oferta.favoritos_ofertas SET estado = 0 WHERE id_oferta = ? AND id_estudiante = ?',
+          [id_oferta, id]
+        );
+        return res.status(200).json({ success: true, message: 'Oferta re-activada en favoritos correctamente.' });
+      }
+    } else {
+      // No existe, se crea como favorito (0)
+      await db.query(
+        'INSERT INTO favorito_oferta.favoritos_ofertas (id_oferta, id_estudiante, estado) VALUES (?, ?, 0)',
+        [id_oferta, id]
+      );
+      return res.status(201).json({ success: true, message: 'Oferta guardada en favoritos con éxito.' });
+    }
+  } catch (error) {
+    console.error('Error en agregarOfertaFavorita:', error);
+    res.status(500).json({ success: false, message: 'Error interno al guardar en favoritos.' });
+  }
+};
+
+export const deshabilitarOfertaFavorita = async (req, res) => {
+  const { id, ofertaId } = req.params;
+  
+  try {
+    // Cambiamos el estado de favorito (0) a deshabilitado (1)
+    const [result] = await db.query(
+      'UPDATE favorito_oferta.favoritos_ofertas SET estado = 1 WHERE id_oferta = ? AND id_estudiante = ?',
+      [ofertaId, id]
+    );
+    
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ success: false, message: 'El favorito no fue localizado para este estudiante.' });
+    }
+    
+    res.status(200).json({ success: true, message: 'Oferta deshabilitada de favoritos exitosamente.' });
+  } catch (error) {
+    console.error('Error en deshabilitarOfertaFavorita:', error);
+    res.status(500).json({ success: false, message: 'Error interno al remover de favoritos.' });
+  }
+};
