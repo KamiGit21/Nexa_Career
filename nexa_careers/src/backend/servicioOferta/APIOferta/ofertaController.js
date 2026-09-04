@@ -492,6 +492,7 @@ export const buscarOfertasAvanzado = async (req, res) => {
       WHERE o.estado = 1
     `;
     const params = [];
+
     if (q) {
       queryBase += " AND o.oferta LIKE ?";
       params.push(`%${q}%`);
@@ -511,8 +512,10 @@ export const buscarOfertasAvanzado = async (req, res) => {
       const hoy = new Date();
       hoy.setHours(0,0,0,0);
 
-      if (typeof rangoFecha === 'object') {
-        const { preset, desde, hasta } = rangoFecha;
+      try {
+        const parsedRango = JSON.parse(rangoFecha);
+        const { preset, desde, hasta } = parsedRango;
+
         if (preset) {
           switch (preset) {
             case 'dia':
@@ -535,28 +538,28 @@ export const buscarOfertasAvanzado = async (req, res) => {
           fechaHasta = new Date(hasta);
         } else if (desde) {
           fechaDesde = new Date(desde);
-          fechaHasta = null;
         } else if (hasta) {
-          fechaDesde = null;
           fechaHasta = new Date(hasta);
         }
-      } 
-      else if (typeof rangoFecha === 'string' && rangoFecha) {
-        switch (rangoFecha) {
-          case 'dia':
-            fechaDesde = new Date(hoy);
-            fechaHasta = new Date(hoy);
-            break;
-          case 'semana':
-            fechaDesde = new Date(hoy);
-            fechaDesde.setDate(hoy.getDate() - 7);
-            fechaHasta = new Date(hoy);
-            break;
-          case 'mes':
-            fechaDesde = new Date(hoy);
-            fechaDesde.setMonth(hoy.getMonth() - 1);
-            fechaHasta = new Date(hoy);
-            break;
+      } catch (e) {
+        // Si no es un JSON, asumimos que mandaron directo el string del preset
+        if (typeof rangoFecha === 'string') {
+          switch (rangoFecha) {
+            case 'dia':
+              fechaDesde = new Date(hoy);
+              fechaHasta = new Date(hoy);
+              break;
+            case 'semana':
+              fechaDesde = new Date(hoy);
+              fechaDesde.setDate(hoy.getDate() - 7);
+              fechaHasta = new Date(hoy);
+              break;
+            case 'mes':
+              fechaDesde = new Date(hoy);
+              fechaDesde.setMonth(hoy.getMonth() - 1);
+              fechaHasta = new Date(hoy);
+              break;
+          }
         }
       }
 

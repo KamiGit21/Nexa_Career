@@ -73,7 +73,7 @@ const filtros = ref({
   titulo:     '',
   empleador:  '',
   modalidad:  '',
-  rangoFecha: ''   // 'dia' | 'semana' | 'mes' | ''
+  rangoFecha: { preset: '', desde: '', hasta: '' } // Cambiado a objeto para compatibilidad con backend
 })
 
 const toggleOrden = () => {
@@ -95,15 +95,21 @@ const cargarOfertas = async (pagina = 1) => {
   paginaActual.value = pagina
 
   try {
-    const response = await buscarOfertasAvanzado({
+    const payload = {
       pagina,
       size:       limite.value,
       titulo:     filtros.value.titulo,
       empleador:  filtros.value.empleador,
       modalidad:  filtros.value.modalidad,
-      orden:      ordenadoPorFecha.value ? 'desc' : 'asc',
-      rangoFecha: filtros.value.rangoFecha || undefined  // el backend resuelve el rango
-    })
+      orden:      ordenadoPorFecha.value ? 'desc' : 'asc'
+    }
+
+    // Agregar rangoFecha solo si hay valores válidos en el objeto
+    if (filtros.value.rangoFecha && (filtros.value.rangoFecha.preset || (filtros.value.rangoFecha.desde && filtros.value.rangoFecha.hasta))) {
+      payload.rangoFecha = filtros.value.rangoFecha;
+    }
+
+    const response = await buscarOfertasAvanzado(payload)
 
     if (response.success && response.data) {
       const ofertasEnriquecidas = await Promise.all(
@@ -138,7 +144,7 @@ const cargarOfertas = async (pagina = 1) => {
 }
 
 watch(filtros, (nuevosFiltros) => {
-  const estaVacio = Object.values(nuevosFiltros).every(v => v === '')
+  const estaVacio = !nuevosFiltros.titulo && !nuevosFiltros.empleador && !nuevosFiltros.modalidad && (!nuevosFiltros.rangoFecha || !nuevosFiltros.rangoFecha.preset);
   if (estaVacio) cargarOfertas(1)
 }, { deep: true })
 
