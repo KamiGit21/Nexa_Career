@@ -249,6 +249,38 @@ export const desarchivarCurso = async (idCurso) => {
   }
 }
 
+// obtener SOLO cursos publicados estudiante
+export const listarCursosPublicadosPorEstudiante = async (id) => {
+  try {
+    const res = await fetch(`${API_URL}/cursos/estudiante/${id}/publicados`)
+    return await res.json()
+  } catch (error) {
+    console.error('Error en listarCursosPublicadosPorEstudiante:', error)
+    return { success: false, message: error.message }
+  }
+}
+
+// obtener SOLO cursos publicados empleador
+export const listarCursosPublicadosPorEmpleador = async (id) => {
+  try {
+    const res = await fetch(`${API_URL}/cursos/empleador/${id}/publicados`)
+    return await res.json()
+  } catch (error) {
+    console.error('Error en listarCursosPublicadosPorEmpleador:', error)
+    return { success: false, message: error.message }
+  }
+}
+
+export const filtrarCursosPorFechas = async (fechaDesde, fechaHasta) => {
+  try {
+    const res = await fetch(`${API_URL}/cursos/filtrar-por-fechas?fechaDesde=${fechaDesde}&fechaHasta=${fechaHasta}`)
+    return await res.json()
+  } catch (error) {
+    console.error('Error en filtrarCursosPorFechas:', error)
+    return { success: false, message: error.message }
+  }
+}
+
 export const contarCursosPorEstado = async (estado) => {
   const { data } = await api.get(`/api/cursos/contar/${estado}`);
   return data;

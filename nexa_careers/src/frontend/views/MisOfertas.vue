@@ -1,4 +1,3 @@
-<!-- src/frontend/views/MisOfertas.vue -->
 <template>
   <div class="min-h-screen bg-[#f8f5f0]">
     <div class="max-w-7xl mx-auto px-6 py-10">
@@ -10,17 +9,16 @@
         </div>
         <router-link
           to="/mis-ofertas/nueva"
-          class="px-6 py-3 bg-[#1b2a4a] text-white rounded-2xl font-medium
-                 flex items-center gap-2 hover:bg-[#0f1a2e] transition-colors"
+          class="px-6 py-3 bg-[#1b2a4a] text-white rounded-2xl font-medium flex items-center gap-2 hover:bg-[#0f1a2e] transition-colors"
         >
           + Nueva Oferta
         </router-link>
       </div>
 
-      <!-- FILTRO -->
       <MisOfertasFiltros
         v-model:busqueda="busquedaFiltro"
         v-model:estadoFiltro="estadoFiltro"
+        v-model:rangoFecha="rangoFecha"
       />
 
       <MisOfertasGrid
@@ -65,11 +63,14 @@ const errorBaja          = ref('')
 
 const busquedaFiltro = ref('')
 const estadoFiltro   = ref(null)
+const rangoFecha     = ref('')   // 'dia' | 'semana' | 'mes' | ''
 
 const hayFiltroActivo = computed(() =>
-  busquedaFiltro.value.trim() !== '' || estadoFiltro.value !== null
+  busquedaFiltro.value.trim() !== '' || estadoFiltro.value !== null || rangoFecha.value !== ''
 )
 
+// Solo filtra localmente por texto y estado (ya cargados en memoria).
+// El filtro de fecha lo resuelve el backend al hacer la petición.
 const ofertasFiltradas = computed(() => {
   let resultado = ofertas.value
 
@@ -115,15 +116,20 @@ const cargarOfertas = async () => {
   try {
     const sesion = JSON.parse(localStorage.getItem('sesion'))
     if (!sesion || sesion.rol !== 'empleador') { router.push('/login'); return }
-    
+
     let res
-    // Si hay filtros activos, usar el endpoint de búsqueda
-    if (busquedaFiltro.value.trim() !== '' || estadoFiltro.value !== null) {
-      res = await buscarOfertasPorEmpleadorConFiltro(sesion.id, busquedaFiltro.value, estadoFiltro.value)
+    if (hayFiltroActivo.value) {
+      // Pasa rangoFecha al backend — el backend resuelve el filtro por fecha
+      res = await buscarOfertasPorEmpleadorConFiltro(
+        sesion.id,
+        busquedaFiltro.value,
+        estadoFiltro.value,
+        rangoFecha.value || null
+      )
     } else {
       res = await listarOfertasPorEmpleador(sesion.id)
     }
-    
+
     if (res.success) {
       ofertas.value = await Promise.all(
         (res.data || []).map(async (o) => ({
@@ -150,10 +156,8 @@ onMounted(async () => {
 })
 
 let timeoutId = null
-watch([busquedaFiltro, estadoFiltro], () => {
+watch([busquedaFiltro, estadoFiltro, rangoFecha], () => {
   if (timeoutId) clearTimeout(timeoutId)
-  timeoutId = setTimeout(() => {
-    cargarOfertas()
-  }, 500)
+  timeoutId = setTimeout(() => { cargarOfertas() }, 500)
 })
 </script>

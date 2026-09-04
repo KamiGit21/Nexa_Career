@@ -104,6 +104,51 @@ export const listarCursosPorEstudiante = async (req, res) => {
   }
 };
 
+// listarcursospublicadosporestudiante
+export const listarCursosPublicadosPorEstudiante = async (req, res) => {
+  const { id_estudiante } = req.params;
+  try {
+    const [rows] = await db.query(
+      `SELECT 
+        c.*,
+        CASE
+          WHEN c.tipo_ofertante = 0 THEN CONCAT(e.nombre, ' ', e.apellido)
+          WHEN c.tipo_ofertante = 1 THEN emp.empresa
+          ELSE '—'
+        END AS nombre_publicador,
+        CASE
+          WHEN c.tipo_ofertante = 0 THEN 'estudiante'
+          WHEN c.tipo_ofertante = 1 THEN 'empleador'
+          ELSE 'desconocido'
+        END AS tipo_publicador
+      FROM curso.curso c
+      LEFT JOIN estudiante.estudiante e   ON c.tipo_ofertante = 0 AND c.id_estudiante = e.id_estudiante
+      LEFT JOIN empleador.empleador emp  ON c.tipo_ofertante = 1 AND c.id_empleador  = emp.id_empleador
+      WHERE c.tipo_ofertante = 0 
+        AND c.id_estudiante = ? 
+        AND c.estado = 1
+      ORDER BY c.fecha_creacion DESC`,
+      [id_estudiante]
+    );
+
+    for (const curso of rows) {
+      const [categoriasRows] = await db.query(`
+        SELECT cc.id_categoria_curso, cc.id_categoria, cat.categoria 
+        FROM categoria_curso.categoria_curso cc 
+        JOIN categoria.categoria cat ON cc.id_categoria = cat.id_categoria 
+        WHERE cc.id_curso = ?
+        ORDER BY cat.categoria
+      `, [curso.id_curso]);
+      curso.categorias = categoriasRows;
+    }
+
+    res.status(200).json({ success: true, data: rows });
+  } catch (error) {
+    console.error('Error al listar cursos publicados del estudiante:', error);
+    res.status(500).json({ success: false, message: 'Error al listar cursos publicados del estudiante' });
+  }
+};
+
 export const listarCursosPorEmpleador = async (req, res) => {
   const { id_empleador } = req.params;
   try {
@@ -127,6 +172,51 @@ export const listarCursosPorEmpleador = async (req, res) => {
   } catch (error) {
     console.error('Error al listar cursos del empleador:', error);
     res.status(500).json({ success: false, message: 'Error al listar cursos del empleador' });
+  }
+};
+
+// listarcursospublicadosporempleador
+export const listarCursosPublicadosPorEmpleador = async (req, res) => {
+  const { id_empleador } = req.params;
+  try {
+    const [rows] = await db.query(
+      `SELECT 
+        c.*,
+        CASE
+          WHEN c.tipo_ofertante = 0 THEN CONCAT(e.nombre, ' ', e.apellido)
+          WHEN c.tipo_ofertante = 1 THEN emp.empresa
+          ELSE '—'
+        END AS nombre_publicador,
+        CASE
+          WHEN c.tipo_ofertante = 0 THEN 'estudiante'
+          WHEN c.tipo_ofertante = 1 THEN 'empleador'
+          ELSE 'desconocido'
+        END AS tipo_publicador
+      FROM curso.curso c
+      LEFT JOIN estudiante.estudiante e   ON c.tipo_ofertante = 0 AND c.id_estudiante = e.id_estudiante
+      LEFT JOIN empleador.empleador emp  ON c.tipo_ofertante = 1 AND c.id_empleador  = emp.id_empleador
+      WHERE c.tipo_ofertante = 1 
+        AND c.id_empleador = ? 
+        AND c.estado = 1
+      ORDER BY c.fecha_creacion DESC`,
+      [id_empleador]
+    );
+
+    for (const curso of rows) {
+      const [categoriasRows] = await db.query(`
+        SELECT cc.id_categoria_curso, cc.id_categoria, cat.categoria 
+        FROM categoria_curso.categoria_curso cc 
+        JOIN categoria.categoria cat ON cc.id_categoria = cat.id_categoria 
+        WHERE cc.id_curso = ?
+        ORDER BY cat.categoria
+      `, [curso.id_curso]);
+      curso.categorias = categoriasRows;
+    }
+
+    res.status(200).json({ success: true, data: rows });
+  } catch (error) {
+    console.error('Error al listar cursos publicados del empleador:', error);
+    res.status(500).json({ success: false, message: 'Error al listar cursos publicados del empleador' });
   }
 };
 
@@ -718,7 +808,6 @@ export const buscarCursosPorEmpleador = async (req, res) => {
       [id_empleador, searchTerm]
     );
 
-    // add categorías a cada curso
     for (const curso of rows) {
       const [categoriasRows] = await db.query(`
         SELECT cc.id_categoria_curso, cc.id_categoria, cat.categoria 
@@ -737,6 +826,68 @@ export const buscarCursosPorEmpleador = async (req, res) => {
   }
 };
 
+
+
+export const filtrarCursosPorRangoFechas = async (req, res) => {
+  const { fechaDesde, fechaHasta } = req.query;
+
+  if (!fechaDesde || !fechaHasta) {
+    return res.status(400).json({
+      success: false,
+      message: 'Los parámetros fechaDesde y fechaHasta son obligatorios (formato YYYY-MM-DD)'
+    });
+  }
+
+  const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
+  if (!dateRegex.test(fechaDesde) || !dateRegex.test(fechaHasta)) {
+    return res.status(400).json({
+      success: false,
+      message: 'Las fechas deben tener el formato YYYY-MM-DD'
+   });
+  }
+    try {
+    const [rows] = await db.query(
+      `SELECT 
+        c.*,
+        CASE
+          WHEN c.tipo_ofertante = 0 THEN CONCAT(e.nombre, ' ', e.apellido)
+          WHEN c.tipo_ofertante = 1 THEN emp.empresa
+          ELSE '—'
+        END AS nombre_publicador,
+        CASE
+          WHEN c.tipo_ofertante = 0 THEN 'estudiante'
+          WHEN c.tipo_ofertante = 1 THEN 'empleador'
+          ELSE 'desconocido'
+        END AS tipo_publicador
+      FROM curso.curso c
+      LEFT JOIN estudiante.estudiante e   ON c.tipo_ofertante = 0 AND c.id_estudiante = e.id_estudiante
+      LEFT JOIN empleador.empleador emp  ON c.tipo_ofertante = 1 AND c.id_empleador  = emp.id_empleador
+      WHERE c.estado = 1
+        AND c.fecha_creacion BETWEEN ? AND ?
+      ORDER BY c.fecha_creacion DESC`,
+      [fechaDesde, fechaHasta]
+    );
+
+    // add categorías a cada curso igual que en listarCursosDisponibles
+    for (const curso of rows) {
+      const [categoriasRows] = await db.query(`
+        SELECT cc.id_categoria_curso, cc.id_categoria, cat.categoria 
+        FROM categoria_curso.categoria_curso cc 
+        JOIN categoria.categoria cat ON cc.id_categoria = cat.id_categoria 
+        WHERE cc.id_curso = ?
+        ORDER BY cat.categoria
+      `, [curso.id_curso]);
+      curso.categorias = categoriasRows;
+    }
+
+    res.status(200).json({ success: true, data: rows });
+  } catch (error) {
+    console.error('Error al filtrar cursos por rango de fechas:', error);
+    res.status(500).json({ success: false, message: 'Error al filtrar cursos por fechas' });
+   
+  }
+};
+
 export const contarCursos = async (req, res) => {
   const { estado } = req.params;
   if (estado === undefined) {
@@ -745,8 +896,7 @@ export const contarCursos = async (req, res) => {
       message: 'Debes proporcionar un estado para contar los cursos.' 
     });
   }
-
-  try {
+    try {
     const [result] = await db.query(
       'SELECT COUNT(*) as total FROM curso.curso WHERE estado = ?',
       [estado]

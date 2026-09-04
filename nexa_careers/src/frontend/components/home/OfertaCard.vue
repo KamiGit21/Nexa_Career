@@ -3,7 +3,7 @@
     <div>
       <div class="flex justify-between items-start mb-4">
         <span class="px-3 py-1 text-xs font-semibold rounded-full bg-indigo-50 text-indigo-600">
-          {{ oferta.modalidad }}
+          {{ oferta.modalidad || 'Presencial' }}
         </span>
         <span class="text-xs text-gray-400 font-medium">
           {{ formatFecha(oferta.fecha_apertura) }}
@@ -11,7 +11,7 @@
       </div>
 
       <h3 class="text-lg font-bold text-gray-800 mb-2 line-clamp-2">
-        {{ oferta.titulo }}
+        {{ oferta.oferta || oferta.titulo }}
       </h3>
 
       <p class="text-sm text-gray-600 line-clamp-3 mb-4">
@@ -21,7 +21,7 @@
 
     <div class="mt-4">
       <router-link 
-        :to="`/ofertas/${oferta.id}`" 
+        :to="`/ofertas/${oferta.id_oferta || oferta.id}`" 
         class="block w-full text-center py-2 bg-gray-900 text-white rounded-xl text-sm font-medium hover:bg-[#b5943a] transition-colors duration-300"
       >
         Ver detalle

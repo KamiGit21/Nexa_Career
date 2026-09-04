@@ -4,7 +4,12 @@
     <CatalogoCursosHeader v-model:busqueda="busqueda" :orden="orden" @buscar="cargarCursos"
       @toggle-orden="toggleOrden" />
 
-    <CatalogoCursosFiltros v-model:categoriaActiva="categoriaActiva" v-model:orden="orden" :categorias="categoriasDisponibles" />
+    <CatalogoCursosFiltros
+      v-model:categoriaActiva="categoriaActiva"
+      v-model:orden="orden"
+      v-model:rangoFecha="rangoFecha"
+      :categorias="categoriasDisponibles"
+    />
 
     <main class="max-w-7xl mx-auto pt-12 pb-4 px-6">
 
@@ -13,7 +18,7 @@
       </div>
 
       <template v-else>
-        <div v-if="cursos.length === 0" class="text-center py-20 text-gray-400">
+        <div v-if="cursosPaginados.length === 0" class="text-center py-20 text-gray-400">
           <p class="text-5xl mb-4">🔍</p>
           <p class="text-lg font-medium">No encontramos resultados para tu búsqueda</p>
           <button @click="restablecerFiltros" class="mt-4 text-[#1b2a4a] font-bold hover:underline">
@@ -50,33 +55,33 @@
 <script setup>
 import { ref, computed, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
-import { buscarCursosAvanzado, listarCategorias } from '../services/cursoService.js'
+import { buscarCursosAvanzado, listarCategorias, filtrarCursosPorFechas } from '../services/cursoService.js'
 
-// Componentes
 import CatalogoCursosHeader from '../components/catalogoCursos/CatalogoCursosHeader.vue'
 import CatalogoCursosFiltros from '../components/catalogoCursos/CatalogoCursosFiltros.vue'
 import CursoPublicoGrid from '../components/catalogoCursos/CursoPublicoGrid.vue'
 import CatalogoCursosPaginacion from '../components/catalogoCursos/CatalogoCursosPaginacion.vue'
 import BotonScroll from '../components/comunes/BotonScroll.vue'
 
+
 const router = useRouter()
 const cursos = ref([])
 const loading = ref(true)
 
-// Filtros y paginación
 const busqueda = ref('')
 const categoriaActiva = ref('Todas')
 const orden = ref('reciente')
+const rangoFecha = ref({ preset: '', desde: '', hasta: '' })
 
-// Categorías cargadas desde el backend
 const categoriasDisponibles = ref(['Todas'])
-
 const itemsPorPagina = ref(15)
 const opcionesPagina = [9, 12, 15, 18, 21, 24, 27, 30]
 const paginaActual = ref(1)
 const totalPaginas = ref(1)
 
-// Los cursos ya vienen paginados del backend
+// INTEGRACION: al integrar el backend, pasar rangoFecha dentro de filtros en cargarCursos()
+// y reemplazar cursosPaginados por el resultado filtrado del servidor.
+
 const cursosPaginados = computed(() => cursos.value)
 const totalPaginasComp = computed(() => totalPaginas.value)
 
@@ -84,7 +89,6 @@ const toggleOrden = () => {
   orden.value = orden.value === 'reciente' ? 'antiguo' : 'reciente'
 }
 
-// Cargar categorías reales desde el backend
 const cargarCategorias = async () => {
   const response = await listarCategorias()
   if (response.success && response.data) {
@@ -92,25 +96,59 @@ const cargarCategorias = async () => {
   }
 }
 
-// Cargar cursos usando búsqueda avanzada (categoría, texto, orden y paginación en el backend)
 const cargarCursos = async () => {
   loading.value = true
   try {
-    const filtros = {
-      pagina: paginaActual.value,
-      size: itemsPorPagina.value,
-      q: busqueda.value.trim(),
-      categoria: categoriaActiva.value === 'Todas' ? 'Todos' : categoriaActiva.value,
-      orden: orden.value
-    }
-    const response = await buscarCursosAvanzado(filtros)
-    if (response.success) {
-      cursos.value = response.data || []
-      totalPaginas.value = response.paginas || 1
+    let cursosData = []
+    let totalPag = 1
+
+    const { desde, hasta } = rangoFecha.value
+    if (desde && hasta) {
+      const response = await filtrarCursosPorFechas(desde, hasta)
+      if (response.success) {
+        cursosData = response.data
+        let filtrados = [...cursosData]
+
+        if (busqueda.value.trim()) {
+          const term = busqueda.value.toLowerCase()
+          filtrados = filtrados.filter(c => c.curso.toLowerCase().includes(term))
+        }
+
+        if (categoriaActiva.value !== 'Todas') {
+          filtrados = filtrados.filter(c =>
+            c.categorias && c.categorias.some(cat => cat.categoria === categoriaActiva.value)
+          )
+        }
+
+        if (orden.value === 'reciente') {
+          filtrados.sort((a, b) => new Date(b.fecha_creacion) - new Date(a.fecha_creacion))
+        } else {
+          filtrados.sort((a, b) => new Date(a.fecha_creacion) - new Date(b.fecha_creacion))
+        }
+
+        cursosData = filtrados
+        totalPag = Math.ceil(cursosData.length / itemsPorPagina.value)
+        const start = (paginaActual.value - 1) * itemsPorPagina.value
+        const end = start + itemsPorPagina.value
+        cursosData = cursosData.slice(start, end)
+      }
     } else {
-      cursos.value = []
-      totalPaginas.value = 1
+      const filtros = {
+        pagina: paginaActual.value,
+        size: itemsPorPagina.value,
+        q: busqueda.value.trim(),
+        categoria: categoriaActiva.value === 'Todas' ? 'Todos' : categoriaActiva.value,
+        orden: orden.value
+      }
+      const response = await buscarCursosAvanzado(filtros)
+      if (response.success) {
+        cursosData = response.data || []
+        totalPag = response.paginas || 1
+      }
     }
+
+    cursos.value = cursosData
+    totalPaginas.value = totalPag
   } catch (error) {
     console.error('Error cargando cursos:', error)
     cursos.value = []
@@ -131,17 +169,17 @@ const restablecerFiltros = () => {
   busqueda.value = ''
   categoriaActiva.value = 'Todas'
   orden.value = 'reciente'
+  rangoFecha.value = { preset: '', desde: '', hasta: '' }
   paginaActual.value = 1
   cargarCursos()
 }
 
 const irDetalle = (id) => router.push(`/cursos/${id}`)
 
-// Al cambiar filtros, volver a página 1 y recargar desde el backend
-watch([busqueda, categoriaActiva, orden], () => {
+watch([busqueda, categoriaActiva, orden, rangoFecha], () => {
   paginaActual.value = 1
   cargarCursos()
-})
+}, { deep: true })
 
 watch(itemsPorPagina, () => {
   paginaActual.value = 1

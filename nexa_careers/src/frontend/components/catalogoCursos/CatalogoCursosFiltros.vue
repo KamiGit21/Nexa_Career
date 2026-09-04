@@ -1,5 +1,5 @@
 <template>
-  <div class="flex flex-wrap gap-4 mb-8 items-center justify-between">
+  <div class="flex flex-wrap gap-4 mb-8 items-center justify-between px-6 max-w-7xl mx-auto">
     <div class="flex flex-wrap gap-2">
       <button
         v-for="cat in categorias"
@@ -16,25 +16,28 @@
       </button>
     </div>
 
-    <!--<div class="w-full sm:w-auto">
-      <select
-        :value="orden"
-        @change="$emit('update:orden', $event.target.value)"
-        class="w-full sm:w-auto border border-gray-200 rounded-xl text-xs font-bold px-4 py-2.5 text-gray-500 focus:outline-none focus:border-[#1b2a4a] transition-all cursor-pointer bg-white"
-      >
-        <option value="reciente">Más recientes</option>
-        <option value="antiguo">Más antiguos</option>
-        <option value="titulo">A → Z</option>
-      </select>
-    </div>-->
+    <FiltroPorFecha
+      :model-value="rangoFecha"
+      :presets-opciones="presetsCursos"
+      @update:model-value="$emit('update:rangoFecha', $event)"
+    />
   </div>
 </template>
 
 <script setup>
+import FiltroPorFecha from '../comunes/FiltroPorFecha.vue'
+
 defineProps({
   categoriaActiva: { type: String, required: true },
   orden:           { type: String, required: true },
   categorias:      { type: Array,  required: true },
+  rangoFecha:      { type: Object, default: () => ({ preset: '', desde: '', hasta: '' }) }
 })
-defineEmits(['update:categoriaActiva', 'update:orden'])
+defineEmits(['update:categoriaActiva', 'update:orden', 'update:rangoFecha'])
+
+const presetsCursos = [
+  { valor: 'dia',    etiqueta: 'Publicados hoy' },
+  { valor: 'semana', etiqueta: 'Última semana' },
+  { valor: 'mes',    etiqueta: 'Último mes' }
+]
 </script>

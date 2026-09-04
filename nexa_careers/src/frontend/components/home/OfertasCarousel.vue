@@ -19,49 +19,60 @@
             </div>
         </div>
 
-        <div ref="carouselRef" class="flex overflow-x-auto scroll-smooth snap-x snap-mandatory no-scrollbar pb-4 -mx-2">
-            <OfertaCard v-for="oferta in ofertas" :key="oferta.id" :oferta="oferta" class="snap-start" />
+        <div v-if="loading" class="text-center py-12">
+            <p class="text-gray-500">Cargando ofertas...</p>
+        </div>
+
+        <div v-else-if="error" class="text-center py-12">
+            <p class="text-red-500">{{ error }}</p>
+        </div>
+
+        <div v-else-if="ofertas.length === 0" class="text-center py-12">
+            <p class="text-gray-500">No hay ofertas disponibles en este momento.</p>
+        </div>
+
+        <div v-else ref="carouselRef" class="flex overflow-x-auto scroll-smooth snap-x snap-mandatory no-scrollbar pb-4 -mx-2">
+            <OfertaCard v-for="oferta in ofertas" :key="oferta.id_oferta || oferta.id" :oferta="oferta" class="snap-start" />
         </div>
     </section>
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 import OfertaCard from './OfertaCard.vue'
+import { obtenerOfertasPaginacionPorEstadoYFecha } from '@/services/ofertaService'
 
 const carouselRef = ref(null)
+const ofertas = ref([])
+const loading = ref(true)
+const error = ref(null)
 
-// Datos de prueba
-const ofertas = ref([
-    {
-        id: 1,
-        titulo: "Desarrollador Frontend Vue.js",
-        descripcion: "Buscamos un desarrollador apasionado por crear interfaces dinámicas, limpias y altamente optimizadas.",
-        fecha_apertura: "2026-05-25",
-        modalidad: "Remoto"
-    },
-    {
-        id: 2,
-        titulo: "Fullstack Developer (Node.js & PHP)",
-        descripcion: "Únete a nuestro equipo para mantener y escalar plataformas críticas con microservicios robustos.",
-        fecha_apertura: "2026-05-28",
-        modalidad: "Híbrido"
-    },
-    {
-        id: 3,
-        titulo: "Especialista en Ciberseguridad / SGSI",
-        descripcion: "Auditoría, implementación de normativas de seguridad de la información y reingeniería de sistemas.",
-        fecha_apertura: "2026-05-20",
-        modalidad: "Presencial"
-    },
-    {
-        id: 4,
-        titulo: "Diseñador UI/UX & Maquetador",
-        descripcion: "Diseño de wireframes, flujos de usuario y prototipado interactivo listo para desarrollo.",
-        fecha_apertura: "2026-05-15",
-        modalidad: "Remoto"
+// Obtener ofertas con fecha de apertura más próxima (descendente) con estado 1 (aceptado)
+const cargarOfertas = async () => {
+    try {
+        loading.value = true
+        error.value = null
+        // Obtener la primera página de ofertas con estado 1, ordenadas por fecha más próxima
+        const response = await obtenerOfertasPaginacionPorEstadoYFecha(1, 1, 8)
+        
+        if (response.success && response.data) {
+            ofertas.value = response.data
+        } else {
+            error.value = 'No se pudieron cargar las ofertas'
+            ofertas.value = []
+        }
+    } catch (err) {
+        console.error('Error al cargar ofertas:', err)
+        error.value = err.message
+        ofertas.value = []
+    } finally {
+        loading.value = false
     }
-])
+}
+
+onMounted(() => {
+    cargarOfertas()
+})
 
 const scroll = (direction) => {
     if (carouselRef.value) {
