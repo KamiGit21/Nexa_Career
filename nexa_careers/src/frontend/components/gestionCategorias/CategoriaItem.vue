@@ -21,11 +21,6 @@
             Archivada
           </span>
         </div>
-        <p class="text-xs text-slate-400">
-          Usada en {{ categoria.total_ofertas ?? 0 }} ofertas
-          · {{ categoria.total_cursos ?? 0 }} cursos
-        </p>
-        <p class="text-sm font-semibold text-slate-700">{{ categoria.categoria }}</p>
         <div class="flex items-center gap-2 mt-0.5">
           <span :class="categoria.total_ofertas > 0
             ? 'bg-green-100 text-green-700'
@@ -37,18 +32,20 @@
       </div>
     </div>
 
-    <button @click="$emit(archivada ? 'desarchivar' : 'archivar', categoria)" :class="[
-      'text-xs font-medium px-3 py-1.5 rounded-lg transition-colors',
-      archivada
-        ? 'text-green-600 bg-green-50 hover:bg-green-100'
-        : 'text-amber-600 bg-amber-50 hover:bg-amber-100'
-    ]">
-      {{ archivada ? 'Desarchivar' : 'Archivar' }}
-    </button>
-    <button @click="$emit('editar', categoria)" type="button"
-      class="text-xs text-[#1e293b] font-semibold hover:text-[#b5943a] transition-colors px-3 py-1.5 rounded-lg hover:bg-[#1e293b]/5">
-      ✏️ Editar
-    </button>
+    <div class="flex items-center gap-2">
+      <button @click="$emit(archivada ? 'desarchivar' : 'archivar', categoria)" :class="[
+        'text-xs font-medium px-3 py-1.5 rounded-lg transition-colors',
+        archivada
+          ? 'text-green-600 bg-green-50 hover:bg-green-100'
+          : 'text-amber-600 bg-amber-50 hover:bg-amber-100'
+      ]">
+        {{ archivada ? 'Desarchivar' : 'Archivar' }}
+      </button>
+      <button @click="$emit('editar', categoria)" type="button"
+        class="text-xs text-[#1e293b] font-semibold hover:text-[#b5943a] transition-colors px-3 py-1.5 rounded-lg hover:bg-[#1e293b]/5">
+        ✏️ Editar
+      </button>
+    </div>
   </div>
 </template>
 

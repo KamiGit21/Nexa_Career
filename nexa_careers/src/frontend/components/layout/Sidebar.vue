@@ -37,7 +37,7 @@ const props = defineProps({
 
 const menuItems = computed(() => [
   { path: '/dashboard-supervisor',          text: 'Panel Principal',       icon: '📊' },
-  { path: '/supervisor/indicadores', text: 'Indicadores', icon: '📈' },
+  //{ path: '/supervisor/indicadores', text: 'Indicadores', icon: '📈' },
   { path: '/ofertas',                       text: 'Ofertas Laborales',      icon: '🏢' },
   { path: '/supervisor/gestion-ofertas',    text: 'Gestión de Ofertas',     icon: '📋' },
   { path: '/cursos',                        text: 'Catálogo Cursos',        icon: '🎓' },
