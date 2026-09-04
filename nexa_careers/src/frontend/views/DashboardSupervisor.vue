@@ -167,7 +167,7 @@ const quickActions = computed(() => [
     title: 'Lista de<br>Empleadores',
     description: `${estadisticas.value.empleadores} empleadores registrados`,
     buttonText: 'Ver lista',
-    route: '/empleadores',
+    route: '/supervisor/empleadores',
     borderColor: '#1B2A4A'
   },
   {
@@ -175,7 +175,7 @@ const quickActions = computed(() => [
     title: 'Lista de<br>Estudiantes',
     description: `${estadisticas.value.estudiantes} alumnos registrados`,
     buttonText: 'Ver lista',
-    route: '/estudiantes',
+    route: '/supervisor/estudiantes',
     borderColor: '#B5943A'
   },
   {
