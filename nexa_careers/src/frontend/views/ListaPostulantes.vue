@@ -184,7 +184,7 @@ const actualizarEstado = async (postulante, nuevoEstado) => {
   }
 }
 
-const verDetalle = (p) => router.push(`/postulante/${p.id_estudiante}`)
+const verDetalle = (p) => router.push(`/estudiante/${p.id_estudiante}`)
 
 onMounted(cargarDatos)
 </script>
