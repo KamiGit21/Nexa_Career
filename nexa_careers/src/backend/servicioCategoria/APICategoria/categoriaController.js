@@ -29,24 +29,28 @@ export const registrarCategoria = async (req, res) => {
 };
 
 export const listarCategorias = async (req, res) => {
+  const { incluir } = req.query;
   try {
-    const [rows] = await db.query(`
+    let query = `
       SELECT 
         c.id_categoria,
         c.categoria,
+        c.estado,
         COALESCE((
           SELECT COUNT(*) 
           FROM categoria_oferta.categoria_oferta co 
-          WHERE co.id_categoria = c.id_categoria
+          WHERE co.id_categoria = c.id_categoria AND c.estado = 1
         ), 0) AS total_ofertas,
         COALESCE((
           SELECT COUNT(*) 
           FROM categoria_curso.categoria_curso cc 
-          WHERE cc.id_categoria = c.id_categoria
+          WHERE cc.id_categoria = c.id_categoria AND c.estado = 1
         ), 0) AS total_cursos
       FROM categoria.categoria c
       ORDER BY c.categoria ASC
-    `);
+    `;
+    
+    const [rows] = await db.query(query);
     res.status(200).json({ success: true, data: rows });
   } catch (error) {
     console.error('Error al listar categorías:', error);
@@ -70,7 +74,7 @@ export const buscarCategoriaPorNombre = async (req, res) => {
 export const buscarCategoriaPorId = async (req, res) => {
   const { id } = req.params;
   try {
-    const [rows] = await db.query('SELECT * FROM categoria.categoria WHERE id_categoria = ?', [id]);
+    const [rows] = await db.query('SELECT id_categoria, categoria, estado FROM categoria.categoria WHERE id_categoria = ?', [id]);
     if (rows.length === 0) return res.status(404).json({ success: false, message: 'Categoría no encontrada' });
 
     res.status(200).json({ success: true, data: rows[0] });
@@ -106,6 +110,33 @@ export const asociarCategoriaAOferta = async (req, res) => {
   } catch (error) {
     console.error('Error al asociar categoría a oferta:', error);
     return res.status(500).json({ success: false, message: 'Error interno del servidor al asociar categoría' });
+  }
+};
+
+export const cambiarEstadoCategoria = async (req, res) => {
+  const { id } = req.params;
+  const { estado } = req.body;
+
+  if (typeof estado !== 'number' || ![0, 1].includes(estado)) {
+    return res.status(400).json({ success: false, message: 'El estado debe ser 0 (archivada) o 1 (activa)' });
+  }
+
+  try {
+    const [rows] = await db.query('SELECT * FROM categoria.categoria WHERE id_categoria = ?', [id]);
+    if (rows.length === 0) {
+      return res.status(404).json({ success: false, message: 'Categoría no encontrada' });
+    }
+
+    await db.query('UPDATE categoria.categoria SET estado = ? WHERE id_categoria = ?', [estado, id]);
+    
+    const estadoTexto = estado === 1 ? 'activa' : 'archivada';
+    res.status(200).json({ 
+      success: true, 
+      message: `Categoría marcada como ${estadoTexto} correctamente` 
+    });
+  } catch (error) {
+    console.error('Error al cambiar estado de categoría:', error);
+    res.status(500).json({ success: false, message: 'Error interno del servidor al cambiar estado' });
   }
 };
 

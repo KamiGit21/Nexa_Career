@@ -6,9 +6,21 @@ const api = axios.create({
     headers: { 'Content-Type': 'application/json' },
 })
 
-// GET /api/categorias - Listar todas las categorías
+// POST /api/categorias/registrar - Registrar nueva categoría
+export async function registrarCategoria(datos) {
+    const { data } = await api.post('/api/categorias/registrar', datos)
+    return data
+}
+
+// GET /api/categorias - Listar todas las categorías (solo activas por defecto)
 export async function listarCategorias() {
-    const { data } = await api.get('/api/categorias')
+    const { data } = await api.get('/api/ategorias')
+    return data
+}
+
+// GET /api/categorias?incluir=todas - Listar todas las categorías incluyendo archivadas
+export async function listarCategoriasCompleto() {
+    const { data } = await api.get('/api/categorias?incluir=todas')
     return data
 }
 
@@ -30,9 +42,18 @@ export async function asociarCategoriaAOferta(idCategoria, idOferta) {
     return data
 }
 
+// PATCH /api/categorias/:id/estado - Cambiar estado de la categoría (archivar/desarchivar)
+export async function cambiarEstadoCategoria(idCategoria, estado) {
+    const { data } = await api.patch(`/api/categorias/${idCategoria}/estado`, { estado })
+    return data
+}
+
 export default {
+    registrarCategoria,
     listarCategorias,
+    listarCategoriasCompleto,
     obtenerCategoriaPorId,
     buscarCategoriasPorNombre,
-    asociarCategoriaAOferta
+    asociarCategoriaAOferta,
+    cambiarEstadoCategoria
 }

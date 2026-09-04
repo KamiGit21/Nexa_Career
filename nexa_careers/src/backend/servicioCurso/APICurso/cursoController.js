@@ -24,9 +24,10 @@ export const listarCursos = async (req, res) => {
       const [categoriasRows] = await db.query(`
         SELECT cc.id_categoria_curso, cc.id_categoria, cat.categoria 
         FROM categoria_curso.categoria_curso cc 
-        JOIN categoria.categoria cat ON cc.id_categoria = cat.id_categoria 
-        WHERE cc.id_curso = ?
-        ORDER BY cat.categoria
+        JOIN categoria.categoria cat ON cc.id_categoria = cat.id_categoria
+      
+      WHERE cc.id_curso = ? AND cat.estado = 1
+      ORDER BY cat.categoria
       `, [curso.id_curso]);
       curso.categorias = categoriasRows;
     }
@@ -63,7 +64,7 @@ export const listarCursosDisponibles = async (req, res) => {
       const [categoriasRows] = await db.query(`
         SELECT cc.id_categoria_curso, cc.id_categoria, cat.categoria 
         FROM categoria_curso.categoria_curso cc 
-        JOIN categoria.categoria cat ON cc.id_categoria = cat.id_categoria 
+        JOIN categoria.categoria cat ON cc.id_categoria = cat.id_categoria AND cat.estado = 1 
         WHERE cc.id_curso = ?
         ORDER BY cat.categoria
       `, [curso.id_curso]);
@@ -89,7 +90,7 @@ export const listarCursosPorEstudiante = async (req, res) => {
       const [categoriasRows] = await db.query(`
         SELECT cc.id_categoria_curso, cc.id_categoria, cat.categoria 
         FROM categoria_curso.categoria_curso cc 
-        JOIN categoria.categoria cat ON cc.id_categoria = cat.id_categoria 
+        JOIN categoria.categoria cat ON cc.id_categoria = cat.id_categoria AND cat.estado = 1 
         WHERE cc.id_curso = ?
         ORDER BY cat.categoria
       `, [curso.id_curso]);
@@ -115,7 +116,7 @@ export const listarCursosPorEmpleador = async (req, res) => {
       const [categoriasRows] = await db.query(`
         SELECT cc.id_categoria_curso, cc.id_categoria, cat.categoria 
         FROM categoria_curso.categoria_curso cc 
-        JOIN categoria.categoria cat ON cc.id_categoria = cat.id_categoria 
+        JOIN categoria.categoria cat ON cc.id_categoria = cat.id_categoria AND cat.estado = 1 
         WHERE cc.id_curso = ?
         ORDER BY cat.categoria
       `, [curso.id_curso]);
@@ -358,7 +359,8 @@ export const listarCategoriasDeCurso = async (req, res) => {
       SELECT cc.id_categoria_curso, cc.id_categoria, cat.categoria 
       FROM categoria_curso.categoria_curso cc 
       JOIN categoria.categoria cat ON cc.id_categoria = cat.id_categoria 
-      WHERE cc.id_curso = ?
+      WHERE cc.id_curso = ? 
+      AND cat.estado = 1 
       ORDER BY cat.categoria
     `, [id_curso]);
     res.status(200).json({ success: true, data: rows });

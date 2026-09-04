@@ -152,3 +152,4 @@ ALTER TABLE estudiante.estudiante
 ADD COLUMN ofertas_recomendadas JSON DEFAULT NULL,
 ADD COLUMN cursos_recomendados JSON DEFAULT NULL,
 ADD COLUMN recomendaciones TEXT DEFAULT NULL;
+ALTER TABLE categoria.categoria ADD COLUMN estado INT DEFAULT 1; -- para habilitar o deshabilitar (archivar) categorías sin eliminarlas
