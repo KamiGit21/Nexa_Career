@@ -99,65 +99,53 @@ const cargarCategorias = async () => {
 const cargarCursos = async () => {
   loading.value = true
   try {
-    let cursosData = []
-    let totalPag = 1
+    let fechaInicio = rangoFecha.value.desde;
+    let fechaFin = rangoFecha.value.hasta;
 
-    const { desde, hasta } = rangoFecha.value
-    if (desde && hasta) {
-      const response = await filtrarCursosPorFechas(desde, hasta)
-      if (response.success) {
-        cursosData = response.data
-        let filtrados = [...cursosData]
-
-        if (busqueda.value.trim()) {
-          const term = busqueda.value.toLowerCase()
-          filtrados = filtrados.filter(c => c.curso.toLowerCase().includes(term))
-        }
-
-        if (categoriaActiva.value !== 'Todas') {
-          filtrados = filtrados.filter(c =>
-            c.categorias && c.categorias.some(cat => cat.categoria === categoriaActiva.value)
-          )
-        }
-
-        if (orden.value === 'reciente') {
-          filtrados.sort((a, b) => new Date(b.fecha_creacion) - new Date(a.fecha_creacion))
-        } else {
-          filtrados.sort((a, b) => new Date(a.fecha_creacion) - new Date(b.fecha_creacion))
-        }
-
-        cursosData = filtrados
-        totalPag = Math.ceil(cursosData.length / itemsPorPagina.value)
-        const start = (paginaActual.value - 1) * itemsPorPagina.value
-        const end = start + itemsPorPagina.value
-        cursosData = cursosData.slice(start, end)
+    // Calcular fechas exactas si el usuario seleccionó un acceso rápido
+    if (rangoFecha.value.preset && !fechaInicio) {
+      const hoy = new Date();
+      fechaFin = hoy.toISOString().split('T')[0];
+      
+      const inicio = new Date();
+      if (rangoFecha.value.preset === 'semana') {
+        inicio.setDate(hoy.getDate() - 7);
+      } else if (rangoFecha.value.preset === 'mes') {
+        inicio.setMonth(hoy.getMonth() - 1);
       }
-    } else {
-      const filtros = {
-        pagina: paginaActual.value,
-        size: itemsPorPagina.value,
-        q: busqueda.value.trim(),
-        categoria: categoriaActiva.value === 'Todas' ? 'Todos' : categoriaActiva.value,
-        orden: orden.value
-      }
-      const response = await buscarCursosAvanzado(filtros)
-      if (response.success) {
-        cursosData = response.data || []
-        totalPag = response.paginas || 1
-      }
+      fechaInicio = inicio.toISOString().split('T')[0];
     }
 
-    cursos.value = cursosData
-    totalPaginas.value = totalPag
+    const filtros = {
+      pagina: paginaActual.value,
+      size: itemsPorPagina.value,
+      q: busqueda.value.trim(),
+      categoria: categoriaActiva.value === 'Todas' ? 'Todos' : categoriaActiva.value,
+      orden: orden.value
+    };
+
+    if (fechaInicio && fechaFin) {
+      filtros.fechaDesde = fechaInicio;
+      filtros.fechaHasta = fechaFin;
+    }
+
+    const response = await buscarCursosAvanzado(filtros);
+    
+    if (response.success) {
+      cursos.value = response.data || [];
+      totalPaginas.value = response.paginas || 1;
+    } else {
+      cursos.value = [];
+      totalPaginas.value = 1;
+    }
   } catch (error) {
-    console.error('Error cargando cursos:', error)
-    cursos.value = []
-    totalPaginas.value = 1
+    console.error('Error cargando cursos:', error);
+    cursos.value = [];
+    totalPaginas.value = 1;
   } finally {
-    loading.value = false
+    loading.value = false;
   }
 }
-
 const cambiarPagina = (nuevaPagina) => {
   if (nuevaPagina < 1 || nuevaPagina > totalPaginasComp.value) return
   paginaActual.value = nuevaPagina

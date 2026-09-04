@@ -599,7 +599,7 @@ export const obtenerCursoPorId = async (req, res) => {
 
 export const buscarCursosPublicosAvanzado = async (req, res) => {
   try {
-    const { pagina = 1, size = 15, q = '', categoria = 'Todos', orden = 'reciente' } = req.query;
+    const { pagina = 1, size = 15, q = '', categoria = 'Todos', orden = 'reciente', fechaDesde, fechaHasta } = req.query;
     const limite = parseInt(size);
     const offset = (parseInt(pagina) - 1) * limite;
 
@@ -623,7 +623,6 @@ export const buscarCursosPublicosAvanzado = async (req, res) => {
     }
 
     if (categoria !== 'Todos') {
-      // Agrega condición para filtrar por categoría
       queryBase += `
         AND EXISTS (
           SELECT 1 FROM categoria_curso.categoria_curso cc
@@ -633,8 +632,15 @@ export const buscarCursosPublicosAvanzado = async (req, res) => {
       params.push(categoria);
     }
 
+    // NUEVO: Filtro por rango de fechas integrado
+    if (fechaDesde && fechaHasta) {
+      queryBase += ` AND c.fecha_creacion BETWEEN ? AND ?`;
+      params.push(fechaDesde, fechaHasta);
+    }
+
     const [countResult] = await db.query(`SELECT COUNT(*) as total ${queryBase}`, params);
     const totalPaginas = Math.ceil(countResult[0].total / limite);
+    
     let orderBy = " ORDER BY c.fecha_creacion DESC"; 
     if (orden === 'antiguo') orderBy = " ORDER BY c.fecha_creacion ASC";
     if (orden === 'titulo') orderBy = " ORDER BY c.curso ASC";
