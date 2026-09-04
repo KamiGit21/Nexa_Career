@@ -6,12 +6,14 @@
     <button
       v-if="esEstudiante"
       @click="toggleFavorito"
-      class="w-full mb-4 py-2.5 flex items-center justify-center gap-2 rounded-xl font-semibold text-sm transition-colors border"
+      class="w-full mb-4 py-2.5 flex items-center justify-center gap-2 rounded-xl font-semibold text-sm transition-all border transform active:scale-95"
       :class="favorito
         ? 'bg-red-50 border-red-200 text-red-600 hover:bg-red-100'
         : 'bg-gray-50 border-gray-200 text-gray-600 hover:bg-gray-100'"
     >
-      <span>{{ favorito ? '❤️' : '🤍' }}</span>
+      <span :class="favorito ? 'drop-shadow-sm' : 'grayscale opacity-50'">
+        {{ favorito ? '❤️' : '🤍' }}
+      </span>
       {{ favorito ? 'Guardado en favoritos' : 'Guardar en favoritos' }}
     </button>
 
@@ -54,9 +56,9 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import CursoEstadoBadge from '../misCursos/CursoEstadoBadge.vue'
-import { guardarFavorito, eliminarFavorito } from '../../services/CursoFavoritos.js'
+import { obtenerCursosFavoritos, agregarCursoFavorito, deshabilitarCursoFavorito } from '../../services/estudianteService.js'
 
 const props = defineProps({
   curso: { type: Object, required: true }
@@ -65,15 +67,32 @@ const props = defineProps({
 const sesion = JSON.parse(localStorage.getItem('sesion') || '{}')
 const esEstudiante = sesion.rol === 'estudiante'
 const favorito = ref(false)
-// TODO (integración): inicializar con esCursoFavorito(sesion.id, props.curso.id_curso)
+
+onMounted(async () => {
+  if (esEstudiante && props.curso?.id_curso) {
+    // Verificamos si el curso actual existe en la lista de favoritos de la base de datos
+    const res = await obtenerCursosFavoritos(sesion.id);
+    if (res.success && res.data) {
+      favorito.value = res.data.some(c => c.id_curso === props.curso.id_curso);
+    }
+  }
+})
 
 const toggleFavorito = async () => {
-  if (favorito.value) {
-    await eliminarFavorito(sesion.id, props.curso.id_curso)
-  } else {
-    await guardarFavorito(sesion.id, props.curso.id_curso)
+  // Actualización UI optimista para sensación instantánea
+  favorito.value = !favorito.value;
+  
+  try {
+    if (!favorito.value) {
+      await deshabilitarCursoFavorito(sesion.id, props.curso.id_curso);
+    } else {
+      await agregarCursoFavorito(sesion.id, props.curso.id_curso);
+    }
+  } catch (error) {
+    // Revertir el estado visual si falla la petición al backend
+    favorito.value = !favorito.value;
+    console.error("Error al actualizar favorito", error);
   }
-  favorito.value = !favorito.value
 }
 
 const categorias = computed(() => {

@@ -189,10 +189,13 @@
               <button
                 v-if="sesion.rol === 'estudiante'"
                 @click="toggleFavorito"
-                class="w-full mb-4 py-2.5 rounded-xl border font-semibold text-sm flex items-center justify-center gap-2 transition"
+                class="w-full mb-4 py-2.5 rounded-xl border font-semibold text-sm flex items-center justify-center gap-2 transition-all transform active:scale-95"
                 :class="favorito ? 'bg-red-50 border-red-200 text-red-500' : 'bg-gray-50 border-gray-200 text-gray-600 hover:bg-red-50 hover:border-red-200 hover:text-red-400'"
               >
-                {{ favorito ? '❤️ Guardado en favoritos' : '🤍 Guardar en favoritos' }}
+                <span :class="favorito ? 'drop-shadow-sm' : 'grayscale opacity-50'">
+                  {{ favorito ? '❤️' : '🤍' }}
+                </span>
+                {{ favorito ? 'Guardado en favoritos' : 'Guardar en favoritos' }}
               </button>
 
               <ul class="flex flex-col gap-3">
@@ -306,6 +309,7 @@ import { obtenerEmpleadorPorId } from '@/services/empleadorService.js'
 import { obtenerPostulaciones, postularAOferta } from '@/services/postulacionService.js'
 import RechazoOfertaModal from '../components/misOfertas/RechazoOfertaModal.vue'
 import CategoriaOfertaSelect from '@/components/publicarOferta/CategoriaOfertaSelect.vue'
+import { obtenerOfertasFavoritas, agregarOfertaFavorita, deshabilitarOfertaFavorita } from '@/services/estudianteService.js'
 
 const route = useRoute()
 const router = useRouter()
@@ -332,9 +336,17 @@ const motivoRechazo = ref('')
 const favorito = ref(false)
 // TODO (integración): inicializar con esOfertaFavorita(sesion.id, route.params.id)
 const toggleFavorito = async () => {
-  if (favorito.value) await eliminarFavorito(sesion.id, route.params.id)
-  else await guardarFavorito(sesion.id, route.params.id)
-  favorito.value = !favorito.value
+ favorito.value = !favorito.value;
+  try {
+    if (!favorito.value) {
+      await deshabilitarOfertaFavorita(sesion.id, route.params.id);
+    } else {
+      await agregarOfertaFavorita(sesion.id, route.params.id);
+    }
+  } catch (err) {
+    favorito.value = !favorito.value;
+    console.error("Error al cambiar favorito:", err);
+  }
 }
 
 const categoriaIds     = ref([])
@@ -474,23 +486,25 @@ const cargarOferta = async () => {
     const [empRes] = await Promise.all([
       obtenerEmpleadorPorId(oferta.value.id_empleador),
       (async () => {
-        if (sesion.id && sesion.rol === 'estudiante' && oferta.value.estado === 1) {
-          const posRes = await obtenerPostulaciones(sesion.id)
-          const lista = posRes.data ?? []
-          yaPostulado.value = lista.some(
-            p => String(p.id_oferta) === String(route.params.id)
-          )
+        if (sesion.id && sesion.rol === 'estudiante') {
+          if (oferta.value.estado === 1) {
+            const posRes = await obtenerPostulaciones(sesion.id)
+            const lista = posRes.data ?? []
+            yaPostulado.value = lista.some(
+              p => String(p.id_oferta) === String(route.params.id)
+            )
+          }
+
+          const favRes = await obtenerOfertasFavoritas(sesion.id)
+          if(favRes.success && favRes.data) {
+             favorito.value = favRes.data.some(o => String(o.id_oferta) === String(route.params.id));
+          }
         }
       })()
     ])
 
     if (empRes.success) empresaData.value = empRes.data
 
-    if (sesion.id && sesion.rol === 'estudiante' && oferta.value.estado === 1) {
-      const posRes = await obtenerPostulaciones(sesion.id)
-      const lista = posRes.data ?? []
-      yaPostulado.value = lista.some(p => String(p.id_oferta) === String(route.params.id))
-    }
   } catch (e) {
     console.error('[DetalleOferta]', e)
     error.value = 'No se pudo cargar la oferta. Intenta de nuevo.'
