@@ -1,18 +1,19 @@
 <template>
   <div class="min-h-screen bg-[#F5F0E8] p-8">
-    <CategoriasHeader @nueva="modalVisible = true" />
+    <CategoriasHeader @nueva="modalNuevaVisible = true" />
 
     <CategoriasListado
       :categorias="categorias"
       :cargando="cargando"
       @archivar="abrirModalArchivar"
       @desarchivar="abrirModalDesarchivar"
+      @editar="abrirModalEditar"
     />
 
     <NuevaCategoriaModal
-      :visible="modalVisible"
+      :visible="modalNuevaVisible"
       :guardando="guardando"
-      @cerrar="modalVisible = false"
+      @cerrar="modalNuevaVisible = false"
       @guardada="registrarCategoria"
     />
 
@@ -24,6 +25,13 @@
       @cancelar="cerrarModalArchivar"
       @confirmar="confirmarArchivar"
     />
+    <EditarCategoriaModal
+      :visible="modalEditarVisible"
+      :categoria="categoriaSeleccionada"
+      :guardando="guardando"
+      @cerrar="modalEditarVisible = false"
+      @guardada="editarCategoria"
+    />
   </div>
 </template>
 
@@ -33,16 +41,24 @@ import CategoriasHeader       from '@/components/gestionCategorias/CategoriasHea
 import CategoriasListado      from '@/components/gestionCategorias/CategoriasListado.vue'
 import NuevaCategoriaModal    from '@/components/gestionCategorias/NuevaCategoriaModal.vue'
 import ArchivarCategoriaModal from '@/components/gestionCategorias/ArchivarCategoriaModal.vue'
-import { registrarCategoria as apiRegistrarCategoria, listarCategoriasCompleto, cambiarEstadoCategoria } from '@/services/categoriaService.js'
+import EditarCategoriaModal   from '@/components/gestionCategorias/EditarCategoriaModal.vue'
+import {
+  registrarCategoria as apiRegistrarCategoria,
+  listarCategorias,
+  listarCategoriasCompleto,
+  cambiarEstadoCategoria,
+  actualizarCategoria,
+} from '@/services/categoriaService.js'
 
 const categorias            = ref([])
-const cargando              = ref(false)
-const guardando             = ref(false)
-const procesando            = ref(false)
-const modalVisible          = ref(false)
-const modalArchivarVisible  = ref(false)
-const categoriaSeleccionada = ref(null)
-const accionEsArchivar      = ref(true)
+const cargando               = ref(true)
+const guardando              = ref(false)
+const procesando             = ref(false)
+const modalNuevaVisible      = ref(false)
+const modalArchivarVisible   = ref(false)
+const modalEditarVisible     = ref(false)
+const categoriaSeleccionada  = ref(null)
+const accionEsArchivar       = ref(true)
 
 const cargarCategorias = async () => {
   cargando.value = true
@@ -55,10 +71,21 @@ const cargarCategorias = async () => {
     }
   } catch (error) {
     console.error('Error al cargar categorías:', error)
-    alert('Error al cargar las categorías')
+    try {
+      const res = await listarCategorias()
+      if (res.success) categorias.value = res.data
+    } catch (fallbackError) {
+      console.error('Error en fallback de listarCategorias:', fallbackError)
+      alert('Error al cargar las categorías')
+    }
   } finally {
     cargando.value = false
   }
+}
+
+const abrirModalEditar = (categoria) => {
+  categoriaSeleccionada.value = categoria
+  modalEditarVisible.value = true
 }
 
 const registrarCategoria = async (nombre) => {
@@ -68,7 +95,7 @@ const registrarCategoria = async (nombre) => {
   try {
     const response = await apiRegistrarCategoria({ categoria: nombre })
     if (response.success) {
-      modalVisible.value = false
+      modalNuevaVisible.value = false
       await cargarCategorias()
       alert('Categoría registrada correctamente')
     } else {
@@ -116,6 +143,25 @@ const confirmarArchivar = async (categoria) => {
     alert('Error al actualizar la categoría')
   } finally {
     procesando.value = false
+  }
+}
+
+const editarCategoria = async ({ id, nombre }) => {
+  guardando.value = true
+  try {
+    const response = await actualizarCategoria(id, nombre)
+    if (response.success) {
+      modalEditarVisible.value = false
+      await cargarCategorias()
+      alert(response.message || 'Categoría actualizada correctamente')
+    } else {
+      alert('Error: ' + response.message)
+    }
+  } catch (error) {
+    console.error('Error al editar categoría:', error)
+    alert('Error al actualizar la categoría')
+  } finally {
+    guardando.value = false
   }
 }
 

@@ -40,6 +40,7 @@
         :categoria="cat"
         @archivar="$emit('archivar', $event)"
         @desarchivar="$emit('desarchivar', $event)"
+        @editar="$emit('editar', $event)"
       />
     </div>
   </div>
@@ -54,8 +55,7 @@ const props = defineProps({
   categorias: { type: Array,   default: () => [] },
   cargando:   { type: Boolean, default: false },
 })
-
-defineEmits(['archivar', 'desarchivar'])
+defineEmits(['editar', 'archivar', 'desarchivar'])
 
 const busqueda   = ref('')
 const tabActiva  = ref('activas')

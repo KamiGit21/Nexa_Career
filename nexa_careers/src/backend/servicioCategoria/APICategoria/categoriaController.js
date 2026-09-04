@@ -71,6 +71,7 @@ export const buscarCategoriaPorNombre = async (req, res) => {
   }
 };
 
+
 export const buscarCategoriaPorId = async (req, res) => {
   const { id } = req.params;
   try {
@@ -113,6 +114,37 @@ export const asociarCategoriaAOferta = async (req, res) => {
   }
 };
 
+export const editarCategoria = async (req, res) => {
+  const { id } = req.params;
+  const { categoria } = req.body;
+  const categoriaNormalizada = categoria?.trim();
+
+  if (!categoriaNormalizada) {
+    return res.status(400).json({ success: false, message: 'El nombre de la categoría es requerido' });
+  }
+
+  try {
+    const [rows] = await db.query('SELECT * FROM categoria.categoria WHERE id_categoria = ?', [id]);
+    if (rows.length === 0) {
+      return res.status(404).json({ success: false, message: 'Categoría no encontrada' });
+    }
+
+    const [categorias] = await db.query('SELECT id_categoria, categoria FROM categoria.categoria WHERE id_categoria != ?', [id]);
+    const yaExiste = categorias.some(
+      (cat) => cat.categoria.trim().toLowerCase() === categoriaNormalizada.toLowerCase()
+    );
+    if (yaExiste) {
+      return res.status(409).json({ success: false, message: 'Ya existe una categoría con ese nombre' });
+    }
+
+    await db.query('UPDATE categoria.categoria SET categoria = ? WHERE id_categoria = ?', [categoriaNormalizada, id]);
+    res.status(200).json({ success: true, message: 'Categoría actualizada correctamente' });
+  } catch (error) {
+    console.error('Error al editar categoría:', error);
+    res.status(500).json({ success: false, message: 'Error interno del servidor al editar' });
+  }
+};
+
 export const cambiarEstadoCategoria = async (req, res) => {
   const { id } = req.params;
   const { estado } = req.body;
@@ -137,6 +169,51 @@ export const cambiarEstadoCategoria = async (req, res) => {
   } catch (error) {
     console.error('Error al cambiar estado de categoría:', error);
     res.status(500).json({ success: false, message: 'Error interno del servidor al cambiar estado' });
+
+  }
+}
+
+export const actualizarCategoriasDeOferta = async (req, res) => {
+  const { id_oferta } = req.params;
+  const { categorias } = req.body;
+
+  if (!Array.isArray(categorias)) {
+    return res.status(400).json({ success: false, message: 'El campo categorias debe ser un arreglo de IDs de categoría' });
+  }
+
+  try {
+    const [ofertaRows] = await db.query('SELECT * FROM oferta.oferta WHERE id_oferta = ?', [id_oferta]);
+    if (ofertaRows.length === 0) {
+      return res.status(404).json({ success: false, message: 'Oferta laboral no encontrada' });
+    }
+
+    const connection = await db.getConnection();
+    try {
+      await connection.beginTransaction();
+      await connection.query('DELETE FROM categoria_oferta.categoria_oferta WHERE id_oferta = ?', [id_oferta]);
+
+      const categoriasUnicas = [...new Set(categorias.filter((idCategoria) => idCategoria !== undefined && idCategoria !== null))];
+      for (const idCategoria of categoriasUnicas) {
+        const [categoriaRows] = await connection.query('SELECT * FROM categoria.categoria WHERE id_categoria = ?', [idCategoria]);
+        if (categoriaRows.length === 0) {
+          await connection.rollback();
+          return res.status(404).json({ success: false, message: `Categoría no encontrada: ${idCategoria}` });
+        }
+        await connection.query('INSERT INTO categoria_oferta.categoria_oferta (id_categoria, id_oferta) VALUES (?, ?)', [idCategoria, id_oferta]);
+      }
+
+      await connection.commit();
+      res.status(200).json({ success: true, message: 'Categorías de la oferta laboral actualizadas correctamente' });
+    } catch (error) {
+      await connection.rollback();
+      console.error('Error al actualizar categorías de oferta:', error);
+      res.status(500).json({ success: false, message: 'Error interno del servidor al actualizar categorías' });
+    } finally {
+      connection.release();
+    }
+  } catch (error) {
+    console.error('Error al actualizar las categorías de la oferta:', error);
+    return res.status(500).json({ success: false, message: 'Error interno del servidor al actualizar categorías' });
   }
 };
 

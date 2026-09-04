@@ -1,4 +1,3 @@
-// src/frontend/services/categoriaService.js
 import axios from 'axios'
 
 const api = axios.create({
@@ -14,7 +13,7 @@ export async function registrarCategoria(datos) {
 
 // GET /api/categorias - Listar todas las categorías (solo activas por defecto)
 export async function listarCategorias() {
-    const { data } = await api.get('/api/ategorias')
+    const { data } = await api.get('/api/categorias')
     return data
 }
 
@@ -36,6 +35,12 @@ export async function buscarCategoriasPorNombre(nombre) {
     return data
 }
 
+// PUT /api/categorias/:id - Editar nombre de una categoría
+export async function actualizarCategoria(id, categoria) {
+    const { data } = await api.put(`/api/categorias/${id}`, { categoria })
+    return data
+}
+
 // PUT /api/categorias/:id/asociar-oferta - Asociar categoría a una oferta
 export async function asociarCategoriaAOferta(idCategoria, idOferta) {
     const { data } = await api.put(`/api/categorias/${idCategoria}/asociar-oferta`, { id_oferta: idOferta })
@@ -48,12 +53,20 @@ export async function cambiarEstadoCategoria(idCategoria, estado) {
     return data
 }
 
+// PUT /api/categorias/oferta/:idOferta - Actualizar categorías de una oferta
+export async function actualizarCategoriasOferta(idOferta, categorias) {
+    const { data } = await api.put(`/api/categorias/oferta/${idOferta}`, { categorias })
+    return data
+}
+
 export default {
     registrarCategoria,
     listarCategorias,
     listarCategoriasCompleto,
     obtenerCategoriaPorId,
     buscarCategoriasPorNombre,
+    actualizarCategoria,
     asociarCategoriaAOferta,
-    cambiarEstadoCategoria
+    cambiarEstadoCategoria,
+    actualizarCategoriasOferta,
 }
