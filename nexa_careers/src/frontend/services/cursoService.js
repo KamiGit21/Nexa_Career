@@ -1,4 +1,10 @@
+import axios from 'axios'
 const API_URL = 'http://localhost:3000/api'
+
+const api = axios.create({
+  baseURL: 'http://localhost:3000',
+  headers: { 'Content-Type': 'application/json' },
+})
 
 export const publicarCursoPorEstudiante = async (data) => {
   try {
@@ -273,4 +279,9 @@ export const filtrarCursosPorFechas = async (fechaDesde, fechaHasta) => {
     console.error('Error en filtrarCursosPorFechas:', error)
     return { success: false, message: error.message }
   }
+}
+
+export const contarCursosPorEstado = async (estado) => {
+  const { data } = await api.get(`/api/cursos/contar/${estado}`);
+  return data;
 }

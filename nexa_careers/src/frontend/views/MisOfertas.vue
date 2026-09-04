@@ -50,11 +50,7 @@ import { useRouter } from 'vue-router'
 import MisOfertasGrid           from '../components/misOfertas/MisOfertasGrid.vue'
 import MisOfertasFiltros        from '../components/misOfertas/MisOfertasFiltros.vue'
 import ConfirmarBajaOfertaModal from '../components/misOfertas/ConfirmarBajaOfertaModal.vue'
-import {
-  listarOfertasPorEmpleador,
-  buscarOfertasPorEmpleadorConFiltro,
-  darDeBajaOferta
-} from '../services/ofertaService.js'
+import { listarOfertasPorEmpleador, buscarOfertasPorEmpleadorConFiltro, darDeBajaOferta, actualizarVencimientos } from '../services/ofertaService.js'
 import { obtenerNumeroPostulacionesPorOferta } from '../services/postulacionService.js'
 
 const router             = useRouter()
@@ -149,7 +145,15 @@ const cargarOfertas = async () => {
   }
 }
 
-onMounted(cargarOfertas)
+onMounted(async () => {
+  try {
+    await actualizarVencimientos()
+    console.log("Vencimientos actualizados")
+  } catch (error) {
+    console.error("No se pudieron actualizar los vencimientos:", error)
+  }
+  await cargarOfertas()
+})
 
 let timeoutId = null
 watch([busquedaFiltro, estadoFiltro, rangoFecha], () => {

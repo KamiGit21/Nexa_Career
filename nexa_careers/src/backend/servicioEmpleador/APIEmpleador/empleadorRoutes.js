@@ -13,6 +13,6 @@ router.put('/:id/contrasena', empleadorController.cambiarContrasena);
 router.put('/:id/estado', empleadorController.cambiarEstado);
 
 router.post('/enviarCodigo', empleadorController.enviarCodigoEmpleador);
-
+router.get('/contar/:activo', empleadorController.contarEmpleadores);
 
 export default router;
