@@ -144,7 +144,7 @@ const routes = [
   },
 
   {
-  path: '/mis-favoritos',
+  path: '/cursos-favoritos',
   name: 'MisCursosFavoritos',
   component: MisCursosFavoritos,
   meta: { requiereRol: ['estudiante'] }

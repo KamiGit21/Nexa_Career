@@ -79,10 +79,10 @@
           </router-link>
 
           <!-- Favoritos — solo estudiante. Cuando exista OfertaFavoritos, agregar aquí también -->
-          <router-link v-if="authState.rol === 'estudiante'" to="/mis-favoritos"
+          <router-link v-if="authState.rol === 'estudiante'" to="/cursos-favoritos"
             @click="menuAbierto = false"
             class="block px-4 py-3 text-gray-700 hover:bg-gray-50 hover:text-[#1b2a4a] transition-colors text-sm font-medium">
-            ❤️ Mis Favoritos
+            ❤️ Cursos Favoritos
           </router-link>
 
           <router-link v-else-if="authState.rol === 'supervisor'" to="/dashboard-supervisor"
