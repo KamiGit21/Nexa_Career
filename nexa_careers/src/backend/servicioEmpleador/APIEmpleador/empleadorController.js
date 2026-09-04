@@ -1,5 +1,5 @@
 import db from './db.js';
-import { enviarCodigo } from './correoService.js';
+import { enviarCodigo, enviarNotificacion } from './correoService.js';
 
 const isValidEmail = (email) => {
   if (!email || typeof email !== 'string') return false;
@@ -271,5 +271,51 @@ export const contarEmpleadores = async (req, res) => {
       success: false, 
       message: 'Error interno al intentar contar los empleadores' 
     });
+  }
+};
+
+export const enviarNotificacionPostulacionEmpleador = async (req, res) => {
+  const { idPostulacion } = req.params;
+  console.log(`\n --- PROCESANDO NOTIFICACIÓN DE NUEVA POSTULACIÓN PARA EMPLEADOR ---`);
+  console.log(`Postulación ID Recibida: ${idPostulacion}`);
+
+  try {
+    const [rows] = await db.query(`
+      SELECT 
+        p.id_postulante,
+        o.oferta,
+        emp.empresa AS nombre_empleador,
+        emp.gmail AS correo_empleador
+      FROM postulante.postulante p
+      JOIN oferta.oferta o ON p.id_oferta = o.id_oferta
+      JOIN empleador.empleador emp ON o.id_empleador = emp.id_empleador
+      WHERE p.id_postulante = ?
+    `, [idPostulacion]);
+
+    if (rows.length === 0) {
+      return res.status(404).json({ success: false, message: 'No se encontraron registros asociados al ID de postulación provisto.' });
+    }
+
+    const datosNotificacion = rows[0];
+
+    if (!datosNotificacion.correo_empleador) {
+      return res.status(444).json({ success: false, message: 'El empleador asociado no cuenta con una dirección de correo electrónica válida.' });
+    }
+
+    const correoResult = await enviarNotificacion(
+      datosNotificacion.correo_empleador,
+      datosNotificacion.nombre_empleador,
+      datosNotificacion.oferta
+    );
+
+    if (correoResult.success) {
+      return res.status(200).json({ success: true, message: 'Notificación enviada al empleador con éxito.' });
+    } else {
+      return res.status(500).json({ success: false, message: correoResult.message });
+    }
+
+  } catch (error) {
+    console.error('❌ Error interno al procesar notificación de empleador:', error);
+    return res.status(500).json({ success: false, message: 'Error interno en el servidor al intentar notificar al empleador.' });
   }
 };

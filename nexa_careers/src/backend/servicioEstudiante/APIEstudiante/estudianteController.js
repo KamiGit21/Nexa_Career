@@ -1,5 +1,6 @@
 import db from './db.js';
-import { enviarCodigo } from './correoService.js';
+
+import { enviarCodigo, enviarNotificacion } from './correoService.js';
 import Groq from 'groq-sdk';
 import { uploadDir } from './cvController.js';
 import path from 'path';
@@ -447,7 +448,7 @@ export const analizarPerfilConIA = async (req, res) => {
     const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
 
     const result = await groq.chat.completions.create({
-    model: "llama-3.3-70b-versatile",
+    model: "openai/gpt-oss-120b",
     messages: [{ role: "user", content: prompt }],
   });
     let responseText = result.choices[0].message.content;
@@ -487,11 +488,245 @@ export const analizarPerfilConIA = async (req, res) => {
 
     aiData.jobs = jobsEnriquecidos;
     aiData.courses = cursosEnriquecidos;
+
+    try {
+      await db.query(
+        `UPDATE estudiante.estudiante 
+         SET ofertas_recomendadas = ?, cursos_recomendados = ?, recomendaciones = ? 
+         WHERE id_estudiante = ?`,
+        [
+          JSON.stringify(jobsEnriquecidos), 
+          JSON.stringify(cursosEnriquecidos), 
+          aiData.profile.tip, 
+          id
+        ]
+      );
+      console.log(`💾 Análisis IA guardado correctamente en la base de datos para el estudiante ${id}.`);
+    } catch (dbError) {
+      console.error('⚠️ Error al guardar los resultados de la IA en la base de datos:', dbError);
+      // No bloqueamos la respuesta al usuario si falla el guardado
+    }
     
     res.status(200).json({ success: true, data: aiData });
 
   } catch (error) {
     console.error('Error en el análisis de IA:', error);
     res.status(500).json({ success: false, message: 'La IA no pudo procesar el perfil en este momento' });
+  }
+};
+
+export const enviarNotificacionEstudiante = async (req, res) => {
+  const { postulacion } = req.params;
+  console.log(`\n --- PROCESANDO NOTIFICACIÓN AUTOMÁTICA DE POSTULACIÓN ---`);
+  console.log(`Postulación ID: ${postulacion}`);
+
+  try {
+    // La consulta SQL sigue uniendo las tablas para traer toda la información necesaria de forma directa
+    const [rows] = await db.query(`
+      SELECT 
+        p.id_estudiante,
+        p.estado,
+        e.nombre,
+        e.apellido,
+        e.gmail AS correo_estudiante,
+        o.oferta,
+        emp.empresa AS empleador
+      FROM postulante.postulante p
+      JOIN estudiante.estudiante e ON p.id_estudiante = e.id_estudiante
+      JOIN oferta.oferta o ON p.id_oferta = o.id_oferta
+      JOIN empleador.empleador emp ON o.id_empleador = emp.id_empleador
+      WHERE p.id_postulante = ?
+    `, [postulacion]);
+
+    if (rows.length === 0) {
+      return res.status(404).json({ success: false, message: 'No se encontró ningún registro para la postulación especificada.' });
+    }
+
+    const datosPostulacion = rows[0];
+
+    // Validar que el estado de la postulación
+    if (Number(datosPostulacion.estado) !== 1) {
+      return res.status(400).json({ 
+        success: false, 
+        message: 'Validación fallida: La postulación no se encuentra en estado aceptado (1).' 
+      });
+    }
+
+    if (!datosPostulacion.correo_estudiante) {
+      return res.status(444).json({ success: false, message: 'El estudiante no posee un correo electrónico válido registrado.' });
+    }
+
+    // envío del correo electrónico 
+    const correoResult = await enviarNotificacion(
+      datosPostulacion.correo_estudiante,
+      datosPostulacion.nombre,
+      datosPostulacion.apellido,
+      datosPostulacion.oferta
+    );
+
+    if (correoResult.success) {
+      return res.status(200).json({ success: true, message: 'Notificación de aceptación enviada correctamente.' });
+    } else {
+      return res.status(500).json({ success: false, message: correoResult.message });
+    }
+
+  } catch (error) {
+    console.error('❌ Error interno en enviarNotificacionEstudiante:', error);
+    return res.status(500).json({ success: false, message: 'Error interno en el servidor al intentar procesar la notificación.' });
+  }
+};
+
+export const obtenerRecomendacionesIA = async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const [rows] = await db.query(
+      'SELECT ofertas_recomendadas, cursos_recomendados, recomendaciones FROM estudiante.estudiante WHERE id_estudiante = ?',
+      [id]
+    );
+
+    if (rows.length === 0) {
+      return res.status(404).json({ success: false, message: 'Estudiante no encontrado' });
+    }
+
+    const { ofertas_recomendadas, cursos_recomendados, recomendaciones } = rows[0];
+
+    res.status(200).json({
+      success: true,
+      data: {
+        ofertas: typeof ofertas_recomendadas === 'string' ? JSON.parse(ofertas_recomendadas) : (ofertas_recomendadas || []),
+        cursos: typeof cursos_recomendados === 'string' ? JSON.parse(cursos_recomendados) : (cursos_recomendados || []),
+        tip: recomendaciones || null
+      }
+    });
+
+  } catch (error) {
+    console.error('❌ Error al obtener recomendaciones:', error);
+    res.status(500).json({ success: false, message: 'Error al recuperar las recomendaciones del estudiante' });
+  }
+};
+
+export const obtenerTipIA = async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const [rows] = await db.query(
+      'SELECT recomendaciones FROM estudiante.estudiante WHERE id_estudiante = ?',
+      [id]
+    );
+
+    if (rows.length === 0) {
+      return res.status(404).json({ success: false, message: 'Estudiante no encontrado' });
+    }
+
+    res.status(200).json({
+      success: true,
+      data: {
+        tip: rows[0].recomendaciones || null
+      }
+    });
+
+  } catch (error) {
+    console.error('❌ Error al obtener el tip:', error);
+    res.status(500).json({ success: false, message: 'Error al recuperar el tip del estudiante' });
+  }
+};
+
+export const obtenerCursosFavoritos = async (req, res) => {
+  const { id } = req.params;
+  
+  try {
+    const [rows] = await db.query(
+      `SELECT c.*,
+        CASE
+          WHEN c.tipo_ofertante = 0 THEN CONCAT(e.nombre, ' ', e.apellido)
+          WHEN c.tipo_ofertante = 1 THEN emp.empresa
+          ELSE '—'
+        END AS nombre_publicador
+       FROM curso.curso c
+       INNER JOIN favorito_curso.favoritos_cursos f ON c.id_curso = f.id_curso 
+       LEFT JOIN estudiante.estudiante e   ON c.tipo_ofertante = 0 AND c.id_estudiante = e.id_estudiante
+       LEFT JOIN empleador.empleador emp  ON c.tipo_ofertante = 1 AND c.id_empleador  = emp.id_empleador
+       WHERE f.id_estudiante = ? AND f.estado = 0`,
+      [id]
+    );
+
+    // categorías para cada curso favorito
+    for (const curso of rows) {
+      const [categoriasRows] = await db.query(`
+        SELECT cc.id_categoria_curso, cc.id_categoria, cat.categoria 
+        FROM categoria_curso.categoria_curso cc 
+        JOIN categoria.categoria cat ON cc.id_categoria = cat.id_categoria 
+        WHERE cc.id_curso = ?
+        ORDER BY cat.categoria
+      `, [curso.id_curso]);
+      curso.categorias = categoriasRows;
+    }
+
+    res.status(200).json({ success: true, data: rows });
+  } catch (error) {
+    console.error('Error en obtenerCursosFavoritos:', error);
+    res.status(500).json({ success: false, message: 'Error interno al obtener cursos favoritos.' });
+  }
+};
+
+export const agregarCursoFavorito = async (req, res) => {
+  const { id } = req.params;
+  const { id_curso } = req.body;
+  
+  if (!id_curso) {
+    return res.status(400).json({ success: false, message: 'El id_curso es obligatorio en el cuerpo de la petición.' });
+  }
+  
+  try {
+    const [exists] = await db.query(
+      'SELECT * FROM favorito_curso.favoritos_cursos WHERE id_curso = ? AND id_estudiante = ?',
+      [id_curso, id]
+    );
+
+    if (exists.length > 0) {
+      if (exists[0].estado === 0) {
+        // Ya existe y está activo (0)
+        return res.status(200).json({ success: true, message: 'El curso ya se encuentra en favoritos.' });
+      } else {
+        // Existe pero estaba deshabilitado (1), lo pasamos a favorito (0)
+        await db.query(
+          'UPDATE favorito_curso.favoritos_cursos SET estado = 0 WHERE id_curso = ? AND id_estudiante = ?',
+          [id_curso, id]
+        );
+        return res.status(200).json({ success: true, message: 'Curso re-activado en favoritos correctamente.' });
+      }
+    } else {
+      // No existe, se crea como favorito (0)
+      await db.query(
+        'INSERT INTO favorito_curso.favoritos_cursos (id_curso, id_estudiante, estado) VALUES (?, ?, 0)',
+        [id_curso, id]
+      );
+      return res.status(201).json({ success: true, message: 'Curso guardado en favoritos con éxito.' });
+    }
+  } catch (error) {
+    console.error('Error en agregarCursoFavorito:', error);
+    res.status(500).json({ success: false, message: 'Error interno al guardar en favoritos.' });
+  }
+};
+
+export const deshabilitarCursoFavorito = async (req, res) => {
+  const { id, cursoId } = req.params;
+  
+  try {
+    // Cambiamos el estado de favorito (0) a deshabilitado (1)
+    const [result] = await db.query(
+      'UPDATE favorito_curso.favoritos_cursos SET estado = 1 WHERE id_curso = ? AND id_estudiante = ?',
+      [cursoId, id]
+    );
+    
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ success: false, message: 'El favorito no fue localizado para este estudiante.' });
+    }
+    
+    res.status(200).json({ success: true, message: 'Curso deshabilitado de favoritos exitosamente.' });
+  } catch (error) {
+    console.error('Error en deshabilitarCursoFavorito:', error);
+    res.status(500).json({ success: false, message: 'Error interno al remover de favoritos.' });
   }
 };
