@@ -28,4 +28,9 @@ router.get('/:id/cursos-favoritos', estudianteController.obtenerCursosFavoritos)
 router.post('/:id/cursos-favoritos/nuevo', estudianteController.agregarCursoFavorito);
 router.put('/:id/cursos-favoritos/deshabilitar/:cursoId', estudianteController.deshabilitarCursoFavorito);
 
+//rutas pa ofertas favoritos de un estudiante
+router.get('/:id/ofertas-favoritas', estudianteController.obtenerOfertasFavoritas);
+router.post('/:id/ofertas-favoritas/nueva', estudianteController.agregarOfertaFavorita);
+router.put('/:id/ofertas-favoritas/deshabilitar/:ofertaId', estudianteController.deshabilitarOfertaFavorita);
+
 export default router;

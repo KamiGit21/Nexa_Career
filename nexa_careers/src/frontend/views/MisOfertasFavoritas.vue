@@ -18,7 +18,7 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { obtenerFavoritosPorEstudiante } from '../services/OfertasFavoritos.js'
+import { obtenerOfertasFavoritas } from '../services/estudianteService.js'
 import MisOfertasFavoritasHeader from '../components/misOfertasFavoritas/MisOfertasFavoritasHeader.vue'
 import MisOfertasFavoritasVacio  from '../components/misOfertasFavoritas/MisOfertasFavoritasVacio.vue'
 import MisOfertasFavoritasGrid   from '../components/misOfertasFavoritas/MisOfertasFavoritasGrid.vue'
@@ -28,8 +28,13 @@ const sesion    = JSON.parse(localStorage.getItem('sesion') || '{}')
 const favoritos = ref([])
 
 onMounted(async () => {
-  favoritos.value = await obtenerFavoritosPorEstudiante(sesion.id)
-  // TODO (integración): agregar manejo de loading y error
+  if (sesion.id) {
+    const response = await obtenerOfertasFavoritas(sesion.id);
+    if (response.success && response.data) {
+      // Inyectamos isFavorito: true para evitar nuevas llamadas HTTP en las tarjetas
+      favoritos.value = response.data.map(oferta => ({ ...oferta, isFavorito: true }));
+    }
+  }
 })
 
 const irDetalle = (id) => router.push(`/ofertas/${id}`)
